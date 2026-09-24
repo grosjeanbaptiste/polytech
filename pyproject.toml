@@ -1,0 +1,44 @@
+[project]
+name = "fluides"
+version = "0.1.0"
+description = "Bibliotheque du cours IFLMA101 - Statique et cinematique des fluides"
+requires-python = ">=3.12"
+dependencies = ["sympy>=1.13"]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  "D203", "D213", "COM812",
+  # RUF001-003 : les identifiants et docstrings sont en francais (langage
+  # ubiquitaire du cours) ; les caracteres accentues y sont voulus.
+  "RUF001", "RUF002", "RUF003",
+  # CPY001 : exercice academique, pas d'en-tete de copyright a porter.
+  "CPY001",
+  # D401 : l'heuristique de "mode imperatif" de ruff est anglophone et
+  # classe a tort toute docstring francaise ; le mode imperatif francais
+  # est respecte a la lecture.
+  "D401",
+  # N818 : le suffixe "Error" est une convention anglaise ; les exceptions
+  # du domaine portent le vocabulaire francais du cours.
+  "N818",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "PLR2004", "D100", "D103"]
+
+[tool.mypy]
+strict = true
+warn_unreachable = true
+
+# sympy n'expose ni stubs ni marqueur py.typed : l'ecart est circonscrit a
+# ce seul paquet tiers, le code de la bibliotheque reste en mode strict.
+[[tool.mypy.overrides]]
+module = "sympy.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
