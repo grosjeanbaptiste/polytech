@@ -1,6 +1,7 @@
 """Cours II.2 (Stevin) et II.3 (manometre multi-fluides)."""
 
 import pytest
+import sympy as sp
 
 from fluides.domain.grandeurs import Hauteur, MasseVolumique, Pression
 from fluides.domain.statique.manometre import Manometre, Sens, Troncon
@@ -63,3 +64,24 @@ def test_la_contribution_de_chaque_troncon_est_consultable() -> None:
     poids = [c.pascals for c in manometre.contributions()]
     assert poids == pytest.approx([981.0, 1_667.7, 46_695.6])
     assert manometre.part_dominante() == pytest.approx(0.9463, abs=1e-4)
+
+
+def test_le_manometre_produit_son_equation_litterale() -> None:
+    """Le corrige affiche l'equation du cours : elle est construite, pas tapee."""
+    manometre = Manometre(
+        troncons=(
+            Troncon(EAU, Hauteur(metres=0.10), Sens.DESCENTE, nom="eau"),
+            Troncon(HUILE, Hauteur(metres=0.20), Sens.DESCENTE, nom="huile"),
+            Troncon(MERCURE, Hauteur(metres=0.35), Sens.MONTEE, nom="Hg"),
+        ),
+    )
+    g = sp.Symbol("g", positive=True)
+    attendu = sp.Eq(
+        sp.Symbol("p_1")
+        + sp.Symbol("rho_eau", positive=True) * g * sp.Symbol("h_1", positive=True)
+        + sp.Symbol("rho_huile", positive=True) * g * sp.Symbol("h_2", positive=True)
+        - sp.Symbol("rho_Hg", positive=True) * g * sp.Symbol("h_3", positive=True),
+        sp.Symbol("p_2"),
+    )
+    obtenu = manometre.equation_symbolique()
+    assert sp.simplify(obtenu.lhs - obtenu.rhs - attendu.lhs + attendu.rhs) == 0

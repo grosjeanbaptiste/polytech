@@ -1,0 +1,55 @@
+"""Les etapes de raisonnement du corrige sont derivees par la bibliotheque."""
+
+import pytest
+import sympy as sp
+
+from fluides.domain.cinematique.champ import ChampDeVitesse
+from fluides.domain.cinematique.symboles import T, X, Y
+
+B = ChampDeVitesse(u=X * T, v=X - Y)
+C = ChampDeVitesse(u=2 * X, v=-2 * Y)
+
+
+def _egal(obtenu: sp.Expr, attendu: sp.Expr) -> bool:
+    return bool(sp.simplify(obtenu - attendu) == 0)
+
+
+def test_les_six_derivees_partielles_de_b_sont_derivees() -> None:
+    d = B.derivees_partielles()
+    assert _egal(d.du_dt, X)
+    assert _egal(d.du_dx, T)
+    assert _egal(d.du_dy, sp.Integer(0))
+    assert _egal(d.dv_dt, sp.Integer(0))
+    assert _egal(d.dv_dx, sp.Integer(1))
+    assert _egal(d.dv_dy, sp.Integer(-1))
+
+
+def test_le_gradient_temporel_de_b_vaut_x_selon_ex() -> None:
+    dudt, dvdt = B.gradient_temporel()
+    assert _egal(dudt, X)
+    assert _egal(dvdt, sp.Integer(0))
+
+
+def test_la_loi_de_volume_de_b_est_integree_depuis_la_divergence() -> None:
+    """V(t)/V0 = exp(t^2/2 - t), obtenu en integrant div V."""
+    assert _egal(B.loi_de_volume(), sp.exp(T**2 / 2 - T))
+
+
+def test_le_volume_de_c_reste_constant() -> None:
+    assert _egal(C.loi_de_volume(), sp.Integer(1))
+
+
+def test_l_ecart_materiel_de_c_suit_les_exponentielles_de_l_etirement() -> None:
+    assert _egal(C.ecart_materiel(axe=0), sp.exp(2 * T))
+    assert _egal(C.ecart_materiel(axe=1), sp.exp(-2 * T))
+
+
+def test_les_lignes_de_courant_de_c_sont_l_hyperbole_xy() -> None:
+    equation = C.equation_lignes_de_courant()
+    assert _egal(equation.lhs, X * Y)
+    assert equation.rhs == sp.Symbol("C")
+
+
+def test_un_axe_invalide_est_refuse() -> None:
+    with pytest.raises(ValueError, match="axe"):
+        C.ecart_materiel(axe=2)
