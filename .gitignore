@@ -6,6 +6,9 @@ __pycache__/
 *.aux
 *.log
 *.out
+*.fdb_latexmk
+*.fls
+*.synctex.gz
 
 # Seuls les PDF sources restent hors du depot : 233 Mo, et ils vivent sur la
 # cle USB PASSPOLYTECH. Tout ce qui en derive (le Markdown converti) et tout
