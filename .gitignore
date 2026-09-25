@@ -7,15 +7,11 @@ __pycache__/
 *.log
 *.out
 
-# Supports de cours copies depuis la cle USB (PASSPOLYTECH) : presents sur
-# le disque et utilises comme reference par la bibliotheque `fluides`, mais
-# hors du depot (233 Mo de PDF, et ce n'est pas du code).
+# Seuls les PDF sources restent hors du depot : 233 Mo, et ils vivent sur la
+# cle USB PASSPOLYTECH. Tout ce qui en derive (le Markdown converti) et tout
+# ce qui les traite (le convertisseur) est suivi.
 /MATHS/
 /Electromagnetisme/
 /SignauxSystemes/
 /MécaniqueFluides/
 
-# Markdown derive de ces memes PDF (genere par le convertisseur) : ignore,
-# car reproductible a la demande. Les transcriptions manuscrites, elles, sont
-# suivies -- voir transcriptions/README.md.
-/cours-markdown/

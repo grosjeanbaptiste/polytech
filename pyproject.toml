@@ -3,7 +3,7 @@ name = "polytech"
 version = "0.1.0"
 description = "Bibliotheques du cursus Polytech, un contexte borne par matiere"
 requires-python = ">=3.12"
-dependencies = ["sympy>=1.13"]
+dependencies = ["sympy>=1.13", "pymupdf4llm>=0.0.17"]
 
 [tool.ruff]
 line-length = 88
@@ -36,7 +36,7 @@ warn_unreachable = true
 # sympy n'expose ni stubs ni marqueur py.typed : l'ecart est circonscrit a
 # ce seul paquet tiers, le code de la bibliotheque reste en mode strict.
 [[tool.mypy.overrides]]
-module = "sympy.*"
+module = ["sympy.*", "pymupdf.*", "pymupdf4llm.*"]
 ignore_missing_imports = true
 
 # LatexPrinter n'est pas annote en amont : heriter d'un `Any` est le seul
