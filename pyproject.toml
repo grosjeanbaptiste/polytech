@@ -39,6 +39,12 @@ warn_unreachable = true
 module = "sympy.*"
 ignore_missing_imports = true
 
+# LatexPrinter n'est pas annote en amont : heriter d'un `Any` est le seul
+# moyen d'etendre l'imprimeur de sympy. L'ecart tient a ce seul module.
+[[tool.mypy.overrides]]
+module = "fluides.application.impression"
+disallow_subclassing_any = false
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
