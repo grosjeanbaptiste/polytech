@@ -1,7 +1,7 @@
 [project]
-name = "fluides"
+name = "polytech"
 version = "0.1.0"
-description = "Bibliotheque du cours IFLMA101 - Statique et cinematique des fluides"
+description = "Bibliotheques du cursus Polytech, un contexte borne par matiere"
 requires-python = ">=3.12"
 dependencies = ["sympy>=1.13"]
 
@@ -42,7 +42,7 @@ ignore_missing_imports = true
 # LatexPrinter n'est pas annote en amont : heriter d'un `Any` est le seul
 # moyen d'etendre l'imprimeur de sympy. L'ecart tient a ce seul module.
 [[tool.mypy.overrides]]
-module = "fluides.application.impression"
+module = "polytech.fluides.application.impression"
 disallow_subclassing_any = false
 
 [tool.pytest.ini_options]

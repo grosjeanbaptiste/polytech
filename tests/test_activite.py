@@ -4,8 +4,8 @@ from collections.abc import Mapping
 
 import pytest
 
-from fluides.application.activite import ResultatsDeLActivite
-from fluides.application.generation import GenererMacros
+from polytech.fluides.application.activite import ResultatsDeLActivite
+from polytech.fluides.application.generation import GenererMacros
 
 RESULTATS = ResultatsDeLActivite().executer()
 

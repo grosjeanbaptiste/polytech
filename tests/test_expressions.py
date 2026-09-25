@@ -2,9 +2,9 @@
 
 from collections.abc import Mapping
 
-from fluides.application.formatage import expression_latex
-from fluides.application.generation import GenererMacros
-from fluides.domain.cinematique.symboles import T, X
+from polytech.fluides.application.formatage import expression_latex
+from polytech.fluides.application.generation import GenererMacros
+from polytech.fluides.domain.cinematique.symboles import T, X
 
 
 class _EnMemoire:

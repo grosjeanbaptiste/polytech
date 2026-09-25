@@ -2,8 +2,8 @@
 
 import pytest
 
-from fluides.domain.grandeurs import Hauteur, MasseVolumique
-from fluides.domain.statique.parements import (
+from polytech.fluides.domain.grandeurs import Hauteur, MasseVolumique
+from polytech.fluides.domain.statique.parements import (
     ParementTriangulaire,
     ParementVertical,
 )

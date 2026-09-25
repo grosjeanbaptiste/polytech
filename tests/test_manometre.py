@@ -3,9 +3,9 @@
 import pytest
 import sympy as sp
 
-from fluides.domain.grandeurs import Hauteur, MasseVolumique, Pression
-from fluides.domain.statique.manometre import Manometre, Sens, Troncon
-from fluides.domain.statique.stevin import variation_de_pression
+from polytech.fluides.domain.grandeurs import Hauteur, MasseVolumique, Pression
+from polytech.fluides.domain.statique.manometre import Manometre, Sens, Troncon
+from polytech.fluides.domain.statique.stevin import variation_de_pression
 
 EAU = MasseVolumique(kg_par_m3=1_000.0)
 HUILE = MasseVolumique(kg_par_m3=850.0)

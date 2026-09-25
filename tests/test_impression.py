@@ -2,13 +2,13 @@
 
 import sympy as sp
 
-from fluides.application.formatage import expression_latex
-from fluides.domain.cinematique.champ_generique import (
+from polytech.fluides.application.formatage import expression_latex
+from polytech.fluides.domain.cinematique.champ_generique import (
     CHAMP_GENERIQUE,
     U_GENERIQUE,
     V_GENERIQUE,
 )
-from fluides.domain.cinematique.symboles import X, Y
+from polytech.fluides.domain.cinematique.symboles import X, Y
 
 
 def test_un_champ_abstrait_s_ecrit_sans_sa_liste_d_arguments() -> None:

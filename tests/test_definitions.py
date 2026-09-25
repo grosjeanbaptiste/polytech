@@ -6,10 +6,13 @@ recopier pour autant : ils sont construits ici, une seule fois.
 
 import sympy as sp
 
-from fluides.domain.cinematique.champ_generique import CHAMP_GENERIQUE
-from fluides.domain.cinematique.lignes import definition_ligne_de_courant
-from fluides.domain.cinematique.symboles import T, X, Y
-from fluides.domain.statique.stevin import loi_de_stevin, relation_entre_deux_points
+from polytech.fluides.domain.cinematique.champ_generique import CHAMP_GENERIQUE
+from polytech.fluides.domain.cinematique.lignes import definition_ligne_de_courant
+from polytech.fluides.domain.cinematique.symboles import T, X, Y
+from polytech.fluides.domain.statique.stevin import (
+    loi_de_stevin,
+    relation_entre_deux_points,
+)
 
 U = sp.Function("u")(X, Y, T)
 V = sp.Function("v")(X, Y, T)

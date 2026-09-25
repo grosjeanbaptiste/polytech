@@ -4,7 +4,7 @@ from collections.abc import Mapping
 
 import pytest
 
-from fluides.application.generation import GenererMacros
+from polytech.fluides.application.generation import GenererMacros
 
 
 class _EnMemoire:

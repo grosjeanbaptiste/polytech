@@ -3,8 +3,8 @@
 import pytest
 import sympy as sp
 
-from fluides.domain.cinematique.champ import ChampDeVitesse
-from fluides.domain.cinematique.symboles import T, X, Y
+from polytech.fluides.domain.cinematique.champ import ChampDeVitesse
+from polytech.fluides.domain.cinematique.symboles import T, X, Y
 
 B = ChampDeVitesse(u=X * T, v=X - Y)
 C = ChampDeVitesse(u=2 * X, v=-2 * Y)

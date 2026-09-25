@@ -2,7 +2,7 @@
 
 import pytest
 
-from fluides.domain.grandeurs import Hauteur, MasseVolumique, Pression
+from polytech.fluides.domain.grandeurs import Hauteur, MasseVolumique, Pression
 
 
 def test_la_pression_se_lit_en_kilopascals() -> None:

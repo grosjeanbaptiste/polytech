@@ -3,12 +3,12 @@
 import pytest
 import sympy as sp
 
-from fluides.domain.cinematique.champ import ChampDeVitesse
-from fluides.domain.cinematique.lignes import (
+from polytech.fluides.domain.cinematique.champ import ChampDeVitesse
+from polytech.fluides.domain.cinematique.lignes import (
     FonctionDeCourantInexistante,
     PotentielInexistant,
 )
-from fluides.domain.cinematique.symboles import T, X, Y
+from polytech.fluides.domain.cinematique.symboles import T, X, Y
 
 CHAMP_B = ChampDeVitesse(u=X * T, v=X - Y)
 CHAMP_C = ChampDeVitesse(u=2 * X, v=-2 * Y)

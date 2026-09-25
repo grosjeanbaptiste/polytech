@@ -2,9 +2,12 @@
 
 import sympy as sp
 
-from fluides.domain.grandeurs import Hauteur, MasseVolumique
-from fluides.domain.statique.parements import ParementTriangulaire, ParementVertical
-from fluides.domain.statique.symboles import ALPHA, RHO, G, H, L
+from polytech.fluides.domain.grandeurs import Hauteur, MasseVolumique
+from polytech.fluides.domain.statique.parements import (
+    ParementTriangulaire,
+    ParementVertical,
+)
+from polytech.fluides.domain.statique.symboles import ALPHA, RHO, G, H, L
 
 EAU = MasseVolumique(kg_par_m3=1_000.0)
 MUR = ParementVertical(fluide=EAU, largeur=1.0)
