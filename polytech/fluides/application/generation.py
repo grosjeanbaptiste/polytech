@@ -16,6 +16,7 @@ from polytech.fluides.application.macros_cinematique import macros_cinematique
 from polytech.fluides.application.macros_definitions import macros_definitions
 from polytech.fluides.application.macros_derivations import macros_derivations
 from polytech.fluides.application.macros_donnees import macros_donnees
+from polytech.fluides.application.macros_hypotheses import macros_hypotheses
 from polytech.fluides.application.macros_statique import macros_statique
 
 if TYPE_CHECKING:
@@ -40,9 +41,14 @@ class GenererMacros:
             **macros_definitions(),
             **macros_donnees(),
             **macros_derivations(),
+            **macros_hypotheses(),
             **macros_statique(),
             **macros_cinematique(),
             "PressionAtmospheriqueKPa": nombre(atmospherique, 1),
+            "PressionNiveauMerReferenceKPa": nombre(
+                enonce.PRESSION_NIVEAU_MER.kilopascals,
+                1,
+            ),
             "PressionAirKPa": nombre(r.pression_air_kpa, 2),
             "PressionAirArrondieKPa": nombre(r.pression_air_kpa, 0),
             "PressionRelativeKPa": nombre(r.pression_relative_kpa, 2),

@@ -47,7 +47,10 @@ class ResultatsDeLActivite:
             / (enonce.EAU.kg_par_m3 * PESANTEUR),
             hauteur_mercure_equivalente_m=relative.pascals
             / (enonce.MERCURE.kg_par_m3 * PESANTEUR),
-            pression_air_niveau_mer_kpa=(101_300.0 + relative.pascals) / 1_000,
+            pression_air_niveau_mer_kpa=(
+                enonce.PRESSION_NIVEAU_MER.pascals + relative.pascals
+            )
+            / 1_000,
             rapport_poussee_prismatique=self._rapport(mur, mur.poussee),
             rapport_moment_prismatique=self._rapport(mur, mur.moment),
             rapport_hauteur_vallee_v=vallee.hauteur_pour_fraction_de_volume(_MOITIE),

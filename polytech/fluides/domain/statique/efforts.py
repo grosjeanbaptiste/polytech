@@ -52,14 +52,39 @@ class Parement(ABC):
             sp.integrate(RHO * G * Z * self.largeur_mouillee(), (Z, 0, H))
         )
 
+    def moment_des_pressions(self) -> sp.Expr:
+        """Moment des forces de pression autour de la surface libre."""
+        return sp.integrate(RHO * G * Z**2 * self.largeur_mouillee(), (Z, 0, H))
+
+    def equation_ligne_action(self) -> sp.Eq:
+        """Definition de la ligne d'action : ``z_a F = int z dF``.
+
+        La resultante doit produire, seule, le meme moment que la
+        distribution de pression entiere. C'est cette egalite qui *definit*
+        la ligne d'action ; le quotient n'en est que la resolution.
+        """
+        return sp.Eq(
+            sp.Symbol("z_a") * sp.Symbol("F"),
+            self.moment_des_pressions(),
+            evaluate=False,
+        )
+
     def expression_ligne_action(self) -> sp.Expr:
         """Profondeur ou passe la resultante, mesuree sous la surface libre.
 
         C'est le barycentre des forces de pression : le meme integrande que
         la poussee, pondere par la profondeur, divise par la poussee.
         """
-        moment = sp.integrate(RHO * G * Z**2 * self.largeur_mouillee(), (Z, 0, H))
-        return sp.simplify(moment / self.expression_poussee())
+        return sp.simplify(self.moment_des_pressions() / self.expression_poussee())
+
+    def expression_bras_de_levier(self) -> sp.Expr:
+        """Hauteur de la ligne d'action au-dessus du fond, soit ``H - z_a``.
+
+        Elle vaut ``H / 3`` pour un parement de largeur uniforme, mais
+        remonte des que la largeur mouillee croit avec la hauteur : le bras
+        se deduit donc de la ligne d'action, il ne se postule pas.
+        """
+        return sp.simplify(H - self.expression_ligne_action())
 
     def ligne_action(self, hauteur: Hauteur) -> float:
         """Profondeur numerique de la ligne d'action, en metres."""
@@ -67,15 +92,21 @@ class Parement(ABC):
 
     def expression_moment(self) -> sp.Expr:
         """Moment de renversement litteral autour du pied."""
-        return sp.simplify(self.expression_poussee() * H / 3)
+        return sp.simplify(
+            self.expression_poussee() * self.expression_bras_de_levier(),
+        )
 
     def exposant_poussee(self) -> int:
         """Degre en ``H`` de la poussee, lu sur l'integrale elle-meme."""
         return int(sp.degree(sp.expand(self.expression_poussee()), H))
 
-    def centre_de_poussee(self, hauteur: Hauteur) -> float:
-        """Altitude du centre de poussee au-dessus du fond, en metres."""
-        return hauteur.metres / 3.0
+    def hauteur_ligne_action(self, hauteur: Hauteur) -> float:
+        """Hauteur de la ligne d'action au-dessus du fond, en metres.
+
+        Le cours dit « ligne d'action » et jamais « centre de poussee » :
+        le nom de la methode suit son vocabulaire.
+        """
+        return self._evaluer(self.expression_bras_de_levier(), hauteur)
 
     def _evaluer(self, expression: sp.Expr, hauteur: Hauteur) -> float:
         valeurs = {

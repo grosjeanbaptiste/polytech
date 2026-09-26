@@ -31,9 +31,9 @@ def test_le_moment_de_renversement_est_divise_par_huit() -> None:
     assert rapport == pytest.approx(0.125)
 
 
-def test_le_centre_de_poussee_est_au_tiers_de_la_hauteur() -> None:
+def test_la_ligne_d_action_est_au_tiers_de_la_hauteur() -> None:
     mur = ParementVertical(fluide=EAU, largeur=1.0)
-    assert mur.centre_de_poussee(Hauteur(metres=9.0)) == pytest.approx(3.0)
+    assert mur.hauteur_ligne_action(Hauteur(metres=9.0)) == pytest.approx(3.0)
 
 
 def test_bassin_prismatique_la_hauteur_suit_le_volume() -> None:

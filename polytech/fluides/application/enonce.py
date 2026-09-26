@@ -20,6 +20,9 @@ MERCURE: Final = MasseVolumique(kg_par_m3=13_600.0)
 PRESSION_ATMOSPHERIQUE: Final = Pression(pascals=85_600.0)
 """Pression atmospherique a 1400 m d'altitude, donnee de l'enonce."""
 
+PRESSION_NIVEAU_MER: Final = Pression(pascals=101_300.0)
+"""Reference au niveau de la mer, pour la discussion sur l'altitude."""
+
 MANOMETRE: Final = Manometre(
     troncons=(
         Troncon(EAU, Hauteur(metres=0.10), Sens.DESCENTE, nom="eau"),

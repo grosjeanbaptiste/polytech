@@ -5,6 +5,8 @@ Chaque entree est le rendu LaTeX d'une expression *derivee* par le domaine.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import sympy as sp
 
 from polytech.fluides.application import enonce
@@ -15,7 +17,35 @@ from polytech.fluides.domain.statique.parements import (
     ParementVertical,
 )
 
+if TYPE_CHECKING:
+    from polytech.fluides.domain.statique.efforts import Parement
+
 _MOITIE = sp.Rational(1, 2)
+_CENT = 100
+
+
+def _macros_bras_de_levier(mur: Parement, vallee: Parement) -> dict[str, str]:
+    """Le bras se deduit de la ligne d'action, et differe selon la geometrie."""
+    return {
+        "EquationLigneAction": expression_latex(mur.equation_ligne_action()),
+        "BrasLevierVertical": expression_latex(mur.expression_bras_de_levier()),
+        "BrasLevierValleeV": expression_latex(vallee.expression_bras_de_levier()),
+        "MomentValleeV": expression_latex(vallee.expression_moment()),
+    }
+
+
+def _macros_facteurs(mur: Parement, vallee: Parement) -> dict[str, str]:
+    """Le corrige dit « divisee par 4 » : le 4 vient du rapport, inverse."""
+    facteurs = {
+        "FacteurPousseePrismatique": mur.rapport_poussee(_MOITIE),
+        "FacteurMomentPrismatique": mur.rapport_moment(_MOITIE),
+        "FacteurPousseeValleeV": vallee.rapport_poussee(_MOITIE),
+    }
+    perte = _CENT * (1 - float(vallee.hauteur_pour_fraction_de_volume(_MOITIE)))
+    return {
+        **{nom: expression_latex(1 / valeur) for nom, valeur in facteurs.items()},
+        "PerteHauteurValleeVPourcent": f"{perte:.0f}",
+    }
 
 
 def macros_statique() -> dict[str, str]:
@@ -23,6 +53,8 @@ def macros_statique() -> dict[str, str]:
     mur = ParementVertical(fluide=enonce.EAU, largeur=1.0)
     vallee = ParementTriangulaire(fluide=enonce.EAU, pente=0.5)
     return {
+        **_macros_bras_de_levier(mur, vallee),
+        **_macros_facteurs(mur, vallee),
         "EquationManometre": expression_latex(enonce.MANOMETRE.equation_symbolique()),
         "PousseeVerticale": expression_latex(mur.expression_poussee()),
         "PousseeInclinee": expression_latex(
