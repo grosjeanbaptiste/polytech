@@ -8,6 +8,10 @@ from __future__ import annotations
 
 from polytech.fluides.application import enonce
 from polytech.fluides.application.formatage import expression_latex
+from polytech.fluides.domain.cinematique.masse import (
+    loi_de_masse_volumique,
+    masse_de_la_particule,
+)
 
 _AXE_X, _AXE_Y = 0, 1
 
@@ -51,6 +55,12 @@ def macros_cinematique() -> dict[str, str]:
         **_macros_deformation(),
         "GradientTemporelB": expression_latex(gradient_x),
         "LoiVolumeB": expression_latex(enonce.CHAMP_B.loi_de_volume()),
+        "LoiMasseVolumiqueB": expression_latex(
+            loi_de_masse_volumique(enonce.CHAMP_B.divergence()),
+        ),
+        "MasseParticuleB": expression_latex(
+            masse_de_la_particule(enonce.CHAMP_B.divergence()),
+        ),
         "DivergenceC": expression_latex(enonce.CHAMP_C.divergence()),
         "TauxRotationC": expression_latex(enonce.CHAMP_C.taux_de_rotation()),
         "VorticiteB": expression_latex(enonce.CHAMP_B.vorticite()),
