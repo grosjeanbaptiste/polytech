@@ -20,6 +20,7 @@ from polytech.fluides.application.macros_donnees import macros_donnees
 from polytech.fluides.application.macros_hypotheses import macros_hypotheses
 from polytech.fluides.application.macros_incertitude import macros_incertitude
 from polytech.fluides.application.macros_statique import macros_statique
+from polytech.fluides.application.macros_validite import macros_validite
 
 _CENT = 100
 
@@ -48,6 +49,7 @@ class GenererMacros:
             **macros_hypotheses(),
             **macros_incertitude(),
             **macros_statique(),
+            **macros_validite(),
             **macros_cinematique(),
             **macros_corroboration(),
             "PressionAtmospheriqueKPa": nombre(atmospherique, 1),
