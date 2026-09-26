@@ -3,6 +3,7 @@
 import pytest
 import sympy as sp
 
+from polytech.fluides.application import enonce
 from polytech.fluides.domain.cinematique.champ import ChampDeVitesse
 from polytech.fluides.domain.cinematique.symboles import T, X, Y
 
@@ -90,3 +91,19 @@ def test_la_particule_de_b_s_etire_puis_se_comprime() -> None:
     """delta_x = e^{t^2/2} croit toujours ; delta_y = e^{-t} decroit toujours."""
     assert _egal(B.ecart_materiel(axe=0), sp.exp(T**2 / 2))
     assert _egal(B.ecart_materiel(axe=1), sp.exp(-T))
+
+
+def test_la_vorticite_vaut_le_double_du_taux_de_rotation() -> None:
+    """Le cours III.5 pose zeta = rot V et omega = (rot V)/2.
+
+    La macro `VorticiteB` etait publiee et citee par le corrige sans
+    qu'aucun test ne couvre la methode qui la produit.
+    """
+    champ = enonce.CHAMP_B
+    assert sp.simplify(champ.vorticite() - 2 * champ.taux_de_rotation()) == 0
+    assert champ.vorticite() == 1
+
+
+def test_la_vorticite_est_nulle_pour_un_ecoulement_irrotationnel() -> None:
+
+    assert enonce.CHAMP_C.vorticite() == 0

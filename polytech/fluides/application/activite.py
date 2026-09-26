@@ -34,13 +34,14 @@ class ResultatsDeLActivite:
         """Calcule et renvoie l'integralite des resultats du corrige."""
         air = enonce.MANOMETRE.pression_amont(aval=enonce.PRESSION_ATMOSPHERIQUE)
         relative = air.relative_a(enonce.PRESSION_ATMOSPHERIQUE)
-        contributions = tuple(c.pascals for c in enonce.MANOMETRE.contributions())
+        eau, huile, mercure = (c.pascals for c in enonce.MANOMETRE.contributions())
+        acceleration_x, acceleration_y = enonce.CHAMP_B.acceleration()
         ax, ay = enonce.CHAMP_B.acceleration_en(*enonce.POINT_B)
         mur, vallee = self._parements()
         return Resultats(
             pression_air_kpa=air.kilopascals,
             pression_relative_kpa=relative.kilopascals,
-            contributions_pa=contributions,  # type: ignore[arg-type]
+            contributions_pa=(eau, huile, mercure),
             part_mercure_pourcent=100 * enonce.MANOMETRE.part_dominante(),
             sensibilite_mercure_kpa_par_m=enonce.MERCURE.kg_par_m3 * PESANTEUR / 1_000,
             hauteur_eau_equivalente_m=relative.pascals
@@ -57,8 +58,9 @@ class ResultatsDeLActivite:
             rapport_poussee_vallee_v=self._rapport(vallee, vallee.poussee),
             divergence_b=expression_latex(enonce.CHAMP_B.divergence()),
             taux_rotation_b=expression_latex(enonce.CHAMP_B.taux_de_rotation()),
-            champ_acceleration_b=tuple(  # type: ignore[arg-type]
-                expression_latex(c) for c in enonce.CHAMP_B.acceleration()
+            champ_acceleration_b=(
+                expression_latex(acceleration_x),
+                expression_latex(acceleration_y),
             ),
             acceleration_b=(ax, ay),
             norme_acceleration_b=math.hypot(ax, ay),

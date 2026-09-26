@@ -19,7 +19,10 @@ from polytech.fluides.domain.statique.equilibre import (
     integration_sur_une_colonne,
     loi_locale,
 )
-from polytech.fluides.domain.statique.symboles import RHO, G, Z
+from polytech.fluides.domain.statique.stevin import (
+    expression_variation_de_pression,
+)
+from polytech.fluides.domain.statique.symboles import PROFONDEUR, RHO, G, Z
 
 DENIVELEE = sp.Symbol("h_2", positive=True)
 
@@ -63,3 +66,14 @@ def test_la_hauteur_de_la_bosse_disparait_de_la_somme() -> None:
     equation = compensation_de_la_bosse(DENIVELEE)
     assert sp.simplify(equation.rhs - RHO * G * DENIVELEE) == 0
     assert not equation.rhs.has(HAUTEUR_BOSSE)
+
+
+def test_la_forme_litterale_du_poids_de_colonne_est_publiable() -> None:
+    """`VariationPression` est citee par le corrige sans test propre.
+
+    Elle doit rendre l'egalite du cours, Delta p = rho g h, sous forme
+    non evaluee afin que le document l'affiche telle quelle.
+    """
+    equation = expression_variation_de_pression()
+    assert sp.simplify(equation.rhs - RHO * G * PROFONDEUR) == 0
+    assert equation.lhs.name == r"\Delta p"

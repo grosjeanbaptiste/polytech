@@ -29,11 +29,14 @@ class ImprimeurDuCours(LatexPrinter):
     """Imprimeur LaTeX suivant les conventions d'ecriture du cours."""
 
     # `exp` est impose par la signature de sympy : son type y est libre.
+    # N802/ANN401 : la signature est imposee par l'API de sympy, qui
+    # appelle `_print_<Classe>` avec un `exp` de type libre.
     def _print_Function(self, expr: sp.Expr, exp: Any = None) -> str:  # noqa: ANN401, N802
         if _est_champ(expr) and exp is None:
             return str(expr.func.__name__)
         return str(super()._print_Function(expr, exp))
 
+    # N802 : nom impose par le repartiteur de sympy (`_print_Mul`).
     def _print_Mul(self, expr: sp.Expr) -> str:  # noqa: N802
         """Ecrit ``1/2 (a + b)`` en facteur, et non distribue sur la somme."""
         coefficient, reste = expr.as_coeff_Mul()
@@ -41,6 +44,7 @@ class ImprimeurDuCours(LatexPrinter):
             return rf"{self._print(coefficient)}\left({self._print(reste)}\right)"
         return str(super()._print_Mul(expr))
 
+    # N802 : nom impose par le repartiteur de sympy (`_print_Derivative`).
     def _print_Derivative(self, expr: sp.Derivative) -> str:  # noqa: N802
         if len(expr.variables) == 1:
             base = self._print(expr.expr)
