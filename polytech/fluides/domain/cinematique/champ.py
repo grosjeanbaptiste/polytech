@@ -107,6 +107,19 @@ class ChampDeVitesse:
         """``phi`` telle que ``V = grad phi``."""
         return lignes.potentiel_des_vitesses(self.u, self.v)
 
+    def trajectoire_est_elementaire(self) -> bool:
+        """Vrai si la trajectoire admet une forme close.
+
+        Le champ B n'en a pas : ``dy/dt = x - y`` avec ``x = x0 e^{t^2/2}``
+        conduit a une primitive non elementaire. C'est une propriete du
+        champ, que le corrige doit pouvoir citer sans provoquer d'erreur.
+        """
+        try:
+            self.trajectoire(1.0, 1.0)
+        except lignes.TrajectoireNonElementaire:
+            return False
+        return True
+
     def trajectoire(self, x0: float, y0: float) -> tuple[sp.Expr, sp.Expr]:
         """Position d'une particule partie de ``(x0, y0)`` a ``t = 0``."""
         return lignes.trajectoire(self.u, self.v, x0, y0)

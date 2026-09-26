@@ -29,6 +29,9 @@ def _macros_deformation() -> dict[str, str]:
     tenseur = enonce.CHAMP_C.tenseur_taux_deformation()
     return {
         "TenseurB": expression_latex(enonce.CHAMP_B.tenseur_taux_deformation()),
+        "EpsXYB": expression_latex(
+            enonce.CHAMP_B.tenseur_taux_deformation()[0, 1],
+        ),
         "TenseurC": expression_latex(tenseur),
         "EpsXXC": expression_latex(tenseur[0, 0]),
         "EpsYYC": expression_latex(tenseur[1, 1]),
@@ -50,6 +53,7 @@ def macros_cinematique() -> dict[str, str]:
         "LoiVolumeB": expression_latex(enonce.CHAMP_B.loi_de_volume()),
         "DivergenceC": expression_latex(enonce.CHAMP_C.divergence()),
         "TauxRotationC": expression_latex(enonce.CHAMP_C.taux_de_rotation()),
+        "VorticiteB": expression_latex(enonce.CHAMP_B.vorticite()),
         "LignesCourantB": expression_latex(
             enonce.CHAMP_B.lignes_de_courant_explicites(),
         ),

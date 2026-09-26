@@ -13,6 +13,7 @@ from polytech.fluides.application import enonce
 from polytech.fluides.application.activite import ResultatsDeLActivite
 from polytech.fluides.application.formatage import nombre
 from polytech.fluides.application.macros_cinematique import macros_cinematique
+from polytech.fluides.application.macros_corroboration import macros_corroboration
 from polytech.fluides.application.macros_definitions import macros_definitions
 from polytech.fluides.application.macros_derivations import macros_derivations
 from polytech.fluides.application.macros_donnees import macros_donnees
@@ -48,6 +49,7 @@ class GenererMacros:
             **macros_incertitude(),
             **macros_statique(),
             **macros_cinematique(),
+            **macros_corroboration(),
             "PressionAtmospheriqueKPa": nombre(atmospherique, 1),
             "ReponseDuCoursKPa": nombre(enonce.REPONSE_DU_COURS.kilopascals, 0),
             "EcartAuCoursPourcent": nombre(

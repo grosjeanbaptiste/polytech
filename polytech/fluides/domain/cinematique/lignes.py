@@ -8,6 +8,8 @@ appelant pourrait oublier de tester.
 
 from __future__ import annotations
 
+import re
+
 import sympy as sp
 
 from polytech.fluides.domain.cinematique.symboles import T, X, Y
@@ -19,6 +21,15 @@ class FonctionDeCourantInexistante(Exception):
 
 class PotentielInexistant(Exception):
     """L'ecoulement est rotationnel : ``phi`` n'existe pas."""
+
+
+class TrajectoireNonElementaire(Exception):
+    """L'integration n'aboutit pas a une forme close.
+
+    Sympy laisse alors une integrale non evaluee et une constante libre :
+    la condition initiale n'a pas pu etre appliquee. Rendre cette
+    expression serait pretendre avoir resolu ce qui ne l'est pas.
+    """
 
 
 def _primitive_par_recollement(
@@ -107,4 +118,22 @@ def trajectoire(
         [fx(T), fy(T)],
         ics={fx(0): x0, fy(0): y0},
     )
-    return (sp.simplify(solution[0].rhs), sp.simplify(solution[1].rhs))
+    position = (sp.simplify(solution[0].rhs), sp.simplify(solution[1].rhs))
+    _exiger_forme_close(position)
+    return position
+
+
+_CONSTANTE_LIBRE = re.compile(r"^C\d+$")
+
+
+def _exiger_forme_close(position: tuple[sp.Expr, sp.Expr]) -> None:
+    """Refuse une solution ou subsiste une integrale ou une constante libre."""
+    for composante in position:
+        libres = {
+            symbole.name
+            for symbole in composante.free_symbols
+            if _CONSTANTE_LIBRE.match(symbole.name)
+        }
+        if composante.has(sp.Integral) or libres:
+            msg = f"l'integration n'aboutit pas a une forme close : {composante}"
+            raise TrajectoireNonElementaire(msg)
