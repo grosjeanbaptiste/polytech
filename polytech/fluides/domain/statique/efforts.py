@@ -18,7 +18,7 @@ from dataclasses import dataclass
 import sympy as sp
 
 from polytech.fluides.domain.grandeurs import PESANTEUR, Hauteur, MasseVolumique
-from polytech.fluides.domain.statique.symboles import RHO, G, H, Z
+from polytech.fluides.domain.statique.symboles import COTE, RHO, G, H, Z
 
 
 def _exiger_fraction(fraction: sp.Expr | float) -> None:
@@ -39,8 +39,13 @@ class Parement(ABC):
         """Largeur mouillee a la profondeur ``Z``, hauteur d'eau ``H``."""
 
     @abstractmethod
-    def exposant_volume(self) -> int:
-        """Exposant ``n`` tel que le volume stocke varie comme ``H^n``."""
+    def section_horizontale(self) -> sp.Expr:
+        """Aire de la surface libre lorsque la hauteur d'eau vaut ``H``.
+
+        C'est la seule chose qu'une geometrie de bassin ait a declarer : le
+        volume stocke et son exposant en ``H`` s'en deduisent par
+        integration, comme la poussee se deduit de la largeur mouillee.
+        """
 
     @abstractmethod
     def _valeurs(self) -> dict[sp.Symbol, float]:
@@ -99,6 +104,15 @@ class Parement(ABC):
     def exposant_poussee(self) -> int:
         """Degre en ``H`` de la poussee, lu sur l'integrale elle-meme."""
         return int(sp.degree(sp.expand(self.expression_poussee()), H))
+
+    def expression_volume(self) -> sp.Expr:
+        """Volume stocke : empilement des sections horizontales de 0 a ``H``."""
+        tranche = self.section_horizontale().subs(H, COTE)
+        return sp.simplify(sp.integrate(tranche, (COTE, 0, H)))
+
+    def exposant_volume(self) -> int:
+        """Degre en ``H`` du volume, lu sur l'integrale elle-meme."""
+        return int(sp.degree(sp.expand(self.expression_volume()), H))
 
     def hauteur_ligne_action(self, hauteur: Hauteur) -> float:
         """Hauteur de la ligne d'action au-dessus du fond, en metres.

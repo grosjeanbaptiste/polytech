@@ -10,7 +10,14 @@ from dataclasses import dataclass
 import sympy as sp
 
 from polytech.fluides.domain.statique.efforts import Parement
-from polytech.fluides.domain.statique.symboles import ALPHA, H, L, Z
+from polytech.fluides.domain.statique.symboles import (
+    AIRE,
+    ALLONGEMENT,
+    ALPHA,
+    H,
+    L,
+    Z,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,9 +36,9 @@ class ParementVertical(Parement):
         """Largeur constante ``L``, independante de la profondeur."""
         return L
 
-    def exposant_volume(self) -> int:
-        """Bassin prismatique : ``V = A H`` varie comme ``H``."""
-        return 1
+    def section_horizontale(self) -> sp.Expr:
+        """Berges verticales : l'aire de la surface libre ne varie pas."""
+        return AIRE
 
     def _valeurs(self) -> dict[sp.Symbol, float]:
         return {L: self.largeur}
@@ -57,9 +64,15 @@ class ParementTriangulaire(Parement):
         """Largeur maximale en surface, nulle au fond."""
         return 2 * ALPHA * (H - Z)
 
-    def exposant_volume(self) -> int:
-        """Vallee auto-similaire : le volume varie comme ``H^3``."""
-        return 3
+    def section_horizontale(self) -> sp.Expr:
+        """Vallee auto-similaire : largeur *et* longueur croissent avec ``H``.
+
+        La surface libre mesure ``2 alpha H`` de large et ``lambda H`` de
+        long : son aire varie donc comme ``H^2``, et le volume comme
+        ``H^3``. C'est cette auto-similarite -- et elle seule -- qui rend
+        poussee et volume proportionnels.
+        """
+        return 2 * ALPHA * ALLONGEMENT * H**2
 
     def _valeurs(self) -> dict[sp.Symbol, float]:
         return {ALPHA: self.pente}
@@ -95,9 +108,9 @@ class ParementIncline(Parement):
         """Largeur de paroi par unite de profondeur."""
         return L / sp.sin(self.angle)
 
-    def exposant_volume(self) -> int:
-        """Bassin prismatique : le volume varie comme la hauteur."""
-        return 1
+    def section_horizontale(self) -> sp.Expr:
+        """L'inclinaison change la paroi, pas la facon dont le bassin se remplit."""
+        return AIRE
 
     def _valeurs(self) -> dict[sp.Symbol, float]:
         return {L: self.largeur}
