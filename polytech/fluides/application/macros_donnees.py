@@ -34,12 +34,28 @@ def _macros_hauteurs() -> dict[str, str]:
     return {nom: f"{h:.2f}" for nom, h in zip(noms, hauteurs, strict=True)}
 
 
+def _macros_point_evaluation() -> dict[str, str]:
+    """Point et instant ou l'enonce demande l'acceleration.
+
+    Ces trois nombres etaient ecrits a la main dans le corrige et dans la
+    feuille de reponses, alors que toutes les autres donnees de l'enonce
+    venaient de macros.
+    """
+    abscisse, ordonnee, instant = enonce.POINT_B
+    return {
+        "PointEvaluationX": nombre(abscisse, 0),
+        "PointEvaluationY": nombre(ordonnee, 0),
+        "InstantEvaluation": nombre(instant, 0),
+    }
+
+
 def macros_donnees() -> dict[str, str]:
     """Rend les donnees de l'enonce, telles que le domaine les porte."""
     mur = ParementVertical(fluide=enonce.EAU, largeur=1.0)
     return {
         **_macros_fluides(),
         **_macros_hauteurs(),
+        **_macros_point_evaluation(),
         "ChampBU": expression_latex(enonce.CHAMP_B.u),
         "ChampBV": expression_latex(enonce.CHAMP_B.v),
         "ChampCU": expression_latex(enonce.CHAMP_C.u),
