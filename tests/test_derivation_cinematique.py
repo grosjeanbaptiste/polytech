@@ -53,3 +53,40 @@ def test_les_lignes_de_courant_de_c_sont_l_hyperbole_xy() -> None:
 def test_un_axe_invalide_est_refuse() -> None:
     with pytest.raises(ValueError, match="axe"):
         C.ecart_materiel(axe=2)
+
+
+def test_les_lignes_de_courant_de_b_dependent_du_temps() -> None:
+    """Sans fonction de courant, il reste l'integration directe de dy/dx.
+
+    C'est ce qui prouve que le reseau se deforme : la famille depend
+    explicitement de t, alors que celle de C n'en depend pas.
+    """
+    y = B.lignes_de_courant_explicites()
+    constante = sp.Symbol("C")
+    assert y.has(T)
+    assert y.has(constante)
+    # la solution satisfait bien dy/dx = v/u
+    residu = sp.simplify(sp.diff(y, X) - (X - y) / (X * T))
+    assert residu == 0
+
+
+def test_les_lignes_de_courant_de_c_ne_dependent_pas_du_temps() -> None:
+    y = C.lignes_de_courant_explicites()
+    assert not y.has(T)
+
+
+@pytest.mark.parametrize("champ", [B, C])
+def test_le_produit_des_ecarts_redonne_la_loi_de_volume(champ: ChampDeVitesse) -> None:
+    """Coherence interne : l'aire est le produit des deux dimensions.
+
+    Les ecarts materiels s'integrent depuis le tenseur, la loi de volume
+    depuis la divergence -- deux chemins distincts qui doivent se rejoindre.
+    """
+    produit = champ.ecart_materiel(axe=0) * champ.ecart_materiel(axe=1)
+    assert _egal(produit, champ.loi_de_volume())
+
+
+def test_la_particule_de_b_s_etire_puis_se_comprime() -> None:
+    """delta_x = e^{t^2/2} croit toujours ; delta_y = e^{-t} decroit toujours."""
+    assert _egal(B.ecart_materiel(axe=0), sp.exp(T**2 / 2))
+    assert _egal(B.ecart_materiel(axe=1), sp.exp(-T))

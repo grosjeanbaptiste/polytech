@@ -49,6 +49,24 @@ def potentiel_des_vitesses(u: sp.Expr, v: sp.Expr) -> sp.Expr:
     return _primitive_par_recollement(u, X, v, Y)
 
 
+def lignes_de_courant_explicites(u: sp.Expr, v: sp.Expr) -> sp.Expr:
+    """Rend ``y(x)`` en integrant ``dy/dx = v/u`` a instant fige.
+
+    La fonction de courant ne suffit pas toujours : elle n'existe qu'a
+    divergence nulle. L'integration directe, elle, vaut dans tous les cas,
+    et montre si la famille depend du temps -- donc si le reseau se deforme.
+    """
+    trace = sp.Function("trace")
+    solution = sp.dsolve(
+        sp.Eq(trace(X).diff(X), (v / u).subs(Y, trace(X))),
+        trace(X),
+    )
+    # `powdenest` ramene exp(-log(x)/t) a x^(-1/t) : la meme chose, lisible.
+    reduite = sp.powdenest(sp.simplify(solution.rhs), force=True)
+    resultat: sp.Expr = reduite.subs(sp.Symbol("C1"), sp.Symbol("C"))
+    return resultat
+
+
 def definition_ligne_de_courant() -> sp.Eq:
     """Enonce du cours III.3 : ``dx/u = dy/v`` a instant fige."""
     u_gen = sp.Function("u")(X, Y, T)

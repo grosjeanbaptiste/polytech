@@ -46,6 +46,10 @@ class ChampDeVitesse:
         """Pente ``dy/dx = v/u`` d'une ligne de courant (cours III.3)."""
         return sp.simplify(self.v / self.u)
 
+    def lignes_de_courant_explicites(self) -> sp.Expr:
+        """Rend ``y(x)`` a instant fige, par integration directe."""
+        return lignes.lignes_de_courant_explicites(self.u, self.v)
+
     def equation_lignes_de_courant(self) -> sp.Eq:
         """Equation implicite des lignes de courant (cours III.3)."""
         return lignes.equation_lignes_de_courant(self.u, self.v)

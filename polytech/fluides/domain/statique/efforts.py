@@ -52,6 +52,19 @@ class Parement(ABC):
             sp.integrate(RHO * G * Z * self.largeur_mouillee(), (Z, 0, H))
         )
 
+    def expression_ligne_action(self) -> sp.Expr:
+        """Profondeur ou passe la resultante, mesuree sous la surface libre.
+
+        C'est le barycentre des forces de pression : le meme integrande que
+        la poussee, pondere par la profondeur, divise par la poussee.
+        """
+        moment = sp.integrate(RHO * G * Z**2 * self.largeur_mouillee(), (Z, 0, H))
+        return sp.simplify(moment / self.expression_poussee())
+
+    def ligne_action(self, hauteur: Hauteur) -> float:
+        """Profondeur numerique de la ligne d'action, en metres."""
+        return self._evaluer(self.expression_ligne_action(), hauteur)
+
     def expression_moment(self) -> sp.Expr:
         """Moment de renversement litteral autour du pied."""
         return sp.simplify(self.expression_poussee() * H / 3)

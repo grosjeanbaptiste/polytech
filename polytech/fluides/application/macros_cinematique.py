@@ -33,6 +33,8 @@ def _macros_deformation() -> dict[str, str]:
         "EpsXXC": expression_latex(tenseur[0, 0]),
         "EpsYYC": expression_latex(tenseur[1, 1]),
         "EpsXYC": expression_latex(tenseur[0, 1]),
+        "EcartMaterielBX": expression_latex(enonce.CHAMP_B.ecart_materiel(_AXE_X)),
+        "EcartMaterielBY": expression_latex(enonce.CHAMP_B.ecart_materiel(_AXE_Y)),
         "EcartMaterielCX": expression_latex(enonce.CHAMP_C.ecart_materiel(_AXE_X)),
         "EcartMaterielCY": expression_latex(enonce.CHAMP_C.ecart_materiel(_AXE_Y)),
     }
@@ -48,6 +50,9 @@ def macros_cinematique() -> dict[str, str]:
         "LoiVolumeB": expression_latex(enonce.CHAMP_B.loi_de_volume()),
         "DivergenceC": expression_latex(enonce.CHAMP_C.divergence()),
         "TauxRotationC": expression_latex(enonce.CHAMP_C.taux_de_rotation()),
+        "LignesCourantB": expression_latex(
+            enonce.CHAMP_B.lignes_de_courant_explicites(),
+        ),
         "LignesCourantC": expression_latex(
             enonce.CHAMP_C.equation_lignes_de_courant(),
         ),

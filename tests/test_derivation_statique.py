@@ -80,3 +80,29 @@ def test_un_angle_symbolique_est_accepte() -> None:
     theta = sp.Symbol("theta", positive=True)
     incline = ParementIncline(fluide=EAU, largeur=1.0, angle=theta)
     assert _egal(incline.expression_poussee(), RHO * G * L * H**2 / (2 * sp.sin(theta)))
+
+
+def test_la_ligne_d_action_du_mur_vertical_est_aux_deux_tiers() -> None:
+    """Moment des forces de pression sur leur resultante.
+
+    Le cours demande « la force hydrostatique et sa ligne d'action » : la
+    seconde s'obtient du meme integrande que la premiere, pondere par la
+    profondeur.
+    """
+    assert _egal(MUR.expression_ligne_action(), 2 * H / 3)
+
+
+def test_la_ligne_d_action_de_la_vallee_en_v_est_a_mi_hauteur() -> None:
+    """Le parement triangulaire, plus large en surface, remonte la poussee."""
+    assert _egal(VALLEE.expression_ligne_action(), H / 2)
+
+
+def test_l_inclinaison_ne_deplace_pas_la_ligne_d_action_en_profondeur() -> None:
+    """La largeur etant uniforme, elle se simplifie : seule la forme compte."""
+    theta = sp.Symbol("theta", positive=True)
+    incline = ParementIncline(fluide=EAU, largeur=1.0, angle=theta)
+    assert _egal(incline.expression_ligne_action(), 2 * H / 3)
+
+
+def test_la_ligne_d_action_numerique_suit_l_expression() -> None:
+    assert MUR.ligne_action(Hauteur(metres=9.0)) == pytest.approx(6.0)

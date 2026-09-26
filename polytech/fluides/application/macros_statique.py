@@ -33,6 +33,8 @@ def macros_statique() -> dict[str, str]:
             ).expression_poussee(),
         ),
         "MomentVertical": expression_latex(mur.expression_moment()),
+        "LigneActionVerticale": expression_latex(mur.expression_ligne_action()),
+        "LigneActionValleeV": expression_latex(vallee.expression_ligne_action()),
         "PousseeValleeV": expression_latex(vallee.expression_poussee()),
         "RapportPousseePrismatique": expression_latex(mur.rapport_poussee(_MOITIE)),
         "RapportMomentPrismatique": expression_latex(mur.rapport_moment(_MOITIE)),
