@@ -1,24 +1,34 @@
 """Cours III.2, III.4 et III.5 -- operateurs differentiels sur un champ plan.
 
 Chaque question du cours se teste par un operateur different, et ils sont
-independants les uns des autres : c'est la raison d'etre de ce module.
+independants les uns des autres : c'est la raison d'etre de ce module. Les
+trois premiers ne sont pas des formules autonomes mais trois lectures du
+meme gradient de vitesse (module ``decomposition``) -- sa trace, sa part
+symetrique, sa part antisymetrique.
 """
 
 from __future__ import annotations
 
 import sympy as sp
 
+from polytech.fluides.domain.cinematique.decomposition import (
+    gradient_de_vitesse,
+    partie_antisymetrique,
+    partie_symetrique,
+)
 from polytech.fluides.domain.cinematique.symboles import T, X, Y
 
 
 def divergence(u: sp.Expr, v: sp.Expr) -> sp.Expr:
-    """Taux de dilatation volumique relatif d'une particule (cours III.4)."""
-    return sp.simplify(sp.diff(u, X) + sp.diff(v, Y))
+    """Trace du gradient : taux de dilatation volumique relatif (III.4)."""
+    return sp.simplify(gradient_de_vitesse(u, v).trace())
 
 
 def taux_de_rotation(u: sp.Expr, v: sp.Expr) -> sp.Expr:
-    """Vitesse angulaire propre ``omega_z`` de la particule (cours III.5)."""
-    return sp.simplify((sp.diff(v, X) - sp.diff(u, Y)) / 2)
+    """Unique coefficient de la part antisymetrique, ``omega_z`` (III.5)."""
+    antisymetrique = partie_antisymetrique(gradient_de_vitesse(u, v))
+    resultat: sp.Expr = antisymetrique[1, 0]
+    return resultat
 
 
 def vorticite(u: sp.Expr, v: sp.Expr) -> sp.Expr:
@@ -27,11 +37,8 @@ def vorticite(u: sp.Expr, v: sp.Expr) -> sp.Expr:
 
 
 def tenseur_taux_deformation(u: sp.Expr, v: sp.Expr) -> sp.Matrix:
-    """Tenseur symetrique des taux de deformation (cours III.4)."""
-    exx = sp.diff(u, X)
-    eyy = sp.diff(v, Y)
-    exy = (sp.diff(u, Y) + sp.diff(v, X)) / 2
-    return sp.simplify(sp.Matrix([[exx, exy], [exy, eyy]]))
+    """Part symetrique du gradient : les taux de deformation (III.4)."""
+    return partie_symetrique(gradient_de_vitesse(u, v))
 
 
 def derivee_materielle(
@@ -47,3 +54,25 @@ def derivee_materielle(
     return sp.simplify(
         sp.diff(grandeur, T) + u * sp.diff(grandeur, X) + v * sp.diff(grandeur, Y),
     )
+
+
+def derivee_le_long_de_la_trajectoire(
+    grandeur: sp.Expr,
+    u: sp.Expr,
+    v: sp.Expr,
+) -> sp.Expr:
+    """Derive ``grandeur`` en suivant la particule, par derivation en chaine.
+
+    On remplace ``x`` et ``y`` par la position ``x(t), y(t)`` d'une particule,
+    on derive en ``t``, puis on reconnait ``dx/dt = u`` et ``dy/dt = v``. Le
+    resultat coincide avec ``derivee_materielle`` : c'est la *demonstration*
+    de l'operateur, et non une seconde definition.
+    """
+    abscisse, ordonnee = sp.Function("x")(T), sp.Function("y")(T)
+    mouvement = {X: abscisse, Y: ordonnee}
+    vitesses = {
+        sp.Derivative(abscisse, T): u.subs(mouvement),
+        sp.Derivative(ordonnee, T): v.subs(mouvement),
+    }
+    derivee = sp.diff(grandeur.subs(mouvement), T).subs(vitesses)
+    return sp.simplify(derivee.subs({abscisse: X, ordonnee: Y}))

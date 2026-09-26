@@ -14,6 +14,7 @@ from polytech.fluides.application.activite import ResultatsDeLActivite
 from polytech.fluides.application.formatage import nombre
 from polytech.fluides.application.macros_cinematique import macros_cinematique
 from polytech.fluides.application.macros_definitions import macros_definitions
+from polytech.fluides.application.macros_derivations import macros_derivations
 from polytech.fluides.application.macros_donnees import macros_donnees
 from polytech.fluides.application.macros_statique import macros_statique
 
@@ -38,6 +39,7 @@ class GenererMacros:
         return {
             **macros_definitions(),
             **macros_donnees(),
+            **macros_derivations(),
             **macros_statique(),
             **macros_cinematique(),
             "PressionAtmospheriqueKPa": nombre(atmospherique, 1),
