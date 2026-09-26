@@ -21,7 +21,18 @@ PRESSION_ATMOSPHERIQUE: Final = Pression(pascals=85_600.0)
 """Pression atmospherique a 1400 m d'altitude, donnee de l'enonce."""
 
 PRESSION_NIVEAU_MER: Final = Pression(pascals=101_300.0)
-"""Reference au niveau de la mer, pour la discussion sur l'altitude."""
+"""Reference au niveau de la mer, pour la discussion sur l'altitude.
+
+Atmosphere type (ISO 2533 / OACI) : 101 325 Pa, arrondi a 101,3 kPa.
+"""
+
+REPONSE_DU_COURS: Final = Pression(pascals=130_000.0)
+"""Reponse publiee par le cours pour cet exercice.
+
+Planche II.3 « Instruments de mesure de la pression : le manometre
+multi-fluides », mention « Rep. : p1 = 130 kPa ». Elle sert de
+corroboration independante du resultat que la bibliotheque calcule.
+"""
 
 MANOMETRE: Final = Manometre(
     troncons=(

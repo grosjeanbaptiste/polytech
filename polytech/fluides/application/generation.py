@@ -19,6 +19,8 @@ from polytech.fluides.application.macros_donnees import macros_donnees
 from polytech.fluides.application.macros_hypotheses import macros_hypotheses
 from polytech.fluides.application.macros_statique import macros_statique
 
+_CENT = 100
+
 if TYPE_CHECKING:
     from polytech.fluides.domain.ports import PublicationDeMacros
 
@@ -45,6 +47,13 @@ class GenererMacros:
             **macros_statique(),
             **macros_cinematique(),
             "PressionAtmospheriqueKPa": nombre(atmospherique, 1),
+            "ReponseDuCoursKPa": nombre(enonce.REPONSE_DU_COURS.kilopascals, 0),
+            "EcartAuCoursPourcent": nombre(
+                _CENT
+                * abs(r.pression_air_kpa - enonce.REPONSE_DU_COURS.kilopascals)
+                / r.pression_air_kpa,
+                2,
+            ),
             "PressionNiveauMerReferenceKPa": nombre(
                 enonce.PRESSION_NIVEAU_MER.kilopascals,
                 1,

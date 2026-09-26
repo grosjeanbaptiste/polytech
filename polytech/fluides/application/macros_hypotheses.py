@@ -20,12 +20,20 @@ from polytech.fluides.domain.grandeurs import Hauteur, Pression
 from polytech.fluides.domain.statique.gaz import (
     AIR,
     TEMPERATURE_AMBIANTE,
+    majorant_de_la_part_negligee,
     part_negligee,
+    part_negligee_litterale,
 )
 from polytech.fluides.domain.statique.stevin import variation_de_pression
 
 CIEL_GAZEUX = Hauteur(metres=0.5)
 """Hauteur d'air supposee au-dessus de l'eau dans le reservoir."""
+
+CIEL_GAZEUX_MAJORANT = Hauteur(metres=2.0)
+"""Borne haute plausible du ciel gazeux, pour le calcul du pire cas."""
+
+TEMPERATURE_MINIMALE = 273.15
+"""Borne basse plausible : de l'eau liquide, donc au moins zero Celsius."""
 
 _CENT = 100
 _DEPART = (sp.Symbol("x_0", positive=True), sp.Symbol("y_0", positive=True))
@@ -47,6 +55,22 @@ def _macros_air() -> dict[str, str]:
         "HauteurCielGazeux": nombre(CIEL_GAZEUX.metres, 1),
         "PartAirNegligeePourcent": f"{part * _CENT:.4f}",
         "ImprecisionLecturePourcent": _imprecision_de_lecture(reservoir),
+        **_macros_robustesse(),
+    }
+
+
+def _macros_robustesse() -> dict[str, str]:
+    """De quoi montrer que (H3) ne repose sur aucun choix arbitraire."""
+    majorant = majorant_de_la_part_negligee(
+        AIR,
+        CIEL_GAZEUX_MAJORANT,
+        TEMPERATURE_MINIMALE,
+    )
+    return {
+        "PartNegligeeLitterale": expression_latex(part_negligee_litterale()),
+        "CielGazeuxMajorant": nombre(CIEL_GAZEUX_MAJORANT.metres, 0),
+        "TemperatureMinimale": nombre(TEMPERATURE_MINIMALE, 2),
+        "MajorantPartNegligeePourcent": f"{majorant * _CENT:.3f}",
     }
 
 
