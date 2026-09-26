@@ -16,6 +16,7 @@ from polytech.fluides.domain.statique.parements import (
     ParementTriangulaire,
     ParementVertical,
 )
+from polytech.fluides.domain.statique.symboles import H
 
 if TYPE_CHECKING:
     from polytech.fluides.domain.statique.efforts import Parement
@@ -31,6 +32,14 @@ def _macros_bras_de_levier(mur: Parement, vallee: Parement) -> dict[str, str]:
         "BrasLevierVertical": expression_latex(mur.expression_bras_de_levier()),
         "BrasLevierValleeV": expression_latex(vallee.expression_bras_de_levier()),
         "MomentValleeV": expression_latex(vallee.expression_moment()),
+        # Bras de levier une fois la hauteur reduite : (H/2)/3 = H/6. Le
+        # corrige l'ecrivait a la main, y compris dans une figure.
+        "BrasLevierHalve": expression_latex(
+            mur.expression_bras_de_levier().subs(
+                H,
+                mur.hauteur_pour_fraction_de_volume(_MOITIE) * H,
+            ),
+        ),
     }
 
 
