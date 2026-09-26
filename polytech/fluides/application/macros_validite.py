@@ -8,11 +8,15 @@ equation -- la verification la plus directe qui soit.
 
 from __future__ import annotations
 
+import sympy as sp
+
 from polytech.fluides.application import enonce
 from polytech.fluides.application.formatage import expression_latex
 from polytech.fluides.domain.cinematique.validite import (
     lieu_singulier,
+    residu_de_la_fonction_de_courant,
     residu_des_lignes_de_courant,
+    residu_du_potentiel,
 )
 
 
@@ -25,4 +29,11 @@ def macros_validite() -> dict[str, str]:
         macros[f"ResiduLignesCourant{suffixe}"] = expression_latex(
             residu_des_lignes_de_courant(champ),
         )
+    champ = enonce.CHAMP_C
+    macros["ResiduPotentielC"] = expression_latex(
+        sp.Matrix(residu_du_potentiel(champ)).T,
+    )
+    macros["ResiduFonctionCourantC"] = expression_latex(
+        sp.Matrix(residu_de_la_fonction_de_courant(champ)).T,
+    )
     return macros

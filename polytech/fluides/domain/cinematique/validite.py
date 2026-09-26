@@ -43,3 +43,26 @@ def residu_des_lignes_de_courant(champ: sp.Expr) -> sp.Expr:
     ordonnee = champ.lignes_de_courant_explicites()
     pente_attendue = (champ.v / champ.u).subs(Y, ordonnee)
     return sp.simplify(sp.diff(ordonnee, X) - pente_attendue)
+
+
+def residu_du_potentiel(champ: sp.Expr) -> tuple[sp.Expr, sp.Expr]:
+    """``grad(phi) - V`` : doit etre le couple nul.
+
+    Comparer ``phi`` a une expression attendue ne verifie que la memoire de
+    celui qui l'ecrit. Sa *definition*, elle, se verifie sur n'importe quel
+    champ, connu ou non.
+    """
+    potentiel = champ.potentiel_des_vitesses()
+    return (
+        sp.simplify(sp.diff(potentiel, X) - champ.u),
+        sp.simplify(sp.diff(potentiel, Y) - champ.v),
+    )
+
+
+def residu_de_la_fonction_de_courant(champ: sp.Expr) -> tuple[sp.Expr, sp.Expr]:
+    """``(dpsi/dy, -dpsi/dx) - V`` : doit etre le couple nul."""
+    courant = champ.fonction_de_courant()
+    return (
+        sp.simplify(sp.diff(courant, Y) - champ.u),
+        sp.simplify(-sp.diff(courant, X) - champ.v),
+    )

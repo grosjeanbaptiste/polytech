@@ -27,6 +27,16 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+# Les quatre exemptions des tests, justifiees comme toutes les autres :
+#   S101   : `assert` est le mecanisme meme de pytest.
+#   PLR2004: une valeur attendue litterale est le propos d'un test ; la
+#            nommer en constante eloignerait l'attendu de l'assertion.
+#   D100   : le nom du fichier de test dit deja ce qu'il couvre.
+#   D103   : un nom de test est une phrase francaise complete
+#            (`test_le_parement_vertical_integre_en_un_demi_rho_g_l_h_carre`) ;
+#            exiger en plus une docstring ferait redire la meme chose. Les
+#            tests dont le *pourquoi* ne se lit pas dans le nom en portent
+#            une, et c'est la regle observee dans ce depot.
 "tests/*" = ["S101", "PLR2004", "D100", "D103"]
 
 [tool.mypy]

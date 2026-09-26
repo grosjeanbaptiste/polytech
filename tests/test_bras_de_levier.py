@@ -13,7 +13,7 @@ from polytech.fluides.domain.statique.parements import (
     ParementTriangulaire,
     ParementVertical,
 )
-from polytech.fluides.domain.statique.symboles import ALPHA, RHO, G, H, L
+from polytech.fluides.domain.statique.symboles import ALPHA, RHO, G, H
 
 EAU = MasseVolumique(kg_par_m3=1_000.0)
 MUR = ParementVertical(fluide=EAU, largeur=1.0)
@@ -34,9 +34,17 @@ def test_le_bras_de_la_vallee_en_v_vaut_la_moitie_de_la_hauteur() -> None:
     assert _egal(VALLEE.expression_bras_de_levier(), H / 2)
 
 
-def test_le_moment_du_mur_vertical_est_inchange() -> None:
-    """Non-regression : la valeur publiee par le corrige ne bouge pas."""
-    assert _egal(MUR.expression_moment(), RHO * G * L * H**3 / 6)
+def test_le_moment_se_compose_de_la_poussee_et_du_bras() -> None:
+    """C'est la composition qui a change, non la valeur du cas vertical.
+
+    Reaffirmer `moment = rho g L H^3 / 6` dupliquerait un test existant
+    (`test_derivation_statique`) sans rien eprouver de neuf. Ce qui merite
+    un test ici, c'est que le moment soit desormais *construit* comme le
+    produit de la poussee par le bras, et non par un H/3 fige.
+    """
+    for parement in (MUR, VALLEE):
+        attendu = parement.expression_poussee() * parement.expression_bras_de_levier()
+        assert _egal(parement.expression_moment(), attendu)
 
 
 def test_le_moment_de_la_vallee_en_v_utilise_son_propre_bras() -> None:
