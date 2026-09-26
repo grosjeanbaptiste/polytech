@@ -10,6 +10,7 @@ import sympy as sp
 from polytech.fluides.application import enonce
 from polytech.fluides.application.formatage import expression_latex
 from polytech.fluides.domain.statique.parements import (
+    ParementIncline,
     ParementTriangulaire,
     ParementVertical,
 )
@@ -24,6 +25,13 @@ def macros_statique() -> dict[str, str]:
     return {
         "EquationManometre": expression_latex(enonce.MANOMETRE.equation_symbolique()),
         "PousseeVerticale": expression_latex(mur.expression_poussee()),
+        "PousseeInclinee": expression_latex(
+            ParementIncline(
+                fluide=enonce.EAU,
+                largeur=1.0,
+                angle=sp.Symbol("theta", positive=True),
+            ).expression_poussee(),
+        ),
         "MomentVertical": expression_latex(mur.expression_moment()),
         "PousseeValleeV": expression_latex(vallee.expression_poussee()),
         "RapportPousseePrismatique": expression_latex(mur.rapport_poussee(_MOITIE)),

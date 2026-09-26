@@ -1,9 +1,11 @@
 """Les formules de poussee sont *integrees*, pas transcrites."""
 
+import pytest
 import sympy as sp
 
 from polytech.fluides.domain.grandeurs import Hauteur, MasseVolumique
 from polytech.fluides.domain.statique.parements import (
+    ParementIncline,
     ParementTriangulaire,
     ParementVertical,
 )
@@ -46,3 +48,35 @@ def test_la_valeur_numerique_decoule_de_la_meme_integrale() -> None:
     """Aucune formule n'est ecrite deux fois : le nombre vient de l'integrale."""
     attendu = 0.5 * 1000 * 9.81 * 1.0 * 10.0**2
     assert MUR.poussee(Hauteur(metres=10.0)) == attendu
+
+
+def test_le_parement_incline_generalise_le_parement_vertical() -> None:
+    """Le cours pose « a la verticale ou inclinee d'un angle theta ».
+
+    L'integrale se fait sur la profondeur ; a la profondeur z, l'element de
+    paroi mesure L/sin(theta) par unite de profondeur. Le cas vertical est
+    celui ou theta vaut 90 degres.
+    """
+    incline = ParementIncline(fluide=EAU, largeur=1.0, angle=sp.pi / 2)
+    assert _egal(incline.expression_poussee(), MUR.expression_poussee())
+
+
+def test_la_poussee_croit_quand_le_parement_se_couche() -> None:
+    """A hauteur d'eau egale, un plan incline offre plus de surface."""
+    couche = ParementIncline(fluide=EAU, largeur=1.0, angle=sp.pi / 6)
+    droit = ParementIncline(fluide=EAU, largeur=1.0, angle=sp.pi / 2)
+    rapport = sp.simplify(couche.expression_poussee() / droit.expression_poussee())
+    assert rapport == 2  # 1 / sin(30°)
+
+
+def test_un_angle_nul_est_refuse() -> None:
+    """Un parement horizontal n'a pas de hauteur d'eau a integrer."""
+    with pytest.raises(ValueError, match="angle"):
+        ParementIncline(fluide=EAU, largeur=1.0, angle=sp.Integer(0))
+
+
+def test_un_angle_symbolique_est_accepte() -> None:
+    """La formule litterale du cours vaut pour un theta quelconque."""
+    theta = sp.Symbol("theta", positive=True)
+    incline = ParementIncline(fluide=EAU, largeur=1.0, angle=theta)
+    assert _egal(incline.expression_poussee(), RHO * G * L * H**2 / (2 * sp.sin(theta)))
