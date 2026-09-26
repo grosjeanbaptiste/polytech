@@ -18,7 +18,7 @@ from dataclasses import dataclass
 import sympy as sp
 
 from polytech.fluides.domain.grandeurs import PESANTEUR, Hauteur, MasseVolumique
-from polytech.fluides.domain.statique.symboles import COTE, RHO, G, H, Z
+from polytech.fluides.domain.statique.symboles import COTE, PROFONDEUR, RHO, G, H
 
 
 def _exiger_fraction(fraction: sp.Expr | float) -> None:
@@ -36,7 +36,7 @@ class Parement(ABC):
 
     @abstractmethod
     def largeur_mouillee(self) -> sp.Expr:
-        """Largeur mouillee a la profondeur ``Z``, hauteur d'eau ``H``."""
+        """Largeur mouillee a la profondeur ``h``, hauteur d'eau ``H``."""
 
     @abstractmethod
     def section_horizontale(self) -> sp.Expr:
@@ -54,22 +54,26 @@ class Parement(ABC):
     def expression_poussee(self) -> sp.Expr:
         """Resultante litterale, integree sur la surface mouillee."""
         return sp.simplify(
-            sp.integrate(RHO * G * Z * self.largeur_mouillee(), (Z, 0, H))
+            sp.integrate(
+                RHO * G * PROFONDEUR * self.largeur_mouillee(), (PROFONDEUR, 0, H)
+            )
         )
 
     def moment_des_pressions(self) -> sp.Expr:
         """Moment des forces de pression autour de la surface libre."""
-        return sp.integrate(RHO * G * Z**2 * self.largeur_mouillee(), (Z, 0, H))
+        return sp.integrate(
+            RHO * G * PROFONDEUR**2 * self.largeur_mouillee(), (PROFONDEUR, 0, H)
+        )
 
     def equation_ligne_action(self) -> sp.Eq:
-        """Definition de la ligne d'action : ``z_a F = int z dF``.
+        """Definition de la ligne d'action : ``h_a F = int h dF``.
 
         La resultante doit produire, seule, le meme moment que la
         distribution de pression entiere. C'est cette egalite qui *definit*
         la ligne d'action ; le quotient n'en est que la resolution.
         """
         return sp.Eq(
-            sp.Symbol("z_a") * sp.Symbol("F"),
+            sp.Symbol("h_a") * sp.Symbol("F"),
             self.moment_des_pressions(),
             evaluate=False,
         )

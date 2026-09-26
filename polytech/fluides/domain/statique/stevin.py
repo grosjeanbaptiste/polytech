@@ -10,7 +10,7 @@ from __future__ import annotations
 import sympy as sp
 
 from polytech.fluides.domain.grandeurs import PESANTEUR, Ecart, Hauteur, MasseVolumique
-from polytech.fluides.domain.statique.symboles import RHO, G, Z
+from polytech.fluides.domain.statique.symboles import ALTITUDE, PROFONDEUR, RHO, G
 
 
 def variation_de_pression(
@@ -31,14 +31,14 @@ def variation_de_pression(
 
 def loi_de_stevin() -> sp.Eq:
     """Enonce du cours II.2 : ``p + rho g z = constante``."""
-    return sp.Eq(sp.Symbol("p") + RHO * G * Z, sp.Symbol("C"))
+    return sp.Eq(sp.Symbol("p") + RHO * G * ALTITUDE, sp.Symbol("C"))
 
 
 def relation_entre_deux_points() -> sp.Eq:
     """Forme pratique : ``p_bas = p_haut + rho g h``, utilisee pour la marche."""
     return sp.Eq(
         sp.Symbol("p_bas"),
-        sp.Symbol("p_haut") + RHO * G * sp.Symbol("h", positive=True),
+        sp.Symbol("p_haut") + RHO * G * PROFONDEUR,
     )
 
 
@@ -46,6 +46,6 @@ def expression_variation_de_pression() -> sp.Eq:
     """Forme litterale du poids d'une colonne : ``Delta p = rho g h``."""
     return sp.Eq(
         sp.Symbol(r"\Delta p"),
-        RHO * G * sp.Symbol("h", positive=True),
+        RHO * G * PROFONDEUR,
         evaluate=False,
     )

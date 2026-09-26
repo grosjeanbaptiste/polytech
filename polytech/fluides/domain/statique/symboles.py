@@ -13,7 +13,19 @@ G = sp.Symbol("g", positive=True)
 L = sp.Symbol("L", positive=True)
 H = sp.Symbol("H", positive=True)
 ALPHA = sp.Symbol("alpha", positive=True)
-Z = sp.Symbol("z", nonnegative=True)
+ALTITUDE = sp.Symbol("z", real=True)
+"""Cote comptee vers le haut. Le cours ecrit ``Delta p = - rho g Delta z``."""
+
+PROFONDEUR = sp.Symbol("h", nonnegative=True)
+"""Enfoncement sous la surface libre, compte vers le bas.
+
+Le cours lui reserve la lettre ``h`` et ecrit ``Delta p = rho g h`` : le
+signe change parce que le sens de parcours change. Confondre les deux
+lettres, c'est s'exposer a une erreur de signe -- d'ou deux symboles.
+"""
+
+Z = ALTITUDE
+"""Alias historique : ``Z`` designait l'altitude."""
 
 AIRE = sp.Symbol("A", positive=True)
 """Aire de la surface libre d'un bassin prismatique."""

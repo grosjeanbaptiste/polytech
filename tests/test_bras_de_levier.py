@@ -51,11 +51,11 @@ def test_la_hauteur_de_la_ligne_d_action_suit_la_geometrie() -> None:
 
 
 def test_la_ligne_d_action_est_definie_par_une_egalite_de_moments() -> None:
-    """z_a F = int z dF : la definition, dont le quotient est la resolution."""
+    """h_a F = int h dF : la definition, dont le quotient est la resolution."""
     equation = MUR.equation_ligne_action()
     resolue = equation.subs(
         {
-            sp.Symbol("z_a"): MUR.expression_ligne_action(),
+            sp.Symbol("h_a"): MUR.expression_ligne_action(),
             sp.Symbol("F"): MUR.expression_poussee(),
         },
     )

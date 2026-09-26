@@ -14,9 +14,9 @@ from polytech.fluides.domain.statique.symboles import (
     AIRE,
     ALLONGEMENT,
     ALPHA,
+    PROFONDEUR,
     H,
     L,
-    Z,
 )
 
 
@@ -62,7 +62,7 @@ class ParementTriangulaire(Parement):
 
     def largeur_mouillee(self) -> sp.Expr:
         """Largeur maximale en surface, nulle au fond."""
-        return 2 * ALPHA * (H - Z)
+        return 2 * ALPHA * (H - PROFONDEUR)
 
     def section_horizontale(self) -> sp.Expr:
         """Vallee auto-similaire : largeur *et* longueur croissent avec ``H``.
