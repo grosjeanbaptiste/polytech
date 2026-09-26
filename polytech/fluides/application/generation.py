@@ -110,5 +110,10 @@ def _macros_des_champs(r: Resultats) -> dict[str, str]:
         "AccelerationBX": nombre(r.acceleration_b[0], 0),
         "AccelerationBY": nombre(r.acceleration_b[1], 0),
         "NormeAccelerationB": nombre(r.norme_acceleration_b, 2),
+        # Le corrige ecrivait « sqrt(5^2+3^2) = sqrt(34) » a la main.
+        "CarreAccelerationB": nombre(
+            r.acceleration_b[0] ** 2 + r.acceleration_b[1] ** 2,
+            0,
+        ),
         "AngleAccelerationB": nombre(r.angle_acceleration_b_degres, 0),
     }
