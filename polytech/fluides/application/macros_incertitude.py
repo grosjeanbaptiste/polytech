@@ -10,6 +10,7 @@ from __future__ import annotations
 from polytech.fluides.application import enonce
 from polytech.fluides.application.formatage import nombre
 from polytech.fluides.domain.grandeurs import Pression
+from polytech.fluides.domain.statique.dilatation import MERCURE_DILATATION
 from polytech.fluides.domain.statique.incertitude import budget_du_manometre
 
 RESOLUTION_HAUTEUR = 0.001
@@ -17,6 +18,13 @@ RESOLUTION_HAUTEUR = 0.001
 
 RESOLUTION_ATMOSPHERIQUE = Pression(pascals=100.0)
 """p_atm est donnee au dixieme de kilopascal."""
+
+PLAGE_THERMIQUE = 20.0
+"""Etendue supposee des temperatures de travail, en kelvins (10 a 30 C).
+
+L'enonce n'en donne aucune : c'est une hypothese, et le budget montre
+qu'elle domine tout le reste.
+"""
 
 FACTEUR_ELARGISSEMENT = 2
 """k = 2, soit un intervalle de confiance d'environ 95 % (GUM)."""
@@ -28,12 +36,18 @@ _NOMS = {
     "huile": "UHuile",
     "Hg": "UMercure",
     "atmosphere": "UAtmosphere",
+    "eau (température)": "UEauThermique",
+    "huile (température)": "UHuileThermique",
+    "Hg (température)": "UMercureThermique",
 }
 _PARTS = {
     "eau": "PartEauVariance",
     "huile": "PartHuileVariance",
     "Hg": "PartMercureVariance",
     "atmosphere": "PartAtmosphereVariance",
+    "eau (température)": "PartEauThermiqueVariance",
+    "huile (température)": "PartHuileThermiqueVariance",
+    "Hg (température)": "PartMercureThermiqueVariance",
 }
 
 
@@ -43,6 +57,7 @@ def macros_incertitude() -> dict[str, str]:
         enonce.MANOMETRE,
         resolution_hauteur=RESOLUTION_HAUTEUR,
         resolution_atmospherique=RESOLUTION_ATMOSPHERIQUE,
+        plage_thermique=PLAGE_THERMIQUE,
     )
     compose = budget.ecart_type_compose()
     macros = {
@@ -58,6 +73,8 @@ def macros_incertitude() -> dict[str, str]:
             2,
         ),
         "DecimalesJustifiees": str(budget.decimales_justifiees_en_kilopascals()),
+        "PlageThermique": nombre(PLAGE_THERMIQUE, 0),
+        "DilatationMercure": f"{MERCURE_DILATATION.coefficient:.2e}",
     }
     for contribution in budget.contributions:
         macros[_NOMS[contribution.nom]] = nombre(contribution.ecart_type, 1)
