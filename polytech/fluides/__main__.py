@@ -12,13 +12,15 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from polytech.fluides.application.generation import GenererMacros
+from polytech.fluides.application.generation import GenererApercu, GenererMacros
 from polytech.fluides.application.trace import GenererTableDuChamp
+from polytech.fluides.infrastructure.apercu import ApercuDesMacros
 from polytech.fluides.infrastructure.latex import FichierDeMacros
 from polytech.fluides.infrastructure.table import FichierDeTable
 
 _DEFAUT = Path("resultats.tex")
 _TABLE = "champ_c.dat"
+_APERCU = "resultats_apercu.tex"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -28,7 +30,11 @@ def main(argv: list[str] | None = None) -> int:
     GenererMacros(publication=FichierDeMacros(chemin=chemin)).executer()
     table = chemin.parent / _TABLE
     GenererTableDuChamp(publication=FichierDeTable(chemin=table)).executer()
-    sys.stdout.write(f"macros ecrites dans {chemin}, table dans {table}\n")
+    apercu = chemin.parent / _APERCU
+    GenererApercu(publication=ApercuDesMacros(chemin=apercu)).executer()
+    sys.stdout.write(
+        f"macros dans {chemin}, table dans {table}, apercu dans {apercu}\n",
+    )
     return 0
 
 
