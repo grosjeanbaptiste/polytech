@@ -25,7 +25,8 @@ _PREAMBULE: Final = (
     " -- NE PAS EDITER.\n"
     r"""
 \documentclass[10pt,a4paper,landscape]{article}
-\usepackage[utf8]{inputenc}
+\usepackage{iftex}
+\ifPDFTeX\usepackage[utf8]{inputenc}\fi
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel}
 \usepackage[a4paper,landscape,margin=1.2cm]{geometry}

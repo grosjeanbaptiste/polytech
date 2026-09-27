@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from polytech.fluides.application import enonce
 from polytech.fluides.application.formatage import nombre
+from polytech.fluides.domain.ecart import ecart_relatif
 
 if TYPE_CHECKING:
     from polytech.fluides.application.resultats import Resultats
@@ -29,8 +30,10 @@ def macros_du_manometre(r: Resultats) -> dict[str, str]:
         "ReponseDuCoursKPa": nombre(enonce.REPONSE_DU_COURS.kilopascals, 0),
         "EcartAuCoursPourcent": nombre(
             _CENT
-            * abs(r.pression_air_kpa - enonce.REPONSE_DU_COURS.kilopascals)
-            / r.pression_air_kpa,
+            * ecart_relatif(
+                mesure=r.pression_air_kpa,
+                reference=enonce.REPONSE_DU_COURS.kilopascals,
+            ),
             2,
         ),
         "PressionNiveauMerReferenceKPa": nombre(
