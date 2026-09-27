@@ -471,3 +471,97 @@ def test_les_consignes_disent_ou_vivent_les_sources_hors_du_depot() -> None:
     assert "PASSPOLYTECH" in consignes
     assert "abandonné" in consignes
     assert "<clé>/Polytech/" in consignes
+
+
+def _empreinte(depot: Path) -> str:
+    """L'empreinte que le script releve avant et apres chaque passe."""
+    ordre = (
+        f"source {shlex.quote(str(SCRIPT))}; "
+        f"empreinte_du_depot {shlex.quote(str(depot))}"
+    )
+    fait = subprocess.run(  # noqa: S603 -- chemin resolu par shutil.which
+        [BASH, "-c", ordre],
+        cwd=depot,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return fait.stdout
+
+
+def test_l_empreinte_voit_un_fichier_que_git_ignore(tmp_path: Path) -> None:
+    """Regression : l'empreinte ne regardait que l'arbre suivi par git.
+
+    L'essentiel de ce que la sauvegarde emporte est justement ignore par git
+    -- les PDF sources, les 132 documents composes. Des cours arrives dans
+    `ProgrammationAlgorithmique/` pendant une passe laissaient donc le depot
+    « stable » au sens de git, et la verification lisait cela comme une copie
+    infidele : un defaut annonce la ou il n'y avait qu'une source mouvante.
+    """
+    depot = _depot(tmp_path / "Polytech", ("a.md",))
+    (depot / ".gitignore").write_text("sources/\n", encoding="utf-8")
+    (depot / "sources").mkdir()
+    avant = _empreinte(depot)
+    (depot / "sources" / "cours.pdf").write_bytes(b"%PDF nouveau\n")
+    assert _empreinte(depot) != avant
+
+
+def test_un_cache_n_est_ni_copie_ni_reclame(tmp_path: Path) -> None:
+    """Les deux listes d'exclusion doivent dire la meme chose.
+
+    rsync et `find` ont des syntaxes differentes, donc le script ecrit ses
+    exclusions deux fois. Si elles divergent, la copie est declaree infidele
+    a jamais : rsync n'emporte pas le fichier, et la verification le
+    reclame. Ce test les confronte sur un cas reel.
+
+    Ces caches sont exclus parce qu'ils changent a chaque execution des
+    tests : `.pytest_cache/v/cache/nodeids` faisait osciller l'empreinte du
+    depot d'une passe a l'autre, pour 21 Mo sans valeur de sauvegarde.
+    """
+    depot = _depot(tmp_path / "Polytech", ("a.md",))
+    for cache in (".pytest_cache", ".mypy_cache", ".ruff_cache", "__pycache__"):
+        (depot / cache).mkdir()
+        (depot / cache / "trace").write_text("volatil", encoding="utf-8")
+    volume = tmp_path / "volume"
+    volume.mkdir()
+    fait = _sauvegarder(depot, volume, "--sans-pdf")
+    assert fait.returncode == 0, fait.stdout + fait.stderr
+    assert "tout le depot est sur la cle" in fait.stdout
+    for cache in (".pytest_cache", ".mypy_cache", ".ruff_cache", "__pycache__"):
+        assert not (volume / "Polytech" / cache).exists(), cache
+
+
+def test_un_cache_profond_n_est_pas_reclame_non_plus(tmp_path: Path) -> None:
+    """`__pycache__` vit a toute profondeur, pas seulement a la racine."""
+    depot = _depot(tmp_path / "Polytech", ("paquet/module.py",))
+    (depot / "paquet" / "__pycache__").mkdir()
+    (depot / "paquet" / "__pycache__" / "module.pyc").write_bytes(b"\x00")
+    volume = tmp_path / "volume"
+    volume.mkdir()
+    fait = _sauvegarder(depot, volume, "--sans-pdf", "--profond")
+    assert fait.returncode == 0, fait.stdout + fait.stderr
+    assert not (volume / "Polytech" / "paquet" / "__pycache__").exists()
+
+
+def test_un_cache_perime_est_ote_de_la_copie(tmp_path: Path) -> None:
+    """Un cache laisse par une copie ancienne ne doit pas y rester indefiniment.
+
+    Depuis qu'ils sont exclus, ni la verification ni la purge ne les voient :
+    toutes deux les elaguent. Sans ce nettoyage, 21 Mo de caches perimes
+    seraient restes sur la cle, invisibles a l'outillage qui les ignore.
+    """
+    depot = _depot(tmp_path / "Polytech", ("a.md",))
+    volume = tmp_path / "volume"
+    volume.mkdir()
+    assert _sauvegarder(depot, volume, "--sans-pdf").returncode == 0
+    perime = volume / "Polytech" / ".mypy_cache" / "3.14"
+    perime.mkdir(parents=True)
+    (perime / "cache.db").write_bytes(b"vieux")
+    profond = volume / "Polytech" / "paquet" / "__pycache__"
+    profond.mkdir(parents=True)
+    (profond / "x.pyc").write_bytes(b"\x00")
+    fait = _sauvegarder(depot, volume, "--sans-pdf")
+    assert fait.returncode == 0, fait.stdout + fait.stderr
+    assert not (volume / "Polytech" / ".mypy_cache").exists()
+    assert not profond.exists()
+    assert "dossiers jetables otes" in fait.stdout
