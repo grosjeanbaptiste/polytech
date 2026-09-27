@@ -94,3 +94,16 @@ class Hauteur:
         if self.metres < 0:
             msg = f"hauteur negative interdite : {self.metres} m"
             raise ValueError(msg)
+
+    def mise_a_l_echelle(self, rapport: float) -> Hauteur:
+        """Rend cette hauteur multipliee par un ``rapport`` sans dimension.
+
+        L'appelant sortait du type pour cela -- il lisait `metres`,
+        multipliait, puis reconstruisait une hauteur -- si bien qu'un
+        flottant nu circulait la ou une hauteur suffisait.
+
+        L'invariant n'est pas redit : la construction du resultat le
+        revalide, donc un rapport negatif est refuse par la meme garde que
+        toute hauteur negative.
+        """
+        return Hauteur(metres=self.metres * rapport)

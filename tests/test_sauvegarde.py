@@ -421,3 +421,22 @@ def test_la_purge_epargne_un_nom_ecrit_sous_l_autre_forme_unicode(
     assert not (copie / "vestige.md").exists()
     restants = [unicodedata.normalize("NFC", c.name) for c in copie.iterdir()]
     assert "Séance.md" in restants
+
+
+def test_les_pdf_partent_sur_la_cle_bien_qu_ils_ne_soient_pas_dans_git(
+    tmp_path: Path,
+) -> None:
+    """Aucun PDF dans git, tous sur la cle : les deux moities de la meme regle.
+
+    Un PDF ignore par git reste un fichier du depot, et la sauvegarde n'a pas
+    a reproduire les exclusions de git -- c'est meme l'inverse : ce que git
+    ne garde pas, seule la cle le conserve.
+    """
+    depot = _depot(tmp_path / "Polytech", ("a.md",))
+    (depot / ".gitignore").write_text("*.pdf\n", encoding="utf-8")
+    (depot / "compose.pdf").write_bytes(b"%PDF-1.7 faux mais suffisant\n")
+    volume = tmp_path / "volume"
+    volume.mkdir()
+    fait = _sauvegarder(depot, volume, "--sans-pdf")
+    assert fait.returncode == 0, fait.stderr
+    assert (volume / "Polytech" / "compose.pdf").is_file()

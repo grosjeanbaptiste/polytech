@@ -84,7 +84,7 @@ class ResultatsDeLActivite:
         grandeur: Callable[[Hauteur], float],
     ) -> float:
         """Rapport de ``grandeur`` entre volume halve et volume plein."""
-        reduite = _HAUTEUR_REFERENCE.metres * parement.hauteur_pour_fraction_de_volume(
-            _MOITIE,
+        reduite = _HAUTEUR_REFERENCE.mise_a_l_echelle(
+            parement.hauteur_pour_fraction_de_volume(_MOITIE),
         )
-        return grandeur(Hauteur(metres=reduite)) / grandeur(_HAUTEUR_REFERENCE)
+        return grandeur(reduite) / grandeur(_HAUTEUR_REFERENCE)
