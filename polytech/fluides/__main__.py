@@ -19,7 +19,7 @@ from polytech.fluides.infrastructure.apercu import ApercuDesMacros
 from polytech.fluides.infrastructure.latex import FichierDeMacros
 from polytech.fluides.infrastructure.table import FichierDeTable
 
-_TRAVAIL = Path("travaux") / "MécaniqueFluides" / "activite-integration-1"
+_TRAVAIL = Path("travaux") / "MecaniqueFluides" / "activite-integration-1"
 _DEFAUT = _TRAVAIL / "resultats.tex"
 _TABLE = "champ_c.dat"
 _APERCU = "resultats_apercu.tex"

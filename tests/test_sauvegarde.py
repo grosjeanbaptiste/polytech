@@ -401,7 +401,7 @@ def test_la_purge_epargne_un_nom_ecrit_sous_l_autre_forme_unicode(
     rsync compare des octets. Sur la cle, il ecrivait « Séance.tex » puis
     relisait le nom sous l'autre forme Unicode, le tenait pour un fichier
     disparu du depot, et le supprimait -- apres l'avoir ecrit. Mesure sur
-    la vraie cle : tout `travaux/MécaniqueFluides/` et trente fichiers
+    la vraie cle : tout `travaux/MecaniqueFluides/` et trente fichiers
     accentues otes de la sauvegarde. La purge se fait donc sur la
     comparaison normalisee, jamais par rsync.
     """
