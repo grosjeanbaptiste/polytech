@@ -10,9 +10,17 @@ __pycache__/
 *.fls
 *.synctex.gz
 
-# Seuls les PDF sources restent hors du depot : 233 Mo, et ils vivent sur la
-# cle USB PASSPOLYTECH. Tout ce qui en derive (le Markdown converti) et tout
-# ce qui les traite (le convertisseur) est suivi.
+# Seuls les PDF sources restent hors du depot : ils pesent des centaines de
+# Mo, et un binaire regenerable ou recopiable n'a rien a faire dans
+# l'historique. Tout ce qui en derive (le Markdown converti) et tout ce qui
+# les traite (le convertisseur) est suivi.
+#
+# Ou vivent-ils, alors ? Dans la copie du depot sur la cle, sous
+# `Polytech/`, faite et verifiee par `outils/sauvegarder-sur-cle.sh`. Il y
+# eut un temps un dossier `PASSPOLYTECH` a part sur la meme cle : il n'a
+# plus de raison d'etre, puisque la copie du depot porte deja tout ce qu'il
+# portait, et davantage. Ne rien y deposer de nouveau -- un fichier ajoute
+# la ne serait ni suivi par git, ni repris par la sauvegarde.
 /MATHS/
 /Electromagnetisme/
 /SignauxSystemes/

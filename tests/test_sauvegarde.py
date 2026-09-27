@@ -440,3 +440,34 @@ def test_les_pdf_partent_sur_la_cle_bien_qu_ils_ne_soient_pas_dans_git(
     fait = _sauvegarder(depot, volume, "--sans-pdf")
     assert fait.returncode == 0, fait.stderr
     assert (volume / "Polytech" / "compose.pdf").is_file()
+
+
+def test_aucun_outil_ne_cherche_les_sources_dans_passpolytech() -> None:
+    """Le dossier `PASSPOLYTECH` est abandonne : la copie du depot le remplace.
+
+    Ses 114 fichiers sont tous dans `<cle>/Polytech/`, verifie contenu par
+    contenu, et celle-ci porte en plus les 132 PDF composes et l'historique
+    git. Un outil qui irait encore y lire designerait une source de verite
+    qui n'en est plus une ; un outil qui y ecrirait deposerait un fichier
+    que ni git ni la sauvegarde ne reprendraient.
+    """
+    outils = (*RACINE.glob("outils/*.sh"), *RACINE.rglob("outils/**/*.py"))
+    fautifs = [
+        str(chemin.relative_to(RACINE))
+        for chemin in outils
+        if "PASSPOLYTECH" in chemin.read_text(encoding="utf-8", errors="replace")
+    ]
+    assert fautifs == []
+
+
+def test_les_consignes_disent_ou_vivent_les_sources_hors_du_depot() -> None:
+    """Un agent qui cherche une source absente doit savoir ou regarder.
+
+    La consigne doit nommer les deux faces de la decision : `Polytech/` est
+    le bon endroit, `PASSPOLYTECH` ne l'est plus. Nommer seulement le bon
+    laisserait l'ancien reflexe intact.
+    """
+    consignes = (RACINE / "AGENTS.md").read_text(encoding="utf-8")
+    assert "PASSPOLYTECH" in consignes
+    assert "abandonné" in consignes
+    assert "<clé>/Polytech/" in consignes
