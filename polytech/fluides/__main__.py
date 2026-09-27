@@ -3,8 +3,9 @@
 Deux fichiers : les macros de resultats, et la table du champ de vitesse
 que trace la figure des lignes de courant.
 
-Usage : ``python -m polytech.fluides [chemin]`` (defaut : ``resultats.tex`` ;
-la table prend le meme repertoire, sous le nom ``champ_c.dat``).
+Usage : ``python -m polytech.fluides [chemin]``. Sans argument, la cible
+est le travail en cours, range sous ``travaux/`` ; la table et l'apercu
+prennent le meme repertoire.
 """
 
 from __future__ import annotations
@@ -18,7 +19,8 @@ from polytech.fluides.infrastructure.apercu import ApercuDesMacros
 from polytech.fluides.infrastructure.latex import FichierDeMacros
 from polytech.fluides.infrastructure.table import FichierDeTable
 
-_DEFAUT = Path("resultats.tex")
+_TRAVAIL = Path("travaux") / "MécaniqueFluides" / "activite-integration-1"
+_DEFAUT = _TRAVAIL / "resultats.tex"
 _TABLE = "champ_c.dat"
 _APERCU = "resultats_apercu.tex"
 
