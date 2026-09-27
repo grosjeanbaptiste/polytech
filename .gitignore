@@ -21,7 +21,7 @@ __pycache__/
 # plus de raison d'etre, puisque la copie du depot porte deja tout ce qu'il
 # portait, et davantage. Ne rien y deposer de nouveau -- un fichier ajoute
 # la ne serait ni suivi par git, ni repris par la sauvegarde.
-/MATHS/
+/Mathematique/
 /Electromagnetisme/
 /SignauxSystemes/
 /MécaniqueFluides/
