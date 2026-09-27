@@ -17,4 +17,18 @@ __pycache__/
 /Electromagnetisme/
 /SignauxSystemes/
 /MécaniqueFluides/
+/Optimisation/
+/ProgrammationAlgorithmique/
+/ElectroniqueInstrumentation/
+# La moitie thermique de UI-B3-IRCIVI-003-C (AA I-TRMI-102) :
+/ThermiqueFondements/
+# L'alternative de Mons, si elle etait un jour suivie a la place :
+/Thermique/
+/ElectroniqueFonctionnelle/
+/MachinesElectriques/
 
+# Aucun PDF n'est suivi : tous se reconstruisent (les quatre documents
+# composes) ou proviennent d'une source exterieure (l'enonce remis). Les
+# suivre ferait entrer dans l'historique un binaire regenerable a chaque
+# compilation, dont le diff n'apprend rien.
+*.pdf
