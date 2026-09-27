@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from polytech.fluides.application.activite import ResultatsDeLActivite
+from polytech.fluides.application.homogeneite import verifier_les_champs_publies
 from polytech.fluides.application.macros_cinematique import macros_cinematique
 from polytech.fluides.application.macros_corroboration import macros_corroboration
 from polytech.fluides.application.macros_definitions import macros_definitions
@@ -54,7 +55,13 @@ class GenererMacros:
 
     @staticmethod
     def macros_publiees() -> dict[str, str]:
-        """Assemble les macros des differents modules et des resultats."""
+        """Assemble les macros des differents modules et des resultats.
+
+        L'homogeneite des champs est verifiee *avant* tout calcul : publier
+        une formule inhomogene serait un echec silencieux, et une erreur
+        surgie plus loin dans la chaine serait illisible.
+        """
+        verifier_les_champs_publies()
         resultats = ResultatsDeLActivite().executer()
         return {
             **macros_definitions(),

@@ -11,10 +11,14 @@ import pytest
 import sympy as sp
 
 from polytech.fluides.application import enonce
+from polytech.fluides.application.homogeneite import (
+    COEFFICIENT_B_U,
+    COEFFICIENT_B_V,
+    COEFFICIENT_C,
+)
 from polytech.fluides.domain.cinematique.dimensions import (
     ACCELERATION,
     TAUX,
-    TEMPS,
     VITESSE,
     DimensionIndeterminee,
     ExpressionNonHomogene,
@@ -22,11 +26,15 @@ from polytech.fluides.domain.cinematique.dimensions import (
     dimension_des_contributions,
 )
 
-COEFF_B_U = TEMPS**-2
-"""u = xt : pour que ce soit une vitesse, le coefficient est en s^-2."""
-COEFF_B_V = TEMPS**-1
-"""v = x - y : une longueur, donc un coefficient en s^-1."""
-COEFF_C = TEMPS**-1
+COEFF_B_U = COEFFICIENT_B_U
+COEFF_B_V = COEFFICIENT_B_V
+COEFF_C = COEFFICIENT_C
+"""Les coefficients viennent de la production, ou ils sont desormais declares.
+
+Ils vivaient ici : un fait sur l'enonce loge dans son verificateur, que rien
+n'empechait de contredire ailleurs. Les trois noms courts sont conserves,
+les assertions de ce fichier les employant partout.
+"""
 
 
 def test_les_deux_composantes_de_b_sont_bien_des_vitesses() -> None:
