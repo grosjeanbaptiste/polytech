@@ -56,3 +56,22 @@ def facteur_maximal_du_second_etage(
         msg = f"facteur global sous la borne physique : {global_}"
         raise ValueError(msg)
     return FACTEUR_MINIMAL + (global_ - FACTEUR_MINIMAL) * gain_du_premier**2
+
+
+def facteur_d_une_cascade(etages: tuple[tuple[float, float], ...]) -> float:
+    """Friis generalisee : chaque etage divise par les gains qui le precedent.
+
+    `etages` donne, dans l'ordre, le couple (facteur de bruit, gain en
+    tension) de chaque quadripole. Le gain du dernier etage n'intervient
+    pas : rien ne le suit.
+    """
+    if not etages:
+        msg = "cascade vide : il n'y a pas de facteur de bruit a calculer"
+        raise ValueError(msg)
+    total = 0.0
+    gain_cumule = 1.0
+    for facteur, gain in etages:
+        _valider(gain)
+        total += (facteur - FACTEUR_MINIMAL) / gain_cumule**2
+        gain_cumule *= gain
+    return FACTEUR_MINIMAL + total

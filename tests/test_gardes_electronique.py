@@ -26,13 +26,16 @@ from polytech.electronique.domain.biquad import TowThomas
 from polytech.electronique.domain.conversion import ConvertisseurAnalogiqueNumerique
 from polytech.electronique.domain.filtre import PrototypeButterworth
 from polytech.electronique.domain.friis import (
+    facteur_d_une_cascade,
     facteur_en_cascade,
     facteur_maximal_du_second_etage,
 )
 from polytech.electronique.domain.induction import BoucleDeMesure
 from polytech.electronique.domain.laplace import est_stable
 from polytech.electronique.domain.nodale import (
+    systeme_avec_transconductance,
     systeme_en_echelle_lc,
+    transfert_avec_transconductance,
     transfert_de_sortie,
 )
 from polytech.electronique.domain.pole_zero import pente_asymptotique
@@ -333,3 +336,28 @@ def test_une_admittance_de_sortie_nulle_interdit_le_transfert_a_vide() -> None:
     """`-y_21/y_22` n'existe pas si `y_22` est nul."""
     with pytest.raises(ValueError, match="admittance de sortie nulle"):
         transfert_a_vide_depuis_y(sp.Matrix([[1, 1], [1, 0]]))
+
+
+def test_une_cascade_vide_n_a_pas_de_facteur_de_bruit() -> None:
+    """Sans etage, la formule de Friis n'a rien a sommer."""
+    with pytest.raises(ValueError, match="cascade vide"):
+        facteur_d_une_cascade(())
+
+
+@pytest.mark.parametrize(
+    ("contre_reaction", "charge"),
+    [(0, 1.0), (1.0, 0)],
+)
+def test_une_resistance_nulle_dans_l_etage_est_refusee(
+    contre_reaction: float,
+    charge: float,
+) -> None:
+    """Une conductance infinie court-circuiterait un noeud entier."""
+    with pytest.raises(ValueError, match="resistance nulle dans l'etage"):
+        systeme_avec_transconductance(1.0, 1.0, contre_reaction, charge, 1.0)
+
+
+def test_une_transconductance_qui_annule_le_determinant_est_refusee() -> None:
+    """A `g_m = -5` et resistances unitaires, le systeme devient singulier."""
+    with pytest.raises(ValueError, match="systeme singulier"):
+        transfert_avec_transconductance(1, 1, 1, 1, -5)

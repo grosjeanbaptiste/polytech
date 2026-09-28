@@ -61,3 +61,58 @@ def transfert_de_sortie(
         raise ValueError(msg)
     solution = matrice.solve(second_membre)
     return sp.cancel(sp.simplify(solution[2] / sp.Symbol("V_S")))
+
+
+def systeme_avec_transconductance(
+    resistance_de_source: sp.Expr,
+    resistance_d_entree: sp.Expr,
+    resistance_de_contre_reaction: sp.Expr,
+    resistance_de_charge: sp.Expr,
+    transconductance: sp.Expr,
+) -> tuple[sp.Matrix, sp.Matrix]:
+    """Le systeme nodal modifie de l'etage a source de courant commandee.
+
+    La source `g_m V_2` n'ajoute aucune inconnue : son courant est une
+    fonction d'une tension de noeud, donc elle se range dans la matrice
+    comme une conductance de plus.
+    """
+    if resistance_de_contre_reaction == 0 or resistance_de_charge == 0:
+        msg = (
+            "resistance nulle dans l'etage : "
+            f"{resistance_de_contre_reaction}, {resistance_de_charge}"
+        )
+        raise ValueError(msg)
+    gs = 1 / resistance_de_source
+    gin = 1 / resistance_d_entree
+    gf = 1 / resistance_de_contre_reaction
+    gc = 1 / resistance_de_charge
+    matrice = sp.Matrix(
+        [
+            [-gs, gs, 0, 1],
+            [gs, -(gs + gin + gf), gf, 0],
+            [0, gf - transconductance, -(gf + gc), 0],
+            [1, 0, 0, 0],
+        ],
+    )
+    return matrice, sp.Matrix([0, 0, 0, sp.Symbol("V_S")])
+
+
+def transfert_avec_transconductance(
+    resistance_de_source: sp.Expr,
+    resistance_d_entree: sp.Expr,
+    resistance_de_contre_reaction: sp.Expr,
+    resistance_de_charge: sp.Expr,
+    transconductance: sp.Expr,
+) -> sp.Expr:
+    """`V_3 / V_S`, obtenu en resolvant le systeme nodal complet."""
+    matrice, second_membre = systeme_avec_transconductance(
+        resistance_de_source,
+        resistance_d_entree,
+        resistance_de_contre_reaction,
+        resistance_de_charge,
+        transconductance,
+    )
+    if matrice.det() == 0:
+        msg = "systeme singulier : l'etage n'a pas de solution unique"
+        raise ValueError(msg)
+    return sp.cancel(matrice.solve(second_membre)[2] / sp.Symbol("V_S"))
