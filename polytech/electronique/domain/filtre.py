@@ -1,6 +1,6 @@
 """Du prototype normalise au filtre reel : mise a l'echelle et transposition.
 
-Un prototype de Butterworth est tabule pour une coupure a 1 rad/s et des
+Un prototype en echelle est tabule pour une coupure a 1 rad/s et des
 terminaisons de 1 ohm. Deux operations en font un filtre reel : la mise a
 l'echelle d'impedance, qui multiplie les inductances et divise les
 capacites, puis la transposition passe-bas vers passe-haut, qui echange la
@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True, slots=True)
-class PrototypeButterworth:
+class PrototypeNormalise:
     """Les elements normalises d'un prototype, et l'impedance visee.
 
     `elements` alterne inductance serie et capacite shunt, en commencant par
@@ -70,3 +70,18 @@ class PrototypeButterworth:
             else self.impedance / (pulsation_de_coupure * g)
             for rang, g in enumerate(self.elements)
         )
+
+
+@dataclass(frozen=True, slots=True)
+class PrototypeButterworth(PrototypeNormalise):
+    """Un prototype de Butterworth : plat dans la bande, sans ondulation."""
+
+
+@dataclass(frozen=True, slots=True)
+class PrototypeDeChebyshev(PrototypeNormalise):
+    """Un prototype de Chebyshev : plus raide, au prix d'une ondulation.
+
+    Sa table depend de l'ondulation toleree dans la bande passante ; la
+    mise a l'echelle et la transposition, elles, ne s'en soucient pas --
+    c'est pourquoi les deux prototypes partagent le meme parent.
+    """

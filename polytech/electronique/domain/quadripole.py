@@ -103,3 +103,43 @@ def transfert_a_vide_depuis_y(matrice: sp.Matrix) -> sp.Expr:
         msg = "admittance de sortie nulle : la sortie a vide n'est pas definie"
         raise ValueError(msg)
     return sp.simplify(-matrice[1, 0] / matrice[1, 1])
+
+
+def matrice_y_du_circuit(
+    courant_d_entree: sp.Expr,
+    courant_de_sortie: sp.Expr,
+    tension_d_entree: sp.Symbol,
+    tension_de_sortie: sp.Symbol,
+) -> sp.Matrix:
+    """La matrice admittance, par definition : le jacobien de `(I_1, I_2)`.
+
+    Les parametres y expriment les deux courants a partir des deux
+    tensions ; leurs quatre valeurs sont donc les derivees partielles de
+    ces expressions, et rien d'autre.
+    """
+    return sp.Matrix(
+        [
+            [
+                sp.simplify(sp.diff(courant_d_entree, tension_d_entree)),
+                sp.simplify(sp.diff(courant_d_entree, tension_de_sortie)),
+            ],
+            [
+                sp.simplify(sp.diff(courant_de_sortie, tension_d_entree)),
+                sp.simplify(sp.diff(courant_de_sortie, tension_de_sortie)),
+            ],
+        ],
+    )
+
+
+def admittance_d_entree_a_vide(matrice: sp.Matrix) -> sp.Expr:
+    """`I_1 / V_1` quand la sortie est ouverte : `y_11 - y_12 y_21 / y_22`.
+
+    A vide `I_2 = 0`, ce qui lie `V_2` a `V_1` ; reporter cette liaison
+    dans la premiere equation elimine `V_2`.
+    """
+    if matrice[1, 1] == 0:
+        msg = "admittance de sortie nulle : la sortie a vide n'est pas definie"
+        raise ValueError(msg)
+    return sp.simplify(
+        matrice[0, 0] - matrice[0, 1] * matrice[1, 0] / matrice[1, 1],
+    )

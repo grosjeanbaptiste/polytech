@@ -71,3 +71,40 @@ class BoucleDeMesure:
         """
         flux = self.flux(permeabilite, courant_crete, pulsation, instant)
         return tension_de_la_source + sp.diff(flux, instant)
+
+
+@dataclass(frozen=True, slots=True)
+class BoucleRectangulaire:
+    """Une boucle plongee dans un champ uniforme et variable dans le temps.
+
+    Le champ ne depend plus de la position : le flux est simplement le
+    produit de l'aire par le champ, et la loi de Faraday se reduit a une
+    derivee temporelle.
+    """
+
+    longueur: sp.Expr
+    largeur: sp.Expr
+
+    def __post_init__(self) -> None:
+        """Valide les invariants de l'objet a sa construction."""
+        if self.longueur == 0 or self.largeur == 0:
+            msg = f"boucle d'aire nulle : {self.longueur} x {self.largeur}"
+            raise ValueError(msg)
+
+    def flux(
+        self,
+        champ_crete: sp.Expr,
+        pulsation: sp.Expr,
+        instant: sp.Expr,
+    ) -> sp.Expr:
+        """`a b B_0 sin(omega t)` : l'aire multiplie le champ, rien de plus."""
+        return self.longueur * self.largeur * champ_crete * sp.sin(pulsation * instant)
+
+    def tension_induite(
+        self,
+        champ_crete: sp.Expr,
+        pulsation: sp.Expr,
+        instant: sp.Expr,
+    ) -> sp.Expr:
+        """`-d(Phi)/dt`, la tension que la loi de Faraday impose au contour."""
+        return -sp.diff(self.flux(champ_crete, pulsation, instant), instant)

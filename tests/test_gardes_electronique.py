@@ -23,6 +23,7 @@ from polytech.electronique.domain.amplification import (
     nombre_d_etages,
 )
 from polytech.electronique.domain.biquad import TowThomas
+from polytech.electronique.domain.chebyshev import elements_de_chebyshev
 from polytech.electronique.domain.conversion import ConvertisseurAnalogiqueNumerique
 from polytech.electronique.domain.filtre import PrototypeButterworth
 from polytech.electronique.domain.friis import (
@@ -30,7 +31,10 @@ from polytech.electronique.domain.friis import (
     facteur_en_cascade,
     facteur_maximal_du_second_etage,
 )
-from polytech.electronique.domain.induction import BoucleDeMesure
+from polytech.electronique.domain.induction import (
+    BoucleDeMesure,
+    BoucleRectangulaire,
+)
 from polytech.electronique.domain.laplace import est_stable
 from polytech.electronique.domain.nodale import (
     systeme_avec_transconductance,
@@ -40,6 +44,7 @@ from polytech.electronique.domain.nodale import (
 )
 from polytech.electronique.domain.pole_zero import pente_asymptotique
 from polytech.electronique.domain.quadripole import (
+    admittance_d_entree_a_vide,
     cellule_en_t,
     matrice_y_en_l,
     parametres_g_depuis_z,
@@ -361,3 +366,32 @@ def test_une_transconductance_qui_annule_le_determinant_est_refusee() -> None:
     """A `g_m = -5` et resistances unitaires, le systeme devient singulier."""
     with pytest.raises(ValueError, match="systeme singulier"):
         transfert_avec_transconductance(1, 1, 1, 1, -5)
+
+
+def test_une_admittance_de_sortie_nulle_interdit_l_admittance_d_entree() -> None:
+    """A vide, `V_2` se deduit de `y_21/y_22` : nul, rien ne se deduit."""
+    with pytest.raises(ValueError, match="admittance de sortie nulle"):
+        admittance_d_entree_a_vide(sp.Matrix([[1, 1], [1, 0]]))
+
+
+@pytest.mark.parametrize(("longueur", "largeur"), [(0, 1.0), (1.0, 0)])
+def test_une_boucle_rectangulaire_d_aire_nulle_est_refusee(
+    longueur: float,
+    largeur: float,
+) -> None:
+    """Sans aire, le champ uniforme n'y depose aucun flux."""
+    with pytest.raises(ValueError, match="boucle d'aire nulle"):
+        BoucleRectangulaire(longueur=longueur, largeur=largeur)
+
+
+@pytest.mark.parametrize("ondulation", [0.0, -0.1])
+def test_une_ondulation_non_positive_est_refusee(ondulation: float) -> None:
+    """Sans ondulation, le filtre n'est plus un Chebyshev."""
+    with pytest.raises(ValueError, match="ondulation non positive"):
+        elements_de_chebyshev(ondulation, 3)
+
+
+def test_un_ordre_nul_est_refuse() -> None:
+    """Un filtre d'ordre zero n'a aucun element a tabuler."""
+    with pytest.raises(ValueError, match="ordre inferieur a un"):
+        elements_de_chebyshev(0.1, 0)

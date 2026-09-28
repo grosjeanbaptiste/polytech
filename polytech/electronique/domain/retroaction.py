@@ -16,7 +16,7 @@ from __future__ import annotations
 import sympy as sp
 
 
-def _jacobien(
+def parametres_h_du_circuit(
     tension_d_entree: sp.Expr,
     courant_de_sortie: sp.Expr,
     courant_d_entree: sp.Symbol,
@@ -49,7 +49,7 @@ def parametres_h_amplificateur(
     i1, v2 = sp.symbols("I_1 V_2")
     v1 = resistance_entree * i1
     i2 = (v2 - gain_en_boucle_ouverte * v1) / resistance_sortie
-    return _jacobien(v1, i2, i1, v2)
+    return parametres_h_du_circuit(v1, i2, i1, v2)
 
 
 def parametres_h_reseau_resistif(
@@ -66,7 +66,7 @@ def parametres_h_reseau_resistif(
     )
     v1 = parallele * (i1 + v2 / de_contre_reaction)
     i2 = (v2 - v1) / de_contre_reaction
-    return _jacobien(v1, i2, i1, v2)
+    return parametres_h_du_circuit(v1, i2, i1, v2)
 
 
 def _rapport_de_boucle(matrice: sp.Matrix) -> sp.Expr:
