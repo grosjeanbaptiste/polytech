@@ -54,7 +54,8 @@ def test_un_seul_etage_exigerait_75_megahertz() -> None:
 def test_les_deux_gains_maximaux_laissent_passer_1500() -> None:
     g1 = gain_maximal_par_etage(1e6, 50e3)
     g2 = gain_maximal_par_etage(4e6, 50e3)
-    assert (g1, g2) == (pytest.approx(20.0), pytest.approx(80.0))
+    assert g1 == pytest.approx(20.0)
+    assert g2 == pytest.approx(80.0)
     assert g1 * g2 == pytest.approx(1600.0)
     assert g1 * g2 > 1500
 
