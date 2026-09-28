@@ -77,3 +77,29 @@ def parametres_g_en_l(
 ) -> sp.Matrix:
     """La matrice `G` de la cellule en L, par sa matrice impedance."""
     return parametres_g_depuis_z(matrice_z_en_l(impedance_serie, impedance_shunt))
+
+
+def matrice_y_en_l(
+    impedance_serie: sp.Expr,
+    admittance_shunt: sp.Expr,
+) -> sp.Matrix:
+    """Matrice admittance d'une cellule en L : une serie, puis un shunt.
+
+    Les courants s'ecrivent directement en fonction des deux tensions : la
+    serie relie les deux acces, le shunt ne charge que le second.
+    """
+    if impedance_serie == 0:
+        msg = "impedance serie nulle : les deux acces se confondent"
+        raise ValueError(msg)
+    serie = 1 / impedance_serie
+    return sp.Matrix(
+        [[serie, -serie], [-serie, serie + admittance_shunt]],
+    )
+
+
+def transfert_a_vide_depuis_y(matrice: sp.Matrix) -> sp.Expr:
+    """`V_2 / V_1` a sortie ouverte : `-y_21 / y_22`, par `I_2 = 0`."""
+    if matrice[1, 1] == 0:
+        msg = "admittance de sortie nulle : la sortie a vide n'est pas definie"
+        raise ValueError(msg)
+    return sp.simplify(-matrice[1, 0] / matrice[1, 1])

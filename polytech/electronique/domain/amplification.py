@@ -42,6 +42,25 @@ def nombre_d_etages(
     return math.ceil(math.log(abs(gain_vise), par_etage))
 
 
+def diviseur_d_entree(
+    resistance_de_source: float,
+    impedance_d_entree: float,
+) -> float:
+    """La fraction du signal qui survit a la resistance interne de la source.
+
+    Un montage inverseur presente son resistance d'entree, souvent du meme
+    ordre que celle de la source : la moitie du signal s'y perd avant meme
+    d'etre amplifiee. Un non-inverseur, lui, ne prend rien.
+    """
+    if resistance_de_source < 0 or impedance_d_entree <= 0:
+        msg = (
+            "resistance de source negative ou impedance d'entree nulle : "
+            f"{resistance_de_source}, {impedance_d_entree}"
+        )
+        raise ValueError(msg)
+    return impedance_d_entree / (resistance_de_source + impedance_d_entree)
+
+
 def gain_non_inverseur(resistance_masse: float, contre_reaction: float) -> float:
     """Gain d'un montage non-inverseur : `1 + R_f / R_g`.
 

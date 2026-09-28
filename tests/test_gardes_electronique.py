@@ -16,6 +16,7 @@ from polytech.electronique.domain.acquisition import (
     puissance_de_bruit_en_courant,
 )
 from polytech.electronique.domain.amplification import (
+    diviseur_d_entree,
     gain_inverseur,
     gain_maximal_par_etage,
     gain_non_inverseur,
@@ -37,7 +38,9 @@ from polytech.electronique.domain.nodale import (
 from polytech.electronique.domain.pole_zero import pente_asymptotique
 from polytech.electronique.domain.quadripole import (
     cellule_en_t,
+    matrice_y_en_l,
     parametres_g_depuis_z,
+    transfert_a_vide_depuis_y,
 )
 from polytech.electronique.domain.retroaction import (
     gain_en_boucle_fermee,
@@ -45,6 +48,7 @@ from polytech.electronique.domain.retroaction import (
     parametres_h_reseau_resistif,
 )
 from polytech.electronique.domain.sallen_key import CelluleSallenKey
+from polytech.electronique.domain.second_ordre import PasseBasCanonique
 
 
 @pytest.mark.parametrize("bits", [0, -12])
@@ -292,3 +296,40 @@ def test_des_comptes_negatifs_de_poles_ou_zeros_sont_refuses(
     """Une carte ne porte pas un nombre negatif de croix."""
     with pytest.raises(ValueError, match="comptes negatifs"):
         pente_asymptotique(zeros=zeros, poles=poles)
+
+
+def test_une_pulsation_nulle_prive_le_filtre_de_reference() -> None:
+    """Sans `omega_0`, la forme canonique n'a plus d'echelle."""
+    with pytest.raises(ValueError, match="pulsation nulle"):
+        PasseBasCanonique(1.0, 0, 0.7)
+
+
+def test_un_facteur_de_qualite_nul_est_refuse_par_la_forme_canonique() -> None:
+    """`omega_0 / Q` deviendrait infini : le terme en s n'existe plus."""
+    with pytest.raises(ValueError, match="facteur de qualite nul"):
+        PasseBasCanonique(1.0, 1000.0, 0)
+
+
+@pytest.mark.parametrize(
+    ("source", "entree"),
+    [(-1.0, 1000.0), (1000.0, 0.0)],
+)
+def test_un_diviseur_d_entree_mal_defini_est_refuse(
+    source: float,
+    entree: float,
+) -> None:
+    """Une source de resistance negative ou une entree nulle n'ont pas de sens."""
+    with pytest.raises(ValueError, match="resistance de source negative"):
+        diviseur_d_entree(source, entree)
+
+
+def test_une_impedance_serie_nulle_confond_les_deux_acces() -> None:
+    """Sans serie, la matrice admittance diverge."""
+    with pytest.raises(ValueError, match="impedance serie nulle"):
+        matrice_y_en_l(0, 1)
+
+
+def test_une_admittance_de_sortie_nulle_interdit_le_transfert_a_vide() -> None:
+    """`-y_21/y_22` n'existe pas si `y_22` est nul."""
+    with pytest.raises(ValueError, match="admittance de sortie nulle"):
+        transfert_a_vide_depuis_y(sp.Matrix([[1, 1], [1, 0]]))
