@@ -1,0 +1,240 @@
+"""Chaque garde du contexte electronique est reellement declenchee.
+
+Un `raise` que nul test n'atteint est du code jamais execute : le jour ou
+il se declenche, rien ne garantit qu'il fasse ce qu'on croit.
+"""
+
+import pytest
+import sympy as sp
+
+from polytech.electronique.domain.acquisition import (
+    bits_necessaires,
+    cadence_du_multiplexeur,
+    densite_de_bruit_maximale,
+    gain_de_chaine,
+    nyquist,
+    puissance_de_bruit_en_courant,
+)
+from polytech.electronique.domain.amplification import (
+    gain_inverseur,
+    gain_maximal_par_etage,
+    gain_non_inverseur,
+    nombre_d_etages,
+)
+from polytech.electronique.domain.biquad import TowThomas
+from polytech.electronique.domain.conversion import ConvertisseurAnalogiqueNumerique
+from polytech.electronique.domain.filtre import PrototypeButterworth
+from polytech.electronique.domain.induction import BoucleDeMesure
+from polytech.electronique.domain.laplace import est_stable
+from polytech.electronique.domain.nodale import (
+    systeme_en_echelle_lc,
+    transfert_de_sortie,
+)
+from polytech.electronique.domain.quadripole import (
+    cellule_en_t,
+    parametres_g_depuis_z,
+)
+from polytech.electronique.domain.sallen_key import CelluleSallenKey
+
+
+@pytest.mark.parametrize("bits", [0, -12])
+def test_une_resolution_non_positive_est_refusee(bits: int) -> None:
+    with pytest.raises(ValueError, match="resolution non strictement positive"):
+        ConvertisseurAnalogiqueNumerique(bits=bits, pleine_echelle_volts=15.0)
+
+
+def test_une_pleine_echelle_nulle_est_refusee() -> None:
+    """Sans etendue, le pas de quantification n'existe pas."""
+    with pytest.raises(ValueError, match="pleine echelle non positive"):
+        ConvertisseurAnalogiqueNumerique(bits=12, pleine_echelle_volts=0.0)
+
+
+@pytest.mark.parametrize(("gbw", "bande"), [(0.0, 100e3), (2.5e6, 0.0)])
+def test_un_produit_gain_bande_ou_une_bande_nulle_est_refuse(
+    gbw: float,
+    bande: float,
+) -> None:
+    with pytest.raises(ValueError, match="doivent etre positifs"):
+        gain_maximal_par_etage(gbw, bande)
+
+
+def test_un_etage_qui_n_amplifie_pas_est_signale() -> None:
+    """Gain unitaire par etage : aucun nombre d'etages n'atteindrait la cible.
+
+    Le calcul logarithmique divergerait en silence ; mieux vaut le dire.
+    """
+    with pytest.raises(ValueError, match="n'amplifie pas a cette bande"):
+        nombre_d_etages(500.0, 1e5, 1e5)
+
+
+@pytest.mark.parametrize("montage", [gain_non_inverseur, gain_inverseur])
+def test_une_resistance_nulle_est_refusee(montage: object) -> None:
+    """Elle donnerait un gain infini ou une division par zero."""
+    with pytest.raises(ValueError, match="resistances non positives"):
+        montage(0.0, 20e3)  # type: ignore[operator]
+
+
+def test_un_prototype_vide_est_refuse() -> None:
+    with pytest.raises(ValueError, match="prototype vide"):
+        PrototypeButterworth(elements=(), impedance=50.0)
+
+
+def test_une_impedance_non_positive_est_refusee() -> None:
+    with pytest.raises(ValueError, match="impedance non positive"):
+        PrototypeButterworth(elements=(1.0,), impedance=0.0)
+
+
+def test_un_element_non_positif_du_prototype_est_refuse() -> None:
+    """Une inductance nulle n'est pas un filtre, c'est un fil."""
+    with pytest.raises(ValueError, match="element non positif"):
+        PrototypeButterworth(elements=(1.0, -2.0), impedance=50.0)
+
+
+def test_une_pulsation_de_coupure_nulle_est_refusee() -> None:
+    proto = PrototypeButterworth(elements=(1.0,), impedance=50.0)
+    with pytest.raises(ValueError, match="pulsation de coupure non positive"):
+        proto.en_passe_haut(0.0)
+
+
+def test_une_cellule_sans_impedance_shunt_est_refusee() -> None:
+    """Elle court-circuiterait sa sortie : la matrice n'aurait pas de sens."""
+    with pytest.raises(ValueError, match="court-circuite"):
+        cellule_en_t(sp.Symbol("R"), sp.Integer(0), sp.Integer(0))
+
+
+@pytest.mark.parametrize(("visee", "capteur"), [(0.0, 1e-5), (5.0, 0.0)])
+def test_un_gain_de_chaine_sur_des_tensions_nulles_est_refuse(
+    visee: float,
+    capteur: float,
+) -> None:
+    with pytest.raises(ValueError, match="tensions non positives"):
+        gain_de_chaine(visee, capteur)
+
+
+def test_une_frequence_maximale_nulle_n_a_pas_de_cadence_de_nyquist() -> None:
+    with pytest.raises(ValueError, match="frequence maximale non positive"):
+        nyquist(0.0)
+
+
+def test_un_multiplexeur_sans_voie_est_refuse() -> None:
+    with pytest.raises(ValueError, match="nombre de voies non positif"):
+        cadence_du_multiplexeur(400.0, 0)
+
+
+@pytest.mark.parametrize(("etendue", "pas"), [(0.0, 1e-7), (8e-5, 0.0)])
+def test_une_etendue_ou_un_pas_nul_est_refuse(etendue: float, pas: float) -> None:
+    with pytest.raises(ValueError, match="etendue ou pas non positif"):
+        bits_necessaires(etendue, pas)
+
+
+def test_une_bande_nulle_ne_porte_aucune_puissance_de_bruit() -> None:
+    with pytest.raises(ValueError, match="bande non positive"):
+        puissance_de_bruit_en_courant(20e-15, 1e3, 0.0)
+
+
+@pytest.mark.parametrize(("budget", "bande"), [(0.0, 200.0), (7.5e-7, 0.0)])
+def test_un_budget_de_bruit_nul_est_refuse(budget: float, bande: float) -> None:
+    with pytest.raises(ValueError, match="budget ou bande non positif"):
+        densite_de_bruit_maximale(budget, bande)
+
+
+def test_une_pulsation_de_cellule_nulle_est_refusee() -> None:
+    with pytest.raises(ValueError, match="pulsation non positive"):
+        TowThomas(pulsation=0.0, qualite=0.7, gain=2.0)
+
+
+def test_un_facteur_de_qualite_nul_est_refuse() -> None:
+    """Le motif est ecrit en toutes lettres : l'audit ne lit pas les variables.
+
+    Une premiere ecriture passait le message par une parametrisation ; le
+    test s'executait, mais l'audit transversal ne pouvait pas voir que la
+    garde etait couverte, et la signalait a raison comme orpheline.
+    """
+    with pytest.raises(ValueError, match="facteur de qualite non positif"):
+        TowThomas(pulsation=1e4, qualite=0.0, gain=2.0)
+
+
+def test_un_gain_de_cellule_nul_est_refuse() -> None:
+    with pytest.raises(ValueError, match="gain non positif"):
+        TowThomas(pulsation=1e4, qualite=0.7, gain=0.0)
+
+
+@pytest.mark.parametrize(("r_min", "c_max"), [(0.0, 1e-6), (100.0, 0.0)])
+def test_des_contraintes_de_composants_nulles_sont_refusees(
+    r_min: float,
+    c_max: float,
+) -> None:
+    """Sans borne, le facteur d'echelle n'aurait rien a satisfaire."""
+    cellule = TowThomas(pulsation=1e4, qualite=0.7, gain=2.0)
+    with pytest.raises(ValueError, match="non positive"):
+        cellule.facteur_d_echelle(r_min, c_max)
+
+
+def test_une_boucle_collee_au_fil_est_refusee() -> None:
+    """A distance nulle le champ diverge : l'integrale n'a pas de valeur."""
+    with pytest.raises(ValueError, match="boucle collee au fil"):
+        BoucleDeMesure(hauteur=1.0, distance=0, largeur=1.0)
+
+
+@pytest.mark.parametrize(("largeur", "hauteur"), [(0, 1.0), (1.0, 0)])
+def test_une_boucle_d_aire_nulle_est_refusee(
+    largeur: float,
+    hauteur: float,
+) -> None:
+    """Sans aire, aucun flux ne la traverse et la question perd son sens."""
+    with pytest.raises(ValueError, match="boucle d'aire nulle"):
+        BoucleDeMesure(hauteur=hauteur, distance=1.0, largeur=largeur)
+
+
+def test_une_pulsation_de_coupure_nulle_est_refusee_en_passe_bas() -> None:
+    """La mise a l'echelle divise par elle : zero ferait exploser le filtre."""
+    prototype = PrototypeButterworth(elements=(1.414, 1.414), impedance=73.0)
+    with pytest.raises(ValueError, match="pulsation de coupure non positive"):
+        prototype.en_passe_bas(0.0)
+
+
+def test_une_impedance_d_entree_nulle_interdit_la_matrice_g() -> None:
+    """`g_11 = 1/Z_11` : la matrice hybride inverse n'existe alors pas."""
+    with pytest.raises(ValueError, match="impedance d'entree nulle"):
+        parametres_g_depuis_z(sp.Matrix([[0, 1], [1, 1]]))
+
+
+def test_une_cellule_sallen_key_sans_second_ordre_est_refusee() -> None:
+    """Sans `C_1`, le denominateur tombe au premier ordre : rien a identifier."""
+    cellule = CelluleSallenKey(r1=1.0, r2=1.0, c1=0, c2=1.0)
+    with pytest.raises(ValueError, match="pas du second ordre"):
+        cellule.pulsation_propre()
+
+
+def test_un_transfert_sans_pole_est_refuse() -> None:
+    """Un denominateur constant ne decrit aucun systeme dynamique."""
+    variable = sp.Symbol("s")
+    with pytest.raises(ValueError, match="denominateur sans pole"):
+        est_stable(sp.Integer(1) / 2, variable)
+
+
+def test_des_poles_incalculables_interdisent_de_conclure() -> None:
+    """Sur une quintique generale, sympy ne rend aucune racine : on ne ment pas."""
+    variable = sp.Symbol("s")
+    with pytest.raises(ValueError, match="poles non calculables"):
+        est_stable(1 / (variable**5 - variable + 1), variable)
+
+
+@pytest.mark.parametrize(
+    ("resistance", "inductance", "capacite"),
+    [(0, 1, 1), (1, 0, 1), (1, 1, 0)],
+)
+def test_un_composant_nul_dans_l_echelle_est_refuse(
+    resistance: float,
+    inductance: float,
+    capacite: float,
+) -> None:
+    """Un element nul court-circuite ou ouvre l'echelle : plus de filtre."""
+    with pytest.raises(ValueError, match="composant nul dans l'echelle"):
+        systeme_en_echelle_lc(resistance, inductance, capacite, sp.Symbol("s"))
+
+
+def test_un_systeme_nodal_singulier_est_refuse() -> None:
+    """A `s = -1 + i` et composants unitaires, le determinant s'annule."""
+    with pytest.raises(ValueError, match="systeme nodal singulier"):
+        transfert_de_sortie(1, 1, 1, -1 + sp.I)
