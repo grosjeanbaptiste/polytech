@@ -24,15 +24,25 @@ from polytech.electronique.domain.amplification import (
 from polytech.electronique.domain.biquad import TowThomas
 from polytech.electronique.domain.conversion import ConvertisseurAnalogiqueNumerique
 from polytech.electronique.domain.filtre import PrototypeButterworth
+from polytech.electronique.domain.friis import (
+    facteur_en_cascade,
+    facteur_maximal_du_second_etage,
+)
 from polytech.electronique.domain.induction import BoucleDeMesure
 from polytech.electronique.domain.laplace import est_stable
 from polytech.electronique.domain.nodale import (
     systeme_en_echelle_lc,
     transfert_de_sortie,
 )
+from polytech.electronique.domain.pole_zero import pente_asymptotique
 from polytech.electronique.domain.quadripole import (
     cellule_en_t,
     parametres_g_depuis_z,
+)
+from polytech.electronique.domain.retroaction import (
+    gain_en_boucle_fermee,
+    parametres_h_amplificateur,
+    parametres_h_reseau_resistif,
 )
 from polytech.electronique.domain.sallen_key import CelluleSallenKey
 
@@ -238,3 +248,47 @@ def test_un_systeme_nodal_singulier_est_refuse() -> None:
     """A `s = -1 + i` et composants unitaires, le determinant s'annule."""
     with pytest.raises(ValueError, match="systeme nodal singulier"):
         transfert_de_sortie(1, 1, 1, -1 + sp.I)
+
+
+def test_une_resistance_de_sortie_nulle_interdit_la_matrice_h() -> None:
+    """Sans `R_o`, la maille de sortie n'a plus de loi a deriver."""
+    with pytest.raises(ValueError, match="resistance de sortie nulle"):
+        parametres_h_amplificateur(1e6, 0, 1e5)
+
+
+@pytest.mark.parametrize(("masse", "reaction"), [(0, 1e6), (1e6, 0)])
+def test_une_resistance_nulle_dans_le_pont_est_refusee(
+    masse: float,
+    reaction: float,
+) -> None:
+    """Un pont a resistance nulle court-circuite la retroaction."""
+    with pytest.raises(ValueError, match="resistance nulle dans le pont"):
+        parametres_h_reseau_resistif(masse, reaction)
+
+
+def test_une_matrice_h_degeneree_est_refusee() -> None:
+    """`h_11 h_22` nul rend le rapport de boucle infini : rien a conclure."""
+    with pytest.raises(ValueError, match="matrice H degeneree"):
+        gain_en_boucle_fermee(sp.Matrix([[0, 1], [1, 1]]))
+
+
+def test_un_gain_de_premier_etage_nul_est_refuse_par_friis() -> None:
+    """Friis divise par le carre de ce gain : zero ferait exploser la formule."""
+    with pytest.raises(ValueError, match="gain du premier etage non positif"):
+        facteur_en_cascade(1.5, 10.0, 0.0)
+
+
+def test_un_facteur_global_sous_un_est_refuse() -> None:
+    """Un quadripole n'enleve pas de bruit : sous 1, la question n'a pas de sens."""
+    with pytest.raises(ValueError, match="facteur global sous la borne physique"):
+        facteur_maximal_du_second_etage(0.5, 4.0)
+
+
+@pytest.mark.parametrize(("zeros", "poles"), [(-1, 2), (2, -1)])
+def test_des_comptes_negatifs_de_poles_ou_zeros_sont_refuses(
+    zeros: int,
+    poles: int,
+) -> None:
+    """Une carte ne porte pas un nombre negatif de croix."""
+    with pytest.raises(ValueError, match="comptes negatifs"):
+        pente_asymptotique(zeros=zeros, poles=poles)
