@@ -7,6 +7,14 @@ dependencies = ["sympy>=1.13", "pymupdf4llm>=0.0.17"]
 
 [tool.ruff]
 line-length = 88
+# Le corpus converti n'est pas du code : c'est la transcription fidele de
+# sources, qu'`AGENTS.md` interdit de toucher par sa premiere regle.
+#
+# Ruff 0.16 formate le Python des blocs Markdown. Il voulait donc reecrire
+# `signaux_systemes_commande_exemples.md`, transcription d'un carnet Jupyter
+# -- et une transcription reformatee n'est plus une transcription. Les trois
+# racines du corpus lui sont donc fermees.
+exclude = ["cours-markdown", "cours-latex", "transcriptions"]
 
 [tool.ruff.lint]
 select = ["ALL"]
