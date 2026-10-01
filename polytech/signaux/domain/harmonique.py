@@ -77,3 +77,64 @@ class AnalyseHarmonique:
         """Le couple (argument en degres, gain en dB) : Black inverse les axes."""
         gain, phase = self.point_de_bode(pulsation)
         return phase, gain
+
+
+def courbe_elementaire_de_gain(gain: sp.Expr) -> tuple[sp.Expr, sp.Expr]:
+    """`K` : module constant, argument nul. La brique la plus simple."""
+    return sp.Abs(gain), sp.Integer(0)
+
+
+def courbe_elementaire_d_integrateur() -> tuple[sp.Expr, sp.Expr]:
+    """`1 / (j omega)` : module en `1/omega`, argument constant a -90 degres."""
+    return 1 / PULSATION, -sp.pi / 2
+
+
+def courbe_elementaire_de_premier_ordre(
+    constante: sp.Expr,
+) -> tuple[sp.Expr, sp.Expr]:
+    """`1 / (1 + j omega T)`.
+
+    A la pulsation de coupure `1/T`, le dephasage vaut exactement
+    -45 degres et le module `1/racine(2)`. Ces deux points fixes sont ce
+    qui permet de tracer la courbe a la main.
+    """
+    if sp.simplify(constante) == 0:
+        msg = "constante de temps nulle : la coupure serait a l'infini"
+        raise ValueError(msg)
+    produit = PULSATION * constante
+    return 1 / sp.sqrt(1 + produit**2), -sp.atan(produit)
+
+
+def courbe_elementaire_de_second_ordre(
+    constante: sp.Expr,
+    amortissement: sp.Expr,
+) -> tuple[sp.Expr, sp.Expr]:
+    """`1 / (1 - omega^2 T^2 + 2 j zeta omega T)`.
+
+    A la pulsation propre `1/T` le dephasage vaut exactement -90 degres,
+    **quel que soit** l'amortissement : c'est le point par lequel toutes
+    les courbes de la famille passent.
+    """
+    if sp.simplify(constante) == 0:
+        msg = "constante de temps nulle : la pulsation propre serait infinie"
+        raise ValueError(msg)
+    produit = PULSATION * constante
+    reel = 1 - produit**2
+    imaginaire = 2 * amortissement * produit
+    module = 1 / sp.sqrt(reel**2 + imaginaire**2)
+    return module, -sp.atan2(imaginaire, reel)
+
+
+def influence_du_gain(
+    courbe: tuple[sp.Expr, sp.Expr],
+    gain: sp.Expr,
+) -> tuple[sp.Expr, sp.Expr]:
+    """Multiplie le module, laisse l'argument intact.
+
+    La planche l'ecrit : « |.|, Re et Im multiplies par K ; argument
+    inchange ». C'est ce qui rend le reglage d'un gain si simple sur un
+    diagramme de Bode -- la courbe de phase ne bouge pas, donc la marge de
+    phase se lit a la meme pulsation.
+    """
+    module, phase = courbe
+    return sp.simplify(sp.Abs(gain) * module), phase

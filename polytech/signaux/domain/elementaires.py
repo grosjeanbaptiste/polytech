@@ -10,6 +10,7 @@ calculer une energie qui diverge sans que rien le signale -- sympy rend
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from enum import Enum
 
@@ -87,3 +88,68 @@ class Signal:
             )
             raise ValueError(msg)
         return energie
+
+
+DECIBELS_DE_PUISSANCE = 10
+"""Le rapport signal sur bruit compare des puissances : 10 log, pas 20."""
+
+GAIN_PAR_BIT = 6.0206
+"""`20 log10(2)` : ce qu'un bit de plus apporte au rapport signal sur bruit."""
+
+CONSTANTE_DU_QUANTIFICATEUR = 1.7609
+"""`10 log10(3/2)` : le terme constant de la regle des six decibels par bit."""
+
+
+def produit_scalaire(
+    premier: sp.Expr,
+    second: sp.Expr,
+    duree: sp.Expr,
+) -> sp.Expr:
+    """`int_0^T x y dt` : l'operation dont l'orthogonalite decoule.
+
+    C'est elle qui fonde les series de Fourier -- les harmoniques sont
+    orthogonales deux a deux, et c'est pourquoi leurs coefficients se
+    calculent independamment.
+    """
+    if sp.simplify(duree) == 0:
+        msg = "duree nulle : le produit scalaire n'est pas defini"
+        raise ValueError(msg)
+    return sp.simplify(sp.integrate(premier * second, (TEMPS, 0, duree)))
+
+
+def rapport_signal_sur_bruit_en_decibels(
+    puissance_du_signal: float,
+    puissance_du_bruit: float,
+) -> float:
+    """`10 log10(P_s / P_n)`, en decibels."""
+    if puissance_du_bruit <= 0:
+        msg = f"puissance de bruit nulle ou negative : {puissance_du_bruit}"
+        raise ValueError(msg)
+    if puissance_du_signal <= 0:
+        msg = f"puissance de signal nulle ou negative : {puissance_du_signal}"
+        raise ValueError(msg)
+    return DECIBELS_DE_PUISSANCE * math.log10(puissance_du_signal / puissance_du_bruit)
+
+
+def pas_de_quantification(etendue: float, bits: int) -> float:
+    """`etendue / 2^n` : il se divise par deux a chaque bit ajoute."""
+    if bits <= 0:
+        msg = f"nombre de bits nul ou negatif : {bits}"
+        raise ValueError(msg)
+    if etendue <= 0:
+        msg = f"etendue nulle ou negative : {etendue}"
+        raise ValueError(msg)
+    return etendue / float(2**bits)
+
+
+def rapport_signal_sur_bruit_d_un_quantificateur(bits: int) -> float:
+    """`6,02 n + 1,76` dB : la regle que le fascicule emploie sans la demontrer.
+
+    Elle suppose un signal sinusoidal pleine echelle et une erreur de
+    quantification uniforme. Douze bits donnent 74 dB, et c'est le nombre
+    qu'un dimensionnement de chaine d'acquisition emploie directement.
+    """
+    if bits <= 0:
+        msg = f"nombre de bits nul ou negatif : {bits}"
+        raise ValueError(msg)
+    return GAIN_PAR_BIT * bits + CONSTANTE_DU_QUANTIFICATEUR

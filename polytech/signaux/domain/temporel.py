@@ -68,3 +68,35 @@ class ReponsesTemporelles:
             )
             raise ValueError(msg)
         return sp.simplify(self.transmittance.expression.subs(IMAGE, 0))
+
+
+def reponse_a_une_rampe(transmittance: Transmittance) -> sp.Expr:
+    """L'original de `T(p) / p^2` : la reponse a une rampe unite.
+
+    Le resultat que le fascicule met en avant : un premier ordre suit une
+    rampe avec un retard permanent **exactement** egal a sa constante de
+    temps. C'est ce qui rend l'erreur de trainage calculable sans
+    simulation.
+    """
+    inversee = sp.inverse_laplace_transform(
+        transmittance.expression / IMAGE**2,
+        IMAGE,
+        TEMPS,
+        noconds=True,
+    )
+    return sp.simplify(inversee.subs(sp.Heaviside(TEMPS), 1))
+
+
+def reponse_harmonique(transmittance: Transmittance) -> sp.Expr:
+    """`T(j omega)` : le regime permanent sinusoidal."""
+    return transmittance.reponse_frequentielle()
+
+
+def ordre_du_systeme(transmittance: Transmittance) -> int:
+    """Le degre du denominateur : la classification du fascicule.
+
+    Il structure tout le chapitre dessus -- premier ordre, second ordre,
+    troisieme ordre, ordre quelconque -- parce que la forme de la reponse
+    en depend qualitativement et non seulement quantitativement.
+    """
+    return transmittance.degre()

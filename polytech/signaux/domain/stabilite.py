@@ -87,3 +87,54 @@ class Stabilite:
         """
         unitaire = self.reel_au_croisement({gain: sp.Integer(1)})
         return sp.simplify(1 / abs(unitaire))
+
+
+def equation_caracteristique(boucle_ouverte: Transmittance) -> sp.Expr:
+    """`1 + G(p)`, mis sur denominateur commun : ses racines sont les poles BF.
+
+    C'est la premiere des trois methodes que le fascicule enumere, et la
+    seule qui soit une condition **necessaire et suffisante**. Nyquist et
+    Bode donnent le meme verdict mais par la frequence, ce qui les rend
+    applicables aux systemes a retard -- que le polynome, lui, ne sait pas
+    representer.
+    """
+    ferme = sp.cancel(1 + boucle_ouverte.expression)
+    return sp.expand(sp.fraction(ferme)[0])
+
+
+def est_stable_par_les_racines(boucle_ouverte: Transmittance) -> bool:
+    """Vrai si toutes les racines caracteristiques sont a partie reelle negative."""
+    racines = sp.solve(sp.Eq(equation_caracteristique(boucle_ouverte), 0), IMAGE)
+    if not racines:
+        msg = "equation caracteristique sans racine : la stabilite ne se decide pas"
+        raise ValueError(msg)
+    return all(bool(sp.re(racine) < 0) for racine in racines)
+
+
+def phase_ajoutee_par_un_retard(duree: sp.Expr, pulsation: sp.Expr) -> sp.Expr:
+    """`-omega tau` : un retard ne change pas le module, il mange la phase.
+
+    C'est tout son danger. Un diagramme de gain ne le montre pas, et la
+    marge de phase se consomme proportionnellement a la pulsation -- donc
+    d'autant plus que la boucle est rapide.
+    """
+    return -pulsation * duree
+
+
+def marge_de_phase_avec_retard(
+    marge_sans_retard: sp.Expr,
+    duree: sp.Expr,
+    pulsation: sp.Expr,
+) -> sp.Expr:
+    """La marge restante une fois le retard pris en compte."""
+    return sp.simplify(
+        marge_sans_retard + phase_ajoutee_par_un_retard(duree, pulsation)
+    )
+
+
+def retard_critique(marge_sans_retard: sp.Expr, pulsation: sp.Expr) -> sp.Expr:
+    """`tau_c = marge / omega` : le retard qui epuise exactement la marge."""
+    if sp.simplify(pulsation) == 0:
+        msg = "pulsation nulle : un retard n'y consomme aucune phase"
+        raise ValueError(msg)
+    return sp.simplify(marge_sans_retard / pulsation)

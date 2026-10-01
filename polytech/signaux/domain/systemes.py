@@ -58,3 +58,48 @@ def convolution(premier: sp.Expr, second: sp.Expr) -> sp.Expr:
     variable = sp.Symbol("theta", nonnegative=True)
     integrande = premier.subs(TEMPS, variable) * second.subs(TEMPS, TEMPS - variable)
     return sp.simplify(sp.integrate(integrande, (variable, 0, TEMPS)))
+
+
+def linearisation_de_taylor(
+    modele: sp.Expr,
+    variable: sp.Expr,
+    point: sp.Expr,
+) -> sp.Expr:
+    """`f(x_0) + f'(x_0) (x - x_0)` : le developpement limite au premier terme.
+
+    C'est la seule facon de ramener un systeme physique au cadre LTI du
+    cours, et le fascicule le dit ainsi. Ce qu'elle coute est dit aussi :
+    le modele obtenu ne vaut qu'au **voisinage** du point, et c'est
+    pourquoi on parle de modele local par opposition au modele global.
+    """
+    valeur = modele.subs(variable, point)
+    pente = sp.diff(modele, variable).subs(variable, point)
+    return sp.expand(valeur + pente * (variable - point))
+
+
+def point_de_fonctionnement(modele: sp.Expr, variable: sp.Expr) -> tuple[sp.Expr, ...]:
+    """Les valeurs ou le modele s'annule : les equilibres du systeme.
+
+    Ce sont les points autour desquels on linearise. Un systeme sans
+    equilibre n'a pas de modele local, et le dire vaut mieux que de rendre
+    une liste vide qu'un appelant oublierait de regarder.
+    """
+    racines = sp.solve(sp.Eq(modele, 0), variable)
+    if not racines:
+        msg = f"aucun point de fonctionnement : {modele} ne s'annule jamais"
+        raise ValueError(msg)
+    return tuple(sorted(racines, key=sp.default_sort_key))
+
+
+def est_causal(systeme: Systeme) -> bool:
+    """Vrai si la sortie ne depend pas de l'entree future.
+
+    Le test applique au systeme une entree **avancee** et verifie que la
+    sortie l'est aussi -- un systeme qui anticiperait rendrait une sortie
+    dependant de `t + tau` sans qu'on le lui ait demande. Hors du cadre du
+    cours, et a dire avant de lui chercher une transmittance.
+    """
+    entree = sp.Function("x")
+    avance = sp.Symbol("tau", positive=True)
+    sortie = systeme.operateur(entree(TEMPS))
+    return not sortie.has(entree(TEMPS + avance))
