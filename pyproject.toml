@@ -51,10 +51,12 @@ ignore = [
 strict = true
 warn_unreachable = true
 
-# sympy n'expose ni stubs ni marqueur py.typed : l'ecart est circonscrit a
-# ce seul paquet tiers, le code de la bibliotheque reste en mode strict.
+# sympy et mpmath n'exposent ni stubs ni marqueur py.typed. mpmath est
+# livre avec sympy, et sert aux deux recoupements numeriques du corps
+# noir ; l'ecart reste circonscrit a ces paquets tiers, et le code de la
+# bibliotheque demeure en mode strict.
 [[tool.mypy.overrides]]
-module = ["sympy.*", "pymupdf.*", "pymupdf4llm.*"]
+module = ["sympy.*", "mpmath.*", "pymupdf.*", "pymupdf4llm.*"]
 ignore_missing_imports = true
 
 # LatexPrinter n'est pas annote en amont : heriter d'un `Any` est le seul
