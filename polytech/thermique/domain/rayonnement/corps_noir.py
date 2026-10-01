@@ -53,3 +53,59 @@ def luminance_spectrale(longueur_d_onde: float, temperature: float) -> float:
     numerateur = 2.0 * math.pi * PLANCK * LUMIERE**2
     exposant = PLANCK * LUMIERE / (longueur_d_onde * BOLTZMANN * temperature)
     return numerateur / (longueur_d_onde**5 * (math.expm1(exposant)))
+
+
+def absorptivite_de_kirchhoff(emissivite: float) -> float:
+    """`alpha = epsilon` a l'equilibre thermique : la loi de Kirchhoff.
+
+    Elle ferme le chapitre. Sans elle, un corps gris aurait deux
+    proprietes radiatives independantes, et aucun bilan ne se fermerait --
+    on ne saurait pas combien il absorbe de ce qu'il recoit.
+    """
+    if not 0 <= emissivite <= 1:
+        msg = f"emissivite hors de [0, 1] : {emissivite}"
+        raise ValueError(msg)
+    return emissivite
+
+
+def fraction_emise_sous(longueur_d_onde: float, temperature: float) -> float:
+    """La part de l'emittance totale emise en dessous de cette longueur d'onde.
+
+    C'est la « loi integree » que le formulaire donne en abaque -- un
+    filtre passe-bas, en fonction du seul produit `lambda T`. Elle est
+    calculee ici par la serie de Planck integree, et ses deux bornes sont
+    exactes : zero en zero, un a l'infini.
+
+    Son usage principal est l'effet de serre : a 5800 K le soleil emet
+    plus de 95 pour cent sous trois micrometres, longueur a laquelle le
+    verre est transparent, alors qu'il est opaque au rayonnement bien plus
+    long que la piece reemet.
+    """
+    if longueur_d_onde <= 0:
+        msg = f"longueur d'onde nulle ou negative : {longueur_d_onde} m"
+        raise ValueError(msg)
+    if temperature <= 0:
+        msg = f"temperature nulle ou negative : {temperature} K"
+        raise ValueError(msg)
+    reduit = PLANCK * LUMIERE / (BOLTZMANN * longueur_d_onde * temperature)
+    if reduit > _REDUIT_MAXIMAL:
+        return 0.0
+    somme = 0.0
+    for terme in range(1, _TERMES_DE_LA_SERIE):
+        produit = terme * reduit
+        somme += (
+            math.exp(-produit)
+            * (produit**3 + 3 * produit**2 + 6 * produit + 6)
+            / terme**4
+        )
+    return min(1.0, _FACTEUR_DE_LA_SERIE * somme)
+
+
+_TERMES_DE_LA_SERIE = 60
+"""Au-dela, les termes sont sous la precision du flottant."""
+
+_REDUIT_MAXIMAL = 700.0
+"""Au-dela, `exp(-x)` vaut zero en flottant : la fraction est nulle."""
+
+_FACTEUR_DE_LA_SERIE = 15.0 / math.pi**4
+"""Normalisation de la serie : elle doit tendre vers un."""

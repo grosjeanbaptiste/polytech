@@ -15,6 +15,7 @@ bibliotheque accepte donc un `H` lu, et ne pretend pas le deduire.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 
 from polytech.electromagnetisme.domain.constantes import PERMEABILITE_DU_VIDE
 
@@ -75,3 +76,62 @@ class BrancheFerromagnetique:
             msg = f"nombre de spires nul ou negatif : {spires}"
             raise ValueError(msg)
         return self.amperes_tours() / spires
+
+
+class Magnetisme(Enum):
+    """Les trois comportements que le fascicule distingue."""
+
+    DIAMAGNETIQUE = "diamagnetique"
+    PARAMAGNETIQUE = "paramagnetique"
+    FERROMAGNETIQUE = "ferromagnetique"
+
+
+SEUIL_FERROMAGNETIQUE = 10.0
+"""Au-dela de cette permeabilite relative, le materiau est ferromagnetique.
+
+Le seuil est choisi et dit : les corps paramagnetiques plafonnent a
+quelques millionnemes au-dessus de l'unite, les ferromagnetiques montent a
+plusieurs milliers. Dix separe les deux familles sans ambiguite, et aucun
+materiau usuel ne tombe entre.
+"""
+
+
+def classe_de_magnetisme(relative: float) -> Magnetisme:
+    """Le comportement magnetique que cette permeabilite relative designe.
+
+    Sous l'unite le materiau **repousse** le champ -- c'est le
+    diamagnetisme, et il est universel mais faible. Juste au-dessus, le
+    paramagnetisme. Tres au-dessus, le ferromagnetisme, ou la permeabilite
+    cesse d'etre une constante : le fascicule note qu'elle « passe par un
+    maximum ».
+    """
+    if relative <= 0:
+        msg = f"permeabilite relative nulle ou negative : {relative}"
+        raise ValueError(msg)
+    if relative < 1:
+        return Magnetisme.DIAMAGNETIQUE
+    if relative < SEUIL_FERROMAGNETIQUE:
+        return Magnetisme.PARAMAGNETIQUE
+    return Magnetisme.FERROMAGNETIQUE
+
+
+def pertes_par_hysteresis(
+    aire_du_cycle: float,
+    frequence: float,
+    volume: float,
+) -> float:
+    """`f x aire x volume`, en watts.
+
+    L'aire du cycle est une energie par unite de volume : la parcourir une
+    fois dissipe cette energie, donc la parcourir `f` fois par seconde
+    dissipe cette puissance. C'est pourquoi un transformateur chauffe huit
+    fois plus a 400 Hz qu'a 50 Hz, et pourquoi on empile des toles minces
+    de materiau a cycle etroit.
+    """
+    if frequence < 0:
+        msg = f"frequence negative : {frequence} Hz"
+        raise ValueError(msg)
+    if aire_du_cycle < 0 or volume < 0:
+        msg = f"aire {aire_du_cycle} J/m^3 ou volume {volume} m^3 negatif"
+        raise ValueError(msg)
+    return aire_du_cycle * frequence * volume

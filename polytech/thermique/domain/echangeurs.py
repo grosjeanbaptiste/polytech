@@ -90,3 +90,67 @@ def efficacite_courants_croises_sans_melange(nut: float, rapport: float) -> floa
         raise ValueError(msg)
     exposant = nut**0.22 * (math.exp(-rapport * nut**0.78) - 1) / rapport
     return 1 - math.exp(exposant)
+
+
+def capacite_minimale(premiere: float, seconde: float) -> float:
+    """`(q c)_min` : c'est elle qui limite le flux echangeable."""
+    if premiere <= 0 or seconde <= 0:
+        msg = f"capacite calorifique non positive : {premiere} ou {seconde} W/K"
+        raise ValueError(msg)
+    return min(premiere, seconde)
+
+
+def flux_maximal_echangeable(
+    premiere_capacite: float,
+    seconde_capacite: float,
+    entree_chaude: float,
+    entree_froide: float,
+) -> float:
+    """`(q c)_min (T_ce - T_fe)` : la borne absolue, atteinte a efficacite un.
+
+    C'est le denominateur de l'efficacite, et sa definition : un echangeur
+    ne peut pas faire mieux que porter le fluide limitant a la temperature
+    d'entree de l'autre.
+    """
+    if entree_chaude <= entree_froide:
+        msg = (
+            f"fluide chaud plus froid que le fluide froid : {entree_chaude} <= "
+            f"{entree_froide} -- l'echangeur fonctionnerait a rebours"
+        )
+        raise ValueError(msg)
+    minimale = capacite_minimale(premiere_capacite, seconde_capacite)
+    return minimale * (entree_chaude - entree_froide)
+
+
+def _valider_la_paire(nut: float, rapport: float) -> None:
+    if nut <= 0:
+        msg = f"NUT nul ou negatif : {nut}"
+        raise ValueError(msg)
+    if not 0 < rapport <= 1:
+        msg = f"rapport de capacites hors de ]0, 1] : {rapport}"
+        raise ValueError(msg)
+
+
+def efficacite_a_contre_courant(nut: float, rapport: float) -> float:
+    """`(1 - e^{-NUT(1-R)}) / (1 - R e^{-NUT(1-R)})`.
+
+    A `R = 1` la formule est indeterminee et sa limite vaut
+    `NUT / (1 + NUT)`. Le cas se traite, il ne se contourne pas.
+    """
+    _valider_la_paire(nut, rapport)
+    if math.isclose(rapport, 1.0):
+        return nut / (1 + nut)
+    exposant = math.exp(-nut * (1 - rapport))
+    return (1 - exposant) / (1 - rapport * exposant)
+
+
+def efficacite_a_courants_paralleles(nut: float, rapport: float) -> float:
+    """`(1 - e^{-NUT(1+R)}) / (1 + R)`.
+
+    Toujours inferieure a celle du contre-courant, a NUT et rapport egaux.
+    C'est le resultat que le fascicule met en avant, et sa raison est
+    geometrique : a contre-courant l'ecart de temperature reste a peu pres
+    constant le long de l'echangeur au lieu de s'effondrer.
+    """
+    _valider_la_paire(nut, rapport)
+    return (1 - math.exp(-nut * (1 + rapport))) / (1 + rapport)

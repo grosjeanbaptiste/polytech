@@ -17,6 +17,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
+from polytech.electromagnetisme.domain.constantes import PERMEABILITE_DU_VIDE
+
 
 @dataclass(frozen=True, slots=True)
 class CouplageMagnetique:
@@ -51,3 +53,40 @@ class CouplageMagnetique:
     def est_parfait(self) -> bool:
         """Vrai si tout le flux de l'un traverse l'autre (`k = 1`)."""
         return math.isclose(self.coefficient(), 1.0)
+
+
+def inductance_propre_d_un_solenoide(
+    spires: int,
+    section: float,
+    longueur: float,
+    relative: float = 1.0,
+) -> float:
+    """`mu N^2 S / l`, en henrys.
+
+    Le carre des spires est ce qu'on oublie : doubler le bobinage
+    quadruple l'inductance, parce que chaque spire voit le flux de toutes
+    les autres.
+    """
+    if spires <= 0:
+        msg = f"nombre de spires nul ou negatif : {spires}"
+        raise ValueError(msg)
+    if section <= 0 or longueur <= 0:
+        msg = f"geometrie invalide : section {section} m^2, longueur {longueur} m"
+        raise ValueError(msg)
+    if relative <= 0:
+        msg = f"permeabilite relative nulle ou negative : {relative}"
+        raise ValueError(msg)
+    permeabilite = relative * PERMEABILITE_DU_VIDE
+    return permeabilite * spires**2 * section / longueur
+
+
+def signe_du_couplage(*, flux_de_meme_sens: bool) -> int:
+    """`+1` si les deux flux s'ajoutent, `-1` s'ils s'opposent.
+
+    Le fascicule l'ecrit : « le signe des inductances est lie au sens
+    positif des flux », et « l'association d'inductances en serie depend
+    du sens du flux ». La meme paire de bobines donne donc deux
+    inductances equivalentes selon le branchement, et le signe n'est pas
+    une convention libre -- il se lit sur les sens de bobinage.
+    """
+    return 1 if flux_de_meme_sens else -1

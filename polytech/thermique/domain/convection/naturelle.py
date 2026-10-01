@@ -14,6 +14,7 @@ y interpoler serait inventer une correlation. La garde le dit.
 
 from __future__ import annotations
 
+import math
 from typing import Final
 
 PESANTEUR: Final = 9.81
@@ -63,3 +64,73 @@ def nusselt_lame_de_fluide(rayleigh_local: float) -> float:
         f"formulaire ({FIN_DU_SECOND_REGIME:.0e})"
     )
     raise ValueError(msg)
+
+
+def resistance_de_paroi_plane(
+    epaisseur: float,
+    conductivite: float,
+    aire: float,
+) -> float:
+    """`e / (lambda S)`, en K/W : la forme la plus simple."""
+    if epaisseur <= 0 or conductivite <= 0 or aire <= 0:
+        msg = (
+            f"paroi plane invalide : epaisseur {epaisseur} m, conductivite "
+            f"{conductivite} W/(m K), aire {aire} m^2"
+        )
+        raise ValueError(msg)
+    return epaisseur / (conductivite * aire)
+
+
+def resistance_de_paroi_cylindrique(
+    rayon_interieur: float,
+    rayon_exterieur: float,
+    conductivite: float,
+    longueur: float,
+) -> float:
+    """`ln(r_e / r_i) / (2 pi lambda L)`, en K/W.
+
+    Ce n'est **pas** `e / (lambda S)`. Transposer le cas plan au tube est
+    l'erreur du chapitre, et l'ecart cesse d'etre negligeable des que
+    l'epaisseur n'est plus petite devant le rayon.
+    """
+    if rayon_exterieur <= rayon_interieur:
+        msg = (
+            f"rayon exterieur non superieur a l'interieur : "
+            f"{rayon_exterieur} <= {rayon_interieur} m"
+        )
+        raise ValueError(msg)
+    if conductivite <= 0 or longueur <= 0:
+        msg = f"conductivite {conductivite} ou longueur {longueur} non positive"
+        raise ValueError(msg)
+    return math.log(rayon_exterieur / rayon_interieur) / (
+        2 * math.pi * conductivite * longueur
+    )
+
+
+def resistance_de_surface(echange: float, aire: float) -> float:
+    """`1 / (K S)` : la resistance que le film de convection oppose."""
+    if echange <= 0 or aire <= 0:
+        msg = f"echange {echange} W/(m^2 K) ou aire {aire} m^2 non positif"
+        raise ValueError(msg)
+    return 1.0 / (echange * aire)
+
+
+def coefficient_global_de_transmission(
+    resistances: tuple[float, ...],
+    aire: float,
+) -> float:
+    """`K = 1 / (S somme R)`, en W/(m^2 K).
+
+    C'est la grandeur que les trois applications du fascicule emploient --
+    la tablette, le double vitrage, le boiler -- et celle qui repond a sa
+    question : les pertes au travers d'un vitrage se reduisent en ajoutant
+    une resistance en serie, et l'air en est une bien meilleure que le
+    verre.
+    """
+    if not resistances:
+        msg = "aucune resistance : le coefficient global n'est pas defini"
+        raise ValueError(msg)
+    if aire <= 0:
+        msg = f"aire nulle ou negative : {aire} m^2"
+        raise ValueError(msg)
+    return 1.0 / (aire * sum(resistances))

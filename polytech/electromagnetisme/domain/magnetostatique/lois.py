@@ -68,3 +68,63 @@ def champ_depuis_l_induction(induction: float, relative: float = 1.0) -> float:
         )
         raise ValueError(msg)
     return induction / (relative * PERMEABILITE_DU_VIDE)
+
+
+def _produit_vectoriel(
+    premier: tuple[float, float, float],
+    second: tuple[float, float, float],
+) -> tuple[float, float, float]:
+    """Le produit vectoriel, ecrit une fois pour les deux forces du chapitre."""
+    a1, a2, a3 = premier
+    b1, b2, b3 = second
+    return (a2 * b3 - a3 * b2, a3 * b1 - a1 * b3, a1 * b2 - a2 * b1)
+
+
+def force_de_lorentz(
+    charge: float,
+    vitesse: tuple[float, float, float],
+    induction: tuple[float, float, float],
+) -> tuple[float, float, float]:
+    """`q v x B`, en newtons.
+
+    Elle est **orthogonale a la vitesse**, donc elle ne travaille jamais :
+    un champ magnetique courbe une trajectoire sans changer l'energie du
+    porteur. C'est la propriete qui distingue le magnetisme de
+    l'electrostatique, et elle se verifie par un produit scalaire nul.
+    """
+    un, deux, trois = _produit_vectoriel(vitesse, induction)
+    return charge * un, charge * deux, charge * trois
+
+
+def force_sur_un_element_de_courant(
+    courant: float,
+    element: tuple[float, float, float],
+    induction: tuple[float, float, float],
+) -> tuple[float, float, float]:
+    """`I dl x B` : la force de Lorentz sous sa forme integrable.
+
+    C'est elle que le fascicule emploie, parce qu'un circuit se decoupe en
+    elements de courant alors qu'il ne se decoupe pas en porteurs.
+    """
+    un, deux, trois = _produit_vectoriel(element, induction)
+    return courant * un, courant * deux, courant * trois
+
+
+def intensite_depuis_la_densite(densite: float, section: float) -> float:
+    """`I = J S` pour une densite uniforme et normale a la section."""
+    if section <= 0:
+        msg = f"section nulle ou negative : {section} m^2"
+        raise ValueError(msg)
+    return densite * section
+
+
+def continuite_a_une_interface() -> tuple[str, str]:
+    """Les deux composantes qui se conservent en traversant une interface.
+
+    Le point contre-intuitif que le fascicule met en regard de
+    l'electrostatique : ici c'est la composante **normale** de `B` et la
+    **tangentielle** de `H` ; la-bas c'etait la normale de `D` et la
+    tangentielle de `E`. Les deux couples ne se correspondent pas, et les
+    confondre fait traverser une interface de travers.
+    """
+    return "composante normale de B", "composante tangentielle de H"

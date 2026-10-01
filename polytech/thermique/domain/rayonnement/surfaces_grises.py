@@ -67,3 +67,41 @@ def flux_entre_deux_surfaces(
     )
     ecart = premiere.emittance_de_corps_noir() - seconde.emittance_de_corps_noir()
     return ecart / resistance
+
+
+def flux_entre_deux_plans_gris(
+    premiere_emissivite: float,
+    seconde_emissivite: float,
+    premiere_temperature: float,
+    seconde_temperature: float,
+    aire: float,
+) -> float:
+    """`sigma S (T1^4 - T2^4) / (1/eps_1 + 1/eps_2 - 1)`.
+
+    Cas particulier que le fascicule tabule, et qui sert partout : deux
+    vitres, deux parois d'un four, un ecran anti-rayonnement. Le `-1` du
+    denominateur est ce qui distingue deux plans infinis d'une enceinte
+    quelconque -- chacun ne voit que l'autre, donc le facteur d'angle vaut
+    un dans les deux sens.
+    """
+    for emissivite in (premiere_emissivite, seconde_emissivite):
+        if not 0 < emissivite <= 1:
+            msg = f"emissivite hors de ]0, 1] : {emissivite}"
+            raise ValueError(msg)
+    if aire <= 0:
+        msg = f"aire nulle ou negative : {aire} m^2"
+        raise ValueError(msg)
+    denominateur = 1 / premiere_emissivite + 1 / seconde_emissivite - 1
+    ecart = emittance(premiere_temperature) - emittance(seconde_temperature)
+    return aire * ecart / denominateur
+
+
+def resistance_d_une_surface_adiabatique() -> float:
+    """Zero : une surface adiabatique reradie tout ce qu'elle recoit.
+
+    Le fascicule lui consacre une planche -- « 3 surfaces dont 1 surface
+    adiabatique » -- parce qu'elle modifie le schema en resistances sans
+    ajouter d'inconnue de temperature : son flux net est nul, donc elle ne
+    porte aucune resistance de surface.
+    """
+    return 0.0
