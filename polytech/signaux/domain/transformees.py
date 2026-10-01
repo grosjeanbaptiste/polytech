@@ -185,3 +185,25 @@ def spectre_de_raies(fondamentale: float, harmoniques: int) -> tuple[float, ...]
         msg = f"fondamentale nulle ou negative : {fondamentale} Hz"
         raise ValueError(msg)
     return tuple(fondamentale * rang for rang in range(1, harmoniques + 1))
+
+
+def energie_par_parseval(spectre: sp.Expr, pulsation: sp.Symbol) -> sp.Expr:
+    """L'energie du signal, lue dans son spectre.
+
+    « Proprietes : produit scalaire et Parseval », dit la planche. C'est
+    la plus utile des proprietes de la transformee : l'energie se lit
+    aussi bien dans le temps que dans les frequences, et l'on choisit le
+    domaine ou l'integrale est faisable.
+
+    Le facteur `1/(2 pi)` est celui de la convention en pulsation. En
+    frequence il disparaitrait -- c'est l'erreur que la double convention
+    invite, et elle se voit sur un facteur `6,28`.
+    """
+    if pulsation not in spectre.free_symbols and spectre != 0:
+        msg = (
+            f"variable absente du spectre : {pulsation} n'y figure pas, "
+            f"et l'integrale divergerait"
+        )
+        raise ValueError(msg)
+    carre = sp.Abs(spectre) ** 2
+    return sp.integrate(carre, (pulsation, -sp.oo, sp.oo)) / (2 * sp.pi)
