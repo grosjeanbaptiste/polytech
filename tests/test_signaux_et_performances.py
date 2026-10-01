@@ -20,10 +20,12 @@ from polytech.signaux.domain.controleur import ProportionnelIntegral
 from polytech.signaux.domain.elementaires import Classe, Signal, echelon, rampe
 from polytech.signaux.domain.harmonique import AnalyseHarmonique, en_decibels
 from polytech.signaux.domain.performances import (
+    gain_statique_depuis_decibels,
+)
+from polytech.signaux.domain.reponse_indicielle import (
     amortissement_du_second_ordre,
     depassement_du_second_ordre,
     en_pourcent,
-    gain_statique_depuis_decibels,
     maximum_de_la_reponse,
 )
 from polytech.signaux.domain.symboles import IMAGE, TEMPS

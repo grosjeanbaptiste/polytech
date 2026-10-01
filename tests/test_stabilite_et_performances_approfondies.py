@@ -44,11 +44,13 @@ from polytech.signaux.domain.harmonique import (
     influence_du_gain,
 )
 from polytech.signaux.domain.performances import (
-    bande_passante_du_second_ordre,
-    classe_d_amortissement,
     erreur_de_perturbation,
     erreur_statique_de_consigne,
     module_en_continu,
+)
+from polytech.signaux.domain.reponse_indicielle import (
+    bande_passante_du_second_ordre,
+    classe_d_amortissement,
 )
 from polytech.signaux.domain.stabilite import (
     Stabilite,

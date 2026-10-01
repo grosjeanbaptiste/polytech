@@ -20,6 +20,8 @@ une impedance d'entree qui **diminue** passerait pour un resultat.
 
 from __future__ import annotations
 
+import math
+
 SEUIL_D_EFFICACITE = 100.0
 """`A beta` au-dela duquel l'ecart au gain idealise tombe sous le pour cent.
 
@@ -126,3 +128,61 @@ def bande_apres_retroaction(
 def retroaction_efficace(gain_ouvert: float, retour: float) -> bool:
     """Vrai si `A beta` depasse le seuil au-dela duquel le gain s'idealise."""
     return gain_ouvert * retour >= SEUIL_D_EFFICACITE
+
+
+def impedance_vue_en_boucle_ouverte(serie: float, parallele: float) -> float:
+    """Les « open-loop quantities » : avant retroaction, tout s'additionne.
+
+    C'est le point de depart du chapitre, et il merite d'etre pose : les
+    grandeurs en boucle ouverte n'ont rien de remarquable, et c'est
+    precisement la retroaction qui les transforme.
+    """
+    if serie < 0 or parallele < 0:
+        msg = f"impedance negative : {serie} ou {parallele} ohm"
+        raise ValueError(msg)
+    return serie + parallele
+
+
+def gain_vu_de_la_source(gain: float, source: float, entree: float) -> float:
+    """Le gain reduit par le diviseur que la resistance de source forme.
+
+    « Impact of source resistance » : une source resistive partage la
+    tension avec l'impedance d'entree, et le gain utile en souffre. Une
+    source de meme resistance que l'entree en mange exactement la moitie.
+    """
+    if entree <= 0:
+        msg = f"impedance d'entree nulle ou negative : {entree} ohm"
+        raise ValueError(msg)
+    if source < 0:
+        msg = f"resistance de source negative : {source} ohm"
+        raise ValueError(msg)
+    return gain * entree / (source + entree)
+
+
+def gain_vu_de_la_charge(gain: float, sortie: float, charge: float) -> float:
+    """Le gain reduit par le diviseur de sortie.
+
+    « Impact of load resistance » : symetrique du precedent, et c'est
+    pourquoi la retroaction qui **divise** l'impedance de sortie vaut
+    tellement -- elle rend le montage insensible a sa charge.
+    """
+    if charge <= 0:
+        msg = f"resistance de charge nulle ou negative : {charge} ohm"
+        raise ValueError(msg)
+    if sortie < 0:
+        msg = f"impedance de sortie negative : {sortie} ohm"
+        raise ValueError(msg)
+    return gain * charge / (sortie + charge)
+
+
+def vitesse_de_balayage_minimale(frequence: float, amplitude: float) -> float:
+    """`2 pi f A`, en V/s : la pente maximale d'une sinusoide.
+
+    C'est elle qu'un AOP doit pouvoir suivre, et c'est la limite qui
+    n'apparait sur **aucun** diagramme de Bode -- elle est non lineaire.
+    Un montage peut donc respecter sa bande passante et ecreter quand meme.
+    """
+    if frequence < 0 or amplitude < 0:
+        msg = f"frequence {frequence} Hz ou amplitude {amplitude} V negative"
+        raise ValueError(msg)
+    return 2 * math.pi * frequence * amplitude

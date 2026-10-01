@@ -125,3 +125,63 @@ def puissance_moyenne_d_un_signal(signal: sp.Expr, periode: sp.Expr) -> sp.Expr:
         raise ValueError(msg)
     carre = sp.Abs(signal) ** 2
     return sp.simplify(sp.integrate(carre, (TEMPS, 0, periode)) / periode)
+
+
+TRANSFORMEES_USUELLES = (
+    "impulsion",
+    "echelon",
+    "rampe",
+    "exponentielle causale",
+    "sinusoide",
+)
+"""Les transformees que le fascicule tabule sous « signaux usuels ».
+
+C'est une **donnee** et non une formule : une table se transcrit, elle ne
+se derive pas. La transcrire ici evite de la rouvrir a chaque exercice.
+"""
+
+
+def transformee_inverse_en_pratique() -> tuple[str, ...]:
+    """La recette que le fascicule donne sous « en pratique ».
+
+    Trois etapes, et la premiere est celle qu'on saute : decomposer en
+    fractions simples **avant** de chercher dans la table. Chercher
+    directement une fraction composee dans une table de transformees
+    elementaires ne donne rien.
+    """
+    return (
+        "decomposer en fractions simples",
+        "reconnaitre chaque terme dans la table des transformees usuelles",
+        "sommer les originaux, l'inversion etant lineaire",
+    )
+
+
+def resolution_spectrale(duree: float) -> float:
+    """`delta f = 1 / T`, en hertz : la finesse d'un spectre calcule.
+
+    Elle ne depend **que** de la duree d'observation. Augmenter la cadence
+    d'echantillonnage etend la bande observee, pas la finesse -- c'est le
+    point sur lequel le fascicule insiste, et la source de la plupart des
+    deceptions devant un spectre.
+    """
+    if duree <= 0:
+        msg = f"duree nulle ou negative : {duree} s"
+        raise ValueError(msg)
+    return 1.0 / duree
+
+
+def spectre_de_raies(fondamentale: float, harmoniques: int) -> tuple[float, ...]:
+    """Les frequences des raies d'un signal periodique.
+
+    Un signal periodique n'a pas un spectre continu mais un spectre **de
+    raies**, aux multiples entiers du fondamental. C'est le pont que le
+    fascicule etablit entre transformee et series de Fourier, et il change
+    la nature de l'objet : des coefficients discrets, et non une fonction.
+    """
+    if harmoniques <= 0:
+        msg = f"nombre d'harmoniques nul ou negatif : {harmoniques}"
+        raise ValueError(msg)
+    if fondamentale <= 0:
+        msg = f"fondamentale nulle ou negative : {fondamentale} Hz"
+        raise ValueError(msg)
+    return tuple(fondamentale * rang for rang in range(1, harmoniques + 1))

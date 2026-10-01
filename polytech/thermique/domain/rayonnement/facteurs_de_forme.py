@@ -14,6 +14,7 @@ seul garde-fou disponible.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 
 TOLERANCE = 1e-9
@@ -61,3 +62,43 @@ class Enceinte:
     def est_fermee_depuis(self, depart: int, tolerance: float = TOLERANCE) -> bool:
         """Vrai si la sommation est satisfaite depuis cette surface."""
         return abs(self.somme_depuis(depart) - 1.0) <= tolerance
+
+
+def facteur_entre_deux_plaques_paralleles(cote: float, distance: float) -> float:
+    """Le facteur d'angle entre deux carres identiques, face a face.
+
+    Une des « expressions analytiques » que le fascicule donne en exemple,
+    et la plus utile : elle tend vers **un** quand les plaques se
+    rapprochent -- chacune ne voit plus que l'autre -- ce qui est
+    exactement l'hypothese du cas tabule « deux plans gris infinis
+    paralleles ».
+    """
+    if distance <= 0:
+        msg = f"distance nulle ou negative : {distance} m"
+        raise ValueError(msg)
+    if cote <= 0:
+        msg = f"cote nul ou negatif : {cote} m"
+        raise ValueError(msg)
+    rapport = cote / distance
+    carre = rapport**2
+    racine = math.sqrt(1 + carre)
+    logarithme = math.log(math.sqrt((1 + carre) ** 2 / (1 + 2 * carre)))
+    arcs = rapport * racine * math.atan(rapport / racine) - rapport * math.atan(rapport)
+    return min(1.0, (2 / (math.pi * carre)) * (logarithme + 2 * arcs))
+
+
+def aire_d_echange_direct(aire: float, facteur: float) -> float:
+    """`S_i F_ij`, en metres carres : l'aire d'echange direct.
+
+    Le fascicule emploie cette forme pour les echanges totaux parce
+    qu'elle rend la **reciprocite** visible : `S_i F_ij = S_j F_ji`, donc
+    l'aire d'echange direct est symetrique alors que le facteur d'angle ne
+    l'est pas.
+    """
+    if aire <= 0:
+        msg = f"aire nulle ou negative : {aire} m^2"
+        raise ValueError(msg)
+    if not 0 <= facteur <= 1:
+        msg = f"facteur d'angle hors de [0, 1] : {facteur}"
+        raise ValueError(msg)
+    return aire * facteur

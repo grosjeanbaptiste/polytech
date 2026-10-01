@@ -109,3 +109,28 @@ _REDUIT_MAXIMAL = 700.0
 
 _FACTEUR_DE_LA_SERIE = 15.0 / math.pi**4
 """Normalisation de la serie : elle doit tendre vers un."""
+
+
+def proprietes_d_un_solide_reel(
+    absorptivite: float,
+    reflectivite: float,
+) -> tuple[float, float, float]:
+    """`(alpha, rho, tau)` avec `alpha + rho + tau = 1`.
+
+    C'est un **bilan** de l'energie incidente, donc une egalite exacte :
+    ce qui n'est ni absorbe ni reflechi est transmis. Le fascicule consacre
+    une planche aux « proprietes des solides reels », et cette somme est ce
+    qui les contraint -- on en mesure deux, la troisieme s'en deduit.
+    """
+    for valeur, nom in ((absorptivite, "absorptivite"), (reflectivite, "reflectivite")):
+        if not 0 <= valeur <= 1:
+            msg = f"{nom} hors de [0, 1] : {valeur}"
+            raise ValueError(msg)
+    somme = absorptivite + reflectivite
+    if somme > 1:
+        msg = (
+            f"somme des proprietes superieure a un : {absorptivite} + "
+            f"{reflectivite} = {somme} -- l'energie incidente ne se cree pas"
+        )
+        raise ValueError(msg)
+    return absorptivite, reflectivite, 1 - somme

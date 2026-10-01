@@ -1,6 +1,16 @@
-"""Le bruit thermique d'une resistance (bruit de Johnson-Nyquist).
+"""Les **sources** de bruit : thermique, grenaille, scintillement, quantique.
 
-La densite spectrale de puissance se donne sous deux conventions. La
+La metrologie du bruit -- facteur, figure, temperature equivalente, plage
+dynamique, choix d'une technologie -- vit dans `facteur_de_bruit`. La
+separation n'est pas de confort : ce sont deux responsabilites, et le
+fichier unique depassait la limite de taille du depot.
+
+Le fascicule enumere cinq familles, dont **deux seulement** sont blanches.
+La distinction decide de l'integration : un bruit blanc s'integre comme la
+largeur de bande, un bruit rose comme son logarithme. Elargir la bande vers
+le haut coute donc cher en blanc, et allonger la mesure coute cher en rose.
+
+La densite spectrale du bruit thermique se donne sous deux conventions. La
 version *unilaterale*, celle du cours, ne compte que les frequences
 positives et vaut donc le double de la bilaterale : c'est la distinction
 que le mot « one-sided » de l'enonce recouvre.
@@ -9,13 +19,34 @@ que le mot « one-sided » de l'enonce recouvre.
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 if TYPE_CHECKING:
     import sympy as sp
 
-FACTEUR_UNILATERAL = 4
+FACTEUR_UNILATERAL: Final = 4
 """Deux pour la convention unilaterale, deux pour le theoreme de Nyquist."""
+
+CHARGE_ELEMENTAIRE: Final = 1.602176634e-19
+"""`q`, en coulombs. Le bruit de grenaille la fait apparaitre explicitement."""
+
+FACTEUR_DE_GRENAILLE: Final = 2
+"""`2 q I` : un pour la convention unilaterale, un pour le theoreme de Schottky."""
+
+CONSTANTE_DE_PLANCK: Final = 6.62607015e-34
+"""`h`, en J s. Le bruit quantique la fait apparaitre."""
+
+FAMILLES_DE_BRUIT: Final = (
+    "thermique",
+    "grenaille",
+    "scintillement",
+    "popcorn",
+    "quantique",
+)
+"""Les cinq familles que le fascicule enumere."""
+
+FAMILLES_BLANCHES: Final = frozenset({"thermique", "grenaille"})
+"""Celles dont la densite spectrale ne depend pas de la frequence."""
 
 
 def densite_spectrale_unilaterale(
@@ -25,22 +56,6 @@ def densite_spectrale_unilaterale(
 ) -> sp.Expr:
     """Rend `4 k_B R T`, en volts carres par hertz."""
     return FACTEUR_UNILATERAL * constante_de_boltzmann * resistance * temperature
-
-
-CHARGE_ELEMENTAIRE = 1.602176634e-19
-"""`q`, en coulombs. Le bruit de grenaille la fait apparaitre explicitement."""
-
-FACTEUR_DE_GRENAILLE = 2
-"""`2 q I` : un pour la convention unilaterale, un pour le theoreme de Schottky."""
-
-DECIBELS_PAR_DECADE = 10
-"""La figure de bruit est un rapport de **puissances** : 10 log, et non 20."""
-
-TEMPERATURE_DE_REFERENCE = 290.0
-"""`T_0`, en kelvins. Convention de l'IEEE pour la temperature de bruit."""
-
-FACTEUR_MINIMAL_DE_BRUIT = 1.0
-"""Un quadripole degrade le rapport signal sur bruit, ou le preserve."""
 
 
 def densite_spectrale_de_grenaille(
@@ -64,7 +79,7 @@ def densite_spectrale_en_un_sur_f(
     frequence: float,
     exposant: float = 1.0,
 ) -> float:
-    """`K / f^alpha` : le bruit de scintillement, dit aussi rose ou d'excès.
+    """`K / f^alpha` : le bruit de scintillement, dit aussi rose ou d'exces.
 
     Il diverge en zero, et ce n'est pas un defaut du modele : c'est la
     raison pour laquelle on ne l'integre jamais depuis zero mais depuis une
@@ -85,13 +100,7 @@ def puissance_integree_blanc_et_rose(
     basse: float,
     haute: float,
 ) -> float:
-    """`w (f2 - f1) + K ln(f2 / f1)` : la DSP integree sur la bande.
-
-    Les deux contributions ne se somment pas de la meme facon : le blanc
-    croit comme la **largeur** de bande, le rose comme son **logarithme**.
-    C'est ce qui fait qu'elargir la bande vers le haut coute cher en blanc,
-    et qu'allonger la mesure coute cher en rose.
-    """
+    """`w (f2 - f1) + K ln(f2 / f1)` : la DSP integree sur la bande."""
     if basse <= 0 or haute <= basse:
         msg = f"bande invalide : {basse} Hz a {haute} Hz"
         raise ValueError(msg)
@@ -118,51 +127,22 @@ def tension_efficace_ramenee_a_l_entree(
     return math.hypot(densite_en_tension, densite_en_courant * resistance_de_source)
 
 
-def facteur_de_bruit(rapport_a_l_entree: float, rapport_a_la_sortie: float) -> float:
-    """`F = SNR_entree / SNR_sortie`, qui ne peut pas descendre sous l'unite.
+def est_blanc(famille: str) -> bool:
+    """Vrai si cette famille a une densite spectrale plate."""
+    if famille not in FAMILLES_DE_BRUIT:
+        msg = f"famille de bruit inconnue : {famille!r} -- {FAMILLES_DE_BRUIT}"
+        raise ValueError(msg)
+    return famille in FAMILLES_BLANCHES
 
-    La planche le dit explicitement : « noise factor should always be
-    >= 1 ». Un quadripole n'ameliore jamais un rapport signal sur bruit ;
-    au mieux il le preserve.
+
+def bruit_de_grenaille_quantique(frequence: float) -> float:
+    """`2 h f`, en W/Hz : le bruit quantique, proportionnel a la frequence.
+
+    Negligeable en electronique, dominant en optique. Le fascicule le
+    mentionne sans l'employer -- a un gigahertz il est quinze ordres de
+    grandeur sous le bruit thermique a temperature ambiante.
     """
-    if rapport_a_la_sortie <= 0 or rapport_a_l_entree <= 0:
-        msg = (
-            f"rapport signal sur bruit nul ou negatif : {rapport_a_l_entree} "
-            f"et {rapport_a_la_sortie}"
-        )
+    if frequence < 0:
+        msg = f"frequence negative : {frequence} Hz"
         raise ValueError(msg)
-    facteur = rapport_a_l_entree / rapport_a_la_sortie
-    if facteur < FACTEUR_MINIMAL_DE_BRUIT:
-        msg = (
-            f"facteur de bruit sous l'unite : {facteur:.4g} -- un quadripole "
-            f"n'ameliore pas un rapport signal sur bruit"
-        )
-        raise ValueError(msg)
-    return facteur
-
-
-def figure_de_bruit(facteur: float) -> float:
-    """`NF = 10 log10 F`, en decibels.
-
-    Dix et non vingt : le facteur de bruit est un rapport de puissances,
-    pas d'amplitudes. L'erreur double la figure, et elle est courante.
-    """
-    if facteur < FACTEUR_MINIMAL_DE_BRUIT:
-        msg = f"facteur de bruit sous l'unite : {facteur}"
-        raise ValueError(msg)
-    return DECIBELS_PAR_DECADE * math.log10(facteur)
-
-
-def temperature_de_bruit_equivalente(
-    facteur: float,
-    reference: float = TEMPERATURE_DE_REFERENCE,
-) -> float:
-    """`T_e = (F - 1) T_0` : le bruit du quadripole vu comme une temperature.
-
-    C'est la forme qui rend la formule de Friis lisible -- les
-    temperatures de bruit s'additionnent, ponderees par les gains amont.
-    """
-    if facteur < FACTEUR_MINIMAL_DE_BRUIT:
-        msg = f"facteur de bruit sous l'unite : {facteur}"
-        raise ValueError(msg)
-    return (facteur - 1) * reference
+    return FACTEUR_DE_GRENAILLE * CONSTANTE_DE_PLANCK * frequence

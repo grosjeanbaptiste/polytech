@@ -135,3 +135,17 @@ def pertes_par_hysteresis(
         msg = f"aire {aire_du_cycle} J/m^3 ou volume {volume} m^3 negatif"
         raise ValueError(msg)
     return aire_du_cycle * frequence * volume
+
+
+def potentiel_scalaire_magnetique(champ: float, longueur: float) -> float:
+    """`H l` entre deux points : l'analogue du potentiel electrique.
+
+    Le fascicule lui consacre une planche, et sa limite est ce qui compte :
+    il n'existe que dans les regions **sans courant**. Ailleurs `H` n'est
+    pas a circulation nulle, aucun potentiel ne le decrit, et c'est tout
+    l'ecart entre le magnetisme et l'electrostatique.
+    """
+    if longueur < 0:
+        msg = f"longueur negative : {longueur} m"
+        raise ValueError(msg)
+    return champ * longueur

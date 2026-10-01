@@ -138,3 +138,43 @@ def retard_critique(marge_sans_retard: sp.Expr, pulsation: sp.Expr) -> sp.Expr:
         msg = "pulsation nulle : un retard n'y consomme aucune phase"
         raise ValueError(msg)
     return sp.simplify(marge_sans_retard / pulsation)
+
+
+def poles_instables_par_nyquist(encerclements: int, poles_ouverts: int) -> int:
+    """`Z = N + P` : le nombre de poles instables en boucle fermee.
+
+    `N` compte les encerclements du point `-1` dans le sens horaire, `P`
+    les poles instables en boucle ouverte. C'est un compte **entier**,
+    donc exact -- et c'est ce qui fait la force du critere sur un systeme
+    a retard, qu'aucun polynome ne representerait.
+
+    Un pole instable en ouvert exige donc exactement un encerclement dans
+    le sens **inverse** pour que la boucle fermee soit stable : c'est la
+    forme precise du « une boucle peut stabiliser un instable ».
+    """
+    if poles_ouverts < 0:
+        msg = f"nombre de poles ouverts negatif : {poles_ouverts}"
+        raise ValueError(msg)
+    return encerclements + poles_ouverts
+
+
+def critere_simplifie_de_nyquist(abscisse_du_croisement: float) -> bool:
+    """Vrai si la courbe n'entoure pas le point `-1`.
+
+    « Critere simplifie d'application : stable en BF car n'entoure pas... »
+    C'est la forme que le fascicule emploie en pratique, et elle ne vaut
+    que pour un systeme **stable en boucle ouverte** -- sinon il faut
+    compter les encerclements, et `poles_instables_par_nyquist` est la pour
+    cela.
+
+    La garde sur un croisement positif n'est pas formelle : la courbe de
+    Nyquist d'un systeme a gain negatif croise l'axe reel du cote positif,
+    et le critere simplifie n'y dit rien.
+    """
+    if abscisse_du_croisement > 0:
+        msg = (
+            f"croisement positif : {abscisse_du_croisement} -- le critere "
+            f"simplifie ne porte que sur l'axe reel negatif"
+        )
+        raise ValueError(msg)
+    return abscisse_du_croisement > -1

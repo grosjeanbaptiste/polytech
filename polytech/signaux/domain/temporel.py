@@ -100,3 +100,17 @@ def ordre_du_systeme(transmittance: Transmittance) -> int:
     en depend qualitativement et non seulement quantitativement.
     """
     return transmittance.degre()
+
+
+ORDRE_TROIS = 3
+"""Le fascicule consacre une partie entiere au troisieme ordre."""
+
+
+def est_du_troisieme_ordre(transmittance: Transmittance) -> bool:
+    """Vrai si le denominateur est de degre trois.
+
+    Le fascicule lui consacre une partie parce que trois poles donnent
+    trois modes, dont au plus un reel isole et une paire conjuguee -- et
+    que l'allure resultante ne se devine pas depuis le second ordre.
+    """
+    return ordre_du_systeme(transmittance) == ORDRE_TROIS

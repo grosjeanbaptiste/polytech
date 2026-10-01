@@ -62,10 +62,10 @@ def plage_d_entree_en_mode_commun(
         )
         raise ValueError(msg)
     if marge < 0 or 2 * marge >= alimentation_haute - alimentation_basse:
-        msg = (
-            f"marge de {marge} V incompatible avec une alimentation de "
-            f"{alimentation_haute - alimentation_basse} V"
-        )
+        # « retrait » et non « marge » : la meme garde sert la plage de sortie,
+        # ou le fascicule parle de chute. Un mot neutre couvre les deux.
+        etendue = alimentation_haute - alimentation_basse
+        msg = f"retrait de {marge} V incompatible avec une alimentation de {etendue} V"
         raise ValueError(msg)
     return alimentation_basse + marge, alimentation_haute - marge
 
@@ -116,3 +116,26 @@ def capacite_de_miller(capacite: float, module_du_gain: float) -> float:
         msg = f"capacite negative : {capacite} F"
         raise ValueError(msg)
     return capacite * (1 + module_du_gain)
+
+
+def plage_de_sortie(
+    alimentation_basse: float,
+    alimentation_haute: float,
+    chute: float,
+) -> tuple[float, float]:
+    """Les deux bornes de la plage de sortie, dite « output swing ».
+
+    Elle n'atteint **jamais** les alimentations : l'etage de sortie y
+    perd toujours une chute. Un AOP alimente en plus ou moins quinze volts
+    ne sort pas quinze volts, et un montage dimensionne sans cette marge
+    ecrete.
+
+    C'est exactement la meme nature de limitation que la plage d'entree en
+    mode commun -- deux etages, deux chutes -- et c'est pourquoi les deux
+    fonctions vivent ici et se verifient l'une par l'autre.
+    """
+    return plage_d_entree_en_mode_commun(
+        alimentation_basse,
+        alimentation_haute,
+        marge=chute,
+    )

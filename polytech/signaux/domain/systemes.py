@@ -13,6 +13,7 @@ quelconque. C'est une verification, pas un sondage.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import TYPE_CHECKING
 
 import sympy as sp
@@ -21,6 +22,8 @@ from polytech.signaux.domain.symboles import TEMPS
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+    from polytech.signaux.domain.transmittance import Transmittance
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,3 +106,52 @@ def est_causal(systeme: Systeme) -> bool:
     avance = sp.Symbol("tau", positive=True)
     sortie = systeme.operateur(entree(TEMPS))
     return not sortie.has(entree(TEMPS + avance))
+
+
+class Portee(Enum):
+    """Jusqu'ou un modele est utilisable."""
+
+    GLOBALE = "valable partout : le systeme est lineaire"
+    LOCALE = "valable au voisinage du point de fonctionnement seulement"
+
+
+def portee_du_modele(*, lineaire: bool) -> Portee:
+    """La portee du modele, selon que le systeme est lineaire ou linearise.
+
+    « Deux modeles pour un meme systeme », dit la planche. La distinction
+    n'est pas academique : elle dit jusqu'ou le resultat est utilisable, et
+    un modele local employe loin de son point donne un resultat faux sans
+    le signaler.
+    """
+    return Portee.GLOBALE if lineaire else Portee.LOCALE
+
+
+def composer_en_cascade(sous_systemes: tuple[Transmittance, ...]) -> Transmittance:
+    """Le recollement d'une decomposition en sous-systemes.
+
+    Le fascicule decompose une ligne de laminage en sous-systemes pour la
+    modeliser morceau par morceau ; cette fonction est l'operation
+    inverse, et c'est elle qui permet de verifier que la decomposition
+    etait fidele.
+    """
+    if not sous_systemes:
+        msg = "cascade vide : il n'y a rien a composer"
+        raise ValueError(msg)
+    produit = sous_systemes[0]
+    for bloc in sous_systemes[1:]:
+        produit = produit.en_serie_avec(bloc)
+    return produit
+
+
+def comparaison_des_modeles() -> tuple[str, str]:
+    """Ce que chacun des deux modeles vaut, et ou.
+
+    « Comparaison des modeles » : le fascicule les met en regard sur une
+    planche. Le global vaut partout mais demande un systeme lineaire ; le
+    local vaut au voisinage mais s'obtient de n'importe quel systeme
+    derivable. Le choix n'est donc pas de gout.
+    """
+    return (
+        "modele global : valable partout, exige un systeme lineaire",
+        "modele local : valable au voisinage, s'obtient par linearisation",
+    )

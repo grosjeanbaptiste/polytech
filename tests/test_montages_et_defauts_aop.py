@@ -146,7 +146,7 @@ def test_la_plage_d_entree_en_mode_commun_est_bornee_par_les_alimentations() -> 
 
 
 def test_une_marge_plus_large_que_l_alimentation_est_refusee() -> None:
-    with pytest.raises(ValueError, match="marge"):
+    with pytest.raises(ValueError, match="retrait"):
         plage_d_entree_en_mode_commun(-1.0, 1.0, marge=5.0)
 
 

@@ -67,3 +67,62 @@ def densite_de_bruit_maximale(tension_efficace: float, bande: float) -> float:
         msg = f"budget ou bande non positif : {tension_efficace}, {bande}"
         raise ValueError(msg)
     return math.sqrt(tension_efficace**2 / bande)
+
+
+FACTEUR_UNILATERAL_BILATERAL = 2
+"""La convention unilaterale ne compte que les frequences positives.
+
+Elle vaut donc le double de la bilaterale. Le fascicule consacre une
+planche a la distinction parce que la confondre double ou divise par deux
+toute puissance de bruit calculee.
+"""
+
+
+def autocorrelation_d_un_bruit_blanc(densite: float, retard: float) -> float:
+    """`S delta(tau)` : nulle partout sauf a l'origine.
+
+    C'est la definition meme de la blancheur, et ce qui rend la densite
+    spectrale plate. Deux echantillons distincts sont decorreles, quelle
+    que soit leur proximite -- idealisation, puisqu'aucun bruit reel n'a de
+    bande infinie.
+    """
+    if densite < 0:
+        msg = f"densite spectrale negative : {densite}"
+        raise ValueError(msg)
+    return densite if retard == 0 else 0.0
+
+
+def autocovariance(correlation: float, moyenne: float) -> float:
+    """`C(tau) = R(tau) - m^2` : les deux coincident pour un signal centre."""
+    return correlation - moyenne**2
+
+
+def densite_spectrale_bilaterale(unilaterale: float) -> float:
+    """La bilaterale vaut la moitie de l'unilaterale."""
+    if unilaterale < 0:
+        msg = f"densite spectrale negative : {unilaterale}"
+        raise ValueError(msg)
+    return unilaterale / FACTEUR_UNILATERAL_BILATERAL
+
+
+def densite_spectrale_unilaterale_depuis_bilaterale(bilaterale: float) -> float:
+    """Et reciproquement : l'unilaterale vaut le double."""
+    if bilaterale < 0:
+        msg = f"densite spectrale negative : {bilaterale}"
+        raise ValueError(msg)
+    return bilaterale * FACTEUR_UNILATERAL_BILATERAL
+
+
+def variance_d_un_bruit_borne(densite: float, bande: float) -> float:
+    """`sigma^2 = S B` : la puissance d'un bruit blanc limite en bande.
+
+    Doubler la bande double la puissance -- c'est pourquoi on filtre avant
+    de mesurer, et non apres.
+    """
+    if bande <= 0:
+        msg = f"bande nulle ou negative : {bande} Hz"
+        raise ValueError(msg)
+    if densite < 0:
+        msg = f"densite spectrale negative : {densite}"
+        raise ValueError(msg)
+    return densite * bande

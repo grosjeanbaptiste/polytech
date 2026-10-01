@@ -29,11 +29,13 @@ from polytech.electronique.domain.bruit import (
     CHARGE_ELEMENTAIRE,
     densite_spectrale_de_grenaille,
     densite_spectrale_en_un_sur_f,
+    puissance_integree_blanc_et_rose,
+    tension_efficace_ramenee_a_l_entree,
+)
+from polytech.electronique.domain.facteur_de_bruit import (
     facteur_de_bruit,
     figure_de_bruit,
-    puissance_integree_blanc_et_rose,
     temperature_de_bruit_equivalente,
-    tension_efficace_ramenee_a_l_entree,
 )
 
 

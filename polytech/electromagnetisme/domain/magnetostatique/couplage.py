@@ -90,3 +90,16 @@ def signe_du_couplage(*, flux_de_meme_sens: bool) -> int:
     une convention libre -- il se lit sur les sens de bobinage.
     """
     return 1 if flux_de_meme_sens else -1
+
+
+def flux_a_travers_un_circuit(inductance: float, courant: float) -> float:
+    """`Phi = L i`, en webers : la definition meme de l'inductance propre.
+
+    Le fascicule part de la pour tout le chapitre III.4, parce que c'est
+    cette relation qui lie « les flux aux courants » -- et que c'est elle
+    qui rend l'inductance mesurable sans ouvrir le circuit.
+    """
+    if inductance < 0:
+        msg = f"inductance negative : {inductance} H"
+        raise ValueError(msg)
+    return inductance * courant

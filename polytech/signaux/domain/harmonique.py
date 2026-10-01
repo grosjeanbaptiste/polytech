@@ -138,3 +138,14 @@ def influence_du_gain(
     """
     module, phase = courbe
     return sp.simplify(sp.Abs(gain) * module), phase
+
+
+def parties_reelle_et_imaginaire(spectre: sp.Expr) -> tuple[sp.Expr, sp.Expr]:
+    """Les deux parties du spectre, separees.
+
+    « Calcul de Re et Im » : l'etape que le trace de Nyquist demande, et
+    que celui de Bode ne demande pas. C'est la difference pratique entre
+    les deux lectures -- Bode veut module et argument, Nyquist veut les
+    deux parties.
+    """
+    return sp.simplify(sp.re(spectre)), sp.simplify(sp.im(spectre))

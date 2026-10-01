@@ -126,3 +126,57 @@ def nombre_de_groupes_de_vaschy_buckingham(variables: int, dimensions: int) -> i
 def groupes_sans_dimension() -> tuple[str, str, str]:
     """Les trois groupes que l'analyse dimensionnelle produit, dans l'ordre."""
     return "Nusselt", "Reynolds", "Prandtl"
+
+
+EXPOSANT_LAMINAIRE: Final = 0.5
+"""L'exposant de Reynolds en regime laminaire, sur plaque plane."""
+
+EXPOSANT_TURBULENT: Final = 0.8
+"""Et en turbulent. Plus grand, donc l'echange croit plus vite."""
+
+
+def coefficient_depuis_le_nusselt(
+    nusselt: float,
+    conductivite: float,
+    longueur: float,
+) -> float:
+    """`K = Nu lambda / L` : le retour du nombre sans dimension au physique.
+
+    C'est la derniere etape de toute correlation, et celle qu'on oublie :
+    un Nusselt n'est pas un coefficient d'echange, il faut le diviser par
+    la longueur caracteristique -- **la meme** que celle du Reynolds.
+    """
+    if longueur <= 0:
+        msg = f"longueur caracteristique nulle ou negative : {longueur} m"
+        raise ValueError(msg)
+    if conductivite <= 0:
+        msg = f"conductivite nulle ou negative : {conductivite} W/(m K)"
+        raise ValueError(msg)
+    return nusselt * conductivite / longueur
+
+
+def effet_de_la_turbulence() -> tuple[float, float]:
+    """Les deux exposants de Reynolds, laminaire puis turbulent.
+
+    `0,5` contre `0,8` : la turbulence melange, donc transporte mieux, et
+    l'echange croit plus vite avec la vitesse. C'est ce qui justifie de
+    turbuler volontairement un ecoulement -- promoteurs de turbulence,
+    rugosite, ailettes -- malgre la perte de charge.
+    """
+    return EXPOSANT_LAMINAIRE, EXPOSANT_TURBULENT
+
+
+def couplage_vitesse_temperature() -> str:
+    """Ce que le chapitre avoue d'entree, et qui explique tout le reste.
+
+    « Couplage champ de vitesse / champ de temperature / flux a la
+    paroi » : le champ de vitesse decide du champ de temperature, qui par
+    la masse volumique decide du champ de vitesse. Le systeme est couple,
+    donc non lineaire, donc insoluble en forme fermee -- et c'est pourquoi
+    la convection se **correle** au lieu de se calculer.
+    """
+    return (
+        "le champ de vitesse decide du champ de temperature, qui par la masse "
+        "volumique decide du champ de vitesse : le systeme est couple, donc "
+        "la convection se correle au lieu de se calculer"
+    )

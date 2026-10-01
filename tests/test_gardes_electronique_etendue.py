@@ -34,7 +34,7 @@ from polytech.signaux.domain.harmonique import (
     courbe_elementaire_de_premier_ordre,
     courbe_elementaire_de_second_ordre,
 )
-from polytech.signaux.domain.performances import classe_d_amortissement
+from polytech.signaux.domain.reponse_indicielle import classe_d_amortissement
 from polytech.signaux.domain.stabilite import est_stable_par_les_racines
 from polytech.signaux.domain.transformees import puissance_moyenne_d_un_signal
 from polytech.signaux.domain.transmittance import Transmittance

@@ -134,3 +134,35 @@ def coefficient_global_de_transmission(
         msg = f"aire nulle ou negative : {aire} m^2"
         raise ValueError(msg)
     return 1.0 / (aire * sum(resistances))
+
+
+COEFFICIENT_DU_CYLINDRE: Final = 0.53
+"""`Nu = 0,53 Ra^(1/4)` : la correlation du cylindre horizontal, laminaire."""
+
+EXPOSANT_DU_CYLINDRE: Final = 0.25
+
+
+def nusselt_du_cylindre_horizontal(rayleigh: float) -> float:
+    """`0,53 Ra^(1/4)` : la geometrie a sa propre correlation.
+
+    Le fascicule lui consacre une planche parce qu'un tube horizontal est
+    la geometrie la plus courante en pratique -- une conduite de chauffage,
+    un echangeur a faisceau -- et que la correlation de la plaque plane y
+    serait fausse.
+    """
+    if rayleigh <= 0:
+        msg = f"Rayleigh nul ou negatif : {rayleigh}"
+        raise ValueError(msg)
+    return float(COEFFICIENT_DU_CYLINDRE * rayleigh**EXPOSANT_DU_CYLINDRE)
+
+
+def nusselt_d_un_espace_ferme(rayleigh: float) -> float:
+    """La convection naturelle **interne** : lame d'air, double vitrage.
+
+    Elle delegue a la correlation de la lame de fluide, qui est celle que
+    le formulaire donne : sous le seuil de mise en mouvement, `Nu = 1` --
+    le fluide ne bouge pas et ne fait que conduire. C'est ce qui rend un
+    double vitrage efficace, et c'est pourquoi sa lame ne doit pas etre
+    trop epaisse.
+    """
+    return nusselt_lame_de_fluide(rayleigh)

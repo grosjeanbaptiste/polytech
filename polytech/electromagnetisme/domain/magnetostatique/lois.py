@@ -128,3 +128,17 @@ def continuite_a_une_interface() -> tuple[str, str]:
     confondre fait traverser une interface de travers.
     """
     return "composante normale de B", "composante tangentielle de H"
+
+
+def potentiel_vecteur_du_fil_infini(courant: float, distance: float) -> float:
+    """`-(mu_0 I / 2 pi) ln r` : l'expression macroscopique du potentiel vecteur.
+
+    Le fascicule la donne sous « expression macroscopique du potentiel
+    vecteur : resultat ». Elle decroit **logarithmiquement**, et non comme
+    `1/r` -- c'est son rotationnel qui decroit ainsi, et c'est lui qui est
+    l'induction.
+    """
+    if distance <= 0:
+        msg = f"distance nulle ou negative : {distance} m"
+        raise ValueError(msg)
+    return -PERMEABILITE_DU_VIDE * courant * math.log(distance) / (2 * math.pi)

@@ -132,3 +132,67 @@ def capacite_parasite(permittivite: float, aire: float, distance: float) -> floa
         msg = f"permittivite nulle ou negative : {permittivite} F/m"
         raise ValueError(msg)
     return permittivite * aire / distance
+
+
+def kirchhoff_des_courants(courants: tuple[float, ...]) -> float:
+    """`somme I` a un noeud, qui doit valoir zero.
+
+    Le fascicule en donne la **preuve** a partir de l'equation de
+    continuite : la charge ne s'accumule pas en un point, donc ce qui entre
+    sort. La loi n'est pas un postulat, elle est une consequence.
+    """
+    if not courants:
+        msg = "aucune branche au noeud : la loi des courants n'a pas d'objet"
+        raise ValueError(msg)
+    return sum(courants)
+
+
+def kirchhoff_des_tensions(tensions: tuple[float, ...]) -> float:
+    """`somme U` sur une maille, qui doit valoir zero.
+
+    Sa preuve est l'existence du potentiel : le champ electrostatique est
+    a circulation nulle, donc la somme des differences de potentiel sur un
+    contour ferme s'annule. C'est pourquoi la loi tombe des que la
+    longueur electrique cesse d'etre negligeable -- un champ induit n'est
+    plus a circulation nulle.
+    """
+    if not tensions:
+        msg = "aucune branche dans la maille : la loi des tensions n'a pas d'objet"
+        raise ValueError(msg)
+    return sum(tensions)
+
+
+def inductance_cachee_d_une_boucle(aire: float, perimetre: float) -> float:
+    """Une estimation de l'inductance qu'aucun schema ne montre.
+
+    `mu_0 (aire / perimetre) x 2 pi` en ordre de grandeur. Le fascicule
+    l'appelle « hidden inductance » et c'est elle qui fixe la vitesse a
+    laquelle un courant peut changer -- d'ou la regle de reduire les
+    boucles de courant sur un circuit imprime.
+    """
+    if aire <= 0:
+        msg = f"aire nulle ou negative : {aire} m^2"
+        raise ValueError(msg)
+    if perimetre <= 0:
+        msg = f"perimetre nul ou negatif : {perimetre} m"
+        raise ValueError(msg)
+    permeabilite = 4 * math.pi * 1e-7
+    return permeabilite * 2 * math.pi * aire / perimetre
+
+
+def tension_de_defaut_terre_neutre(courant: float, resistance: float) -> float:
+    """`R I` : la tension qui apparait entre la terre et le neutre.
+
+    « Earth and neutral wire » : ils ne sont pas au meme potentiel. Le
+    courant de retour traverse la resistance du neutre et y cree une
+    chute -- raison pour laquelle une masse reliee au neutre **n'est pas**
+    une masse, et pour laquelle une mesure referencee au neutre porte
+    cette tension en mode commun.
+    """
+    if courant < 0:
+        msg = f"courant negatif : {courant} A -- employer son module"
+        raise ValueError(msg)
+    if resistance < 0:
+        msg = f"resistance negative : {resistance} ohm"
+        raise ValueError(msg)
+    return courant * resistance
