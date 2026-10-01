@@ -16,8 +16,9 @@ la surface est un champ de l'objet et non un argument de passage.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 if TYPE_CHECKING:
     from polytech.fluides.domain.grandeurs import MasseVolumique
@@ -80,3 +81,29 @@ class SurfacePortante:
             msg = f"coefficient de trainee nul ou negatif : {coefficient_de_trainee}"
             raise ValueError(msg)
         return coefficient_de_portance / coefficient_de_trainee
+
+
+RENDEMENT_D_ENVERGURE: Final = 0.85
+"""`e` dans `C_Di = C_L^2 / (pi e AR)`. Valeur usuelle d'une aile reelle."""
+
+
+def trainee_induite(
+    portance: float,
+    allongement: float,
+    rendement: float = RENDEMENT_D_ENVERGURE,
+) -> float:
+    """`C_Di = C_L^2 / (pi e AR)` : la trainee qu'un profil fini ne peut eviter.
+
+    Elle vient des tourbillons de bout d'aile, donc elle n'existe pas sur
+    un profil infini. Elle croit comme le **carre** de la portance et
+    decroit comme l'allongement -- ce qui explique d'un seul coup les
+    grandes ailes fines des planeurs et la traction des avions lourds a
+    basse vitesse.
+    """
+    if allongement <= 0:
+        msg = f"allongement nul ou negatif : {allongement}"
+        raise ValueError(msg)
+    if not 0 < rendement <= 1:
+        msg = f"rendement d'envergure hors de ]0, 1] : {rendement}"
+        raise ValueError(msg)
+    return portance**2 / (math.pi * rendement * allongement)
