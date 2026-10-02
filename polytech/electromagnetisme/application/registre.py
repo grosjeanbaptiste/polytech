@@ -1,0 +1,57 @@
+"""Quel jeu de macros appartient a quel dossier de travail.
+
+La thermique et les fluides n'ont qu'un travail chacun : un seul jeu de
+macros y suffisait. L'electromagnetisme en aura vingt et un, et un jeu
+commun aurait deux defauts.
+
+Chaque `resultats.tex` porterait les macros des vingt autres exercices,
+donc le test « aucune macro publiee ne reste inutilisee » deviendrait
+intenable. Et une erreur dans un exercice ferait echouer la generation
+des vingt autres.
+
+D'ou ce registre, et la convention de nommage qui va avec : les macros
+d'un exercice portent son numero en prefixe -- `Huit...` pour
+l'exercice 8 -- si bien que deux exercices ne peuvent pas se melanger.
+Un test le verifie plutot que de compter sur la discipline.
+"""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Final
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+from polytech.electromagnetisme.application.macros_exercice_08 import (
+    macros_donnees_huit,
+    macros_exercice_huit,
+)
+from polytech.electromagnetisme.application.macros_thevenin import (
+    macros_donnees,
+    macros_thevenin,
+)
+
+
+def _jeu_thevenin_norton() -> dict[str, str]:
+    """L'exercice 1 : equivalences Thevenin / Norton."""
+    return {**macros_donnees(), **macros_thevenin()}
+
+
+def _jeu_exercice_huit() -> dict[str, str]:
+    """L'exercice 8 : Thevenin avec source de courant dans la maille."""
+    return {**macros_donnees_huit(), **macros_exercice_huit()}
+
+
+JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
+    "exs-03-thevenin-norton-01": _jeu_thevenin_norton,
+    "exs-03-thevenin-08": _jeu_exercice_huit,
+}
+"""Le nom du dossier de travail designe le jeu qui l'alimente."""
+
+
+def macros_du_travail(slug: str) -> dict[str, str]:
+    """Les macros de ce dossier de travail, et de lui seul."""
+    if slug not in JEUX_DE_MACROS:
+        msg = f"aucun jeu de macros pour le travail {slug!r}"
+        raise KeyError(msg)
+    return JEUX_DE_MACROS[slug]()

@@ -1,7 +1,9 @@
 """Point d'entree : regenere les macros que les corriges consomment.
 
-Usage : ``python -m polytech.electromagnetisme [chemin]``. Sans argument,
-la cible est le travail en cours, range sous ``travaux/``.
+Usage : ``python -m polytech.electromagnetisme [travail...]``. Sans
+argument, tous les travaux du registre sont regeneres -- ce qui est le
+geste utile apres une modification du domaine, puisqu'elle peut toucher
+plusieurs exercices a la fois.
 """
 
 from __future__ import annotations
@@ -11,19 +13,24 @@ from pathlib import Path
 from typing import Final
 
 from polytech.electromagnetisme.application.generation import GenererMacros
+from polytech.electromagnetisme.application.registre import JEUX_DE_MACROS
 from polytech.electromagnetisme.infrastructure.latex import FichierDeMacros
 
-_TRAVAIL: Final = Path("travaux") / "Electromagnetisme" / "exs-03-thevenin-norton-01"
-_DEFAUT: Final = _TRAVAIL / "resultats.tex"
+TRAVAUX: Final = Path("travaux") / "Electromagnetisme"
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Genere les macros ; retourne 0 en cas de succes."""
+    """Genere les macros des travaux demandes ; rend 0 en cas de succes."""
     arguments = sys.argv[1:] if argv is None else argv
-    chemin = Path(arguments[0]) if arguments else _DEFAUT
-    GenererMacros(publication=FichierDeMacros(chemin=chemin)).executer()
-    nombre = len(GenererMacros.macros_publiees())
-    sys.stdout.write(f"{nombre} macros dans {chemin}\n")
+    travaux = arguments or sorted(JEUX_DE_MACROS)
+    for travail in travaux:
+        chemin = TRAVAUX / travail / "resultats.tex"
+        commande = GenererMacros(
+            publication=FichierDeMacros(chemin=chemin),
+            travail=travail,
+        )
+        commande.executer()
+        sys.stdout.write(f"{travail} : macros ecrites dans {chemin}\n")
     return 0
 
 
