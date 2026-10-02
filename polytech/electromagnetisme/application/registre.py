@@ -36,6 +36,12 @@ from polytech.electromagnetisme.application.macros_forces_06 import (
 from polytech.electromagnetisme.application.macros_forces_11 import (
     macros_forces_onze,
 )
+from polytech.electromagnetisme.application.macros_forces_15 import (
+    macros_forces_quinze,
+)
+from polytech.electromagnetisme.application.macros_forces_16 import (
+    macros_forces_seize,
+)
 from polytech.electromagnetisme.application.macros_thevenin import (
     macros_donnees,
     macros_thevenin,
@@ -65,6 +71,8 @@ def _jeu_forces_six() -> dict[str, str]:
 JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "exs-04-forces-06": _jeu_forces_six,
     "exs-04-forces-11": macros_forces_onze,
+    "exs-04-forces-15": macros_forces_quinze,
+    "exs-04-forces-16": macros_forces_seize,
     "exs-03-circuits-magnetiques-06": _jeu_exercice_six,
     "exs-03-thevenin-norton-01": _jeu_thevenin_norton,
     "exs-03-thevenin-08": _jeu_exercice_huit,
