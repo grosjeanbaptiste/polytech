@@ -4,12 +4,15 @@ Le manuscrit emploie une **difference finie** et non une derivee :
 
     |F| = |(dW/dx)_U| ~= |(Delta W / Delta x)_U|
 
-Le signe `~=` est dans l'enonce, et il demande d'etre explique. Ce n'est
-pas une approximation de paresse : la capacite d'un condensateur plan
-varie **lineairement** avec l'ecartement tant qu'on reste en geometrie
-plane, et pour une fonction affine la secante **est** la tangente. La
-difference finie est donc exacte ici, et ce test le prouve en comparant
-les deux chemins sur une capacite affine.
+Le signe `~=` est dans l'enonce, et il demande d'etre explique. Pour une
+capacite **affine** en `x`, la secante est la tangente et le quotient est
+exact ; ce fichier le montre, ainsi que le contre-exemple quadratique.
+
+Ce docstring affirmait que la capacite d'un condensateur plan est affine
+en l'**ecartement** : c'est faux, elle y est en `1/e`. Elle n'est affine
+qu'en le recouvrement. Ce que le quotient vaut sans cette hypothese --
+la force moyenne -- est etabli dans
+`tests/test_force_moyenne_sur_un_deplacement.py`.
 
 Le second point du chapitre est le **signe**. A tension constante, la
 source fournit du travail en plus de l'energie stockee, et la force vaut
@@ -62,7 +65,7 @@ def test_la_force_croit_comme_le_carre_de_la_tension() -> None:
 
 
 def test_la_difference_finie_coincide_avec_la_derivee_sur_une_capacite_affine() -> None:
-    """La justification du `~=` de l'enonce, et elle est exacte.
+    """Le cas ou le `~=` de l'enonce devient une egalite.
 
     Pour une capacite affine en `x`, la secante et la tangente
     coincident : la difference finie n'approche rien, elle **est** la
@@ -84,8 +87,8 @@ def test_la_difference_finie_coincide_avec_la_derivee_sur_une_capacite_affine() 
 def test_la_difference_finie_s_ecarte_sur_une_capacite_non_affine() -> None:
     """Et la coincidence cesse des que la capacite n'est plus affine.
 
-    C'est ce qui montre que la justification porte bien sur la linearite
-    et non sur la petitesse du deplacement. Sur une capacite quadratique,
+    L'egalite exacte tient donc a la linearite ; hors d'elle, seule la
+    petitesse du deplacement justifie le `~=`. Sur une capacite quadratique,
     la secante et la tangente diffferent -- la tangente est prise au
     debut de l'intervalle, la secante le moyenne.
     """

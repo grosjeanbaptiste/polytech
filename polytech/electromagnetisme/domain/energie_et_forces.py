@@ -83,13 +83,12 @@ def force_sur_une_armature(
     """`|F| = (1/2) U^2 |Delta C| / Delta x`, en newtons.
 
     La forme du manuscrit, par **difference finie** et non par derivee --
-    et l'enonce ecrit bien `~=`. Ce n'est pas une approximation de
-    paresse : la capacite d'un condensateur plan varie lineairement avec
-    l'ecartement, et pour une fonction affine la secante **est** la
-    tangente. Un test le prouve en comparant les deux chemins, et montre
-    que la coincidence cesse sur une capacite quadratique -- la
-    justification porte donc sur la linearite, non sur la petitesse du
-    deplacement.
+    et l'enonce ecrit bien `~=`. Ce quotient est exactement la force
+    **moyenne** sur le deplacement, quelle que soit la loi `C(x)` ; il
+    n'egale la force instantanee que si `C` est affine. C'est le cas d'un
+    glissement lateral, **pas** d'un ecartement, ou `C` est en `1/e` :
+    voir `force_moyenne.py`. Cette docstring a affirme le contraire, et
+    c'etait faux.
 
     Rend un **module**. Le sens ne se perd pas pour autant : la capacite
     croit quand l'ecartement diminue, donc une armature est toujours

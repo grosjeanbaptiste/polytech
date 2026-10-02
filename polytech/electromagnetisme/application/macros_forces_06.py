@@ -11,14 +11,27 @@ l'enonce.
 La seconde est le poids d'un objet de meme force, en grammes. Deux
 dixiemes de newton ne disent rien a personne ; vingt grammes disent
 immediatement si la force compte dans un dimensionnement mecanique.
+
+S'y ajoute l'ecart relatif entre la force moyenne -- ce que le quotient
+de l'enonce donne -- et la force au depart, quand c'est l'ecartement qui
+varie. Il est litteral, l'enonce ne donnant pas l'ecartement.
 """
 
 from __future__ import annotations
 
 from typing import Final
 
-from polytech.electromagnetisme.application.formatage import nombre, scientifique
+import sympy as sp
+
+from polytech.electromagnetisme.application.formatage import (
+    expression_latex,
+    nombre,
+    scientifique,
+)
 from polytech.electromagnetisme.domain.energie_et_forces import force_sur_une_armature
+from polytech.electromagnetisme.domain.force_moyenne import (
+    ecart_relatif_sur_l_ecartement,
+)
 
 TENSION: Final = 10e3
 """`U`, en volts. Donnee de l'enonce."""
@@ -31,6 +44,12 @@ DEPLACEMENT: Final = 1e-3
 
 PESANTEUR: Final = 9.81
 """Pour convertir la force en une masse equivalente, en m/s^2."""
+
+ECARTEMENT: Final = sp.Symbol("e", positive=True)
+"""L'ecartement de depart, que l'enonce ne donne pas : il reste litteral."""
+
+PAS: Final = sp.Symbol(r"\Delta x", positive=True)
+"""Le deplacement, sous le nom que l'enonce lui donne."""
 
 
 def macros_forces_six() -> dict[str, str]:
@@ -55,5 +74,8 @@ def macros_forces_six() -> dict[str, str]:
         "ForceSixPenteDeCapacite": scientifique(
             VARIATION_DE_CAPACITE / DEPLACEMENT,
             0,
+        ),
+        "ForceSixEcartRelatifSurLEcartement": expression_latex(
+            ecart_relatif_sur_l_ecartement(ECARTEMENT, PAS),
         ),
     }

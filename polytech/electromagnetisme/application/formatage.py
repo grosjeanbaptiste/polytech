@@ -1,9 +1,14 @@
-"""Mise en forme des nombres et des expressions pour le document.
+r"""Mise en forme des nombres et des expressions pour le document.
 
 Les nombres sont publies **bruts**, a point decimal : c'est la syntaxe
 d'entree de siunitx, qui se charge seul de la virgule decimale et de
 l'espace des milliers. Refaire ce travail ici donnerait deux sources de
 verite pour une meme decision de presentation.
+
+Le logarithme naturel est rendu `\ln` et non `\log`. Ce n'est pas une
+preference : en notation francaise `\log` designe le logarithme
+**decimal**, et composer `\log` ecrirait une autre fonction que celle
+calculee.
 """
 
 from __future__ import annotations
@@ -46,4 +51,25 @@ def expression_latex(expression: sp.Expr, decimales: int | None = None) -> str:
     if decimales is not None:
         flottants = rendu.atoms(sp.Float)
         rendu = rendu.xreplace({f: round(float(f), decimales) for f in flottants})
-    return str(sp.latex(rendu))
+    # `ln_notation` : sympy rend `\log` pour le logarithme naturel, ce qui
+    # est l'usage anglo-saxon. En notation francaise `\log` designe le
+    # logarithme **decimal** -- composer `\log` ecrirait donc une autre
+    # fonction que celle calculee.
+    return str(sp.latex(rendu, ln_notation=True))
+
+
+def forme_signee(expression: sp.Expr) -> str:
+    """Rend l'expression avec le signe **devant** la fraction.
+
+    `sp.together` reunit bien les termes mais laisse le moins dans le
+    numerateur : `frac{I(-R^2 - y(a-y))}{2 pi R^2 y}`. Les corriges
+    manuscrits ecrivent le moins devant la fraction et le numerateur en
+    positif, ce qui se lit mieux et evite de chercher ou le signe se
+    trouve.
+
+    Le procede : reunir l'**oppose**, puis nier. Sur une expression deja
+    positive, l'oppose est negatif et la reunion le garde negatif, de
+    sorte que la negation finale rend bien du positif -- une mise en
+    forme ne doit jamais introduire un signe absent de l'original.
+    """
+    return expression_latex(-sp.together(-expression))

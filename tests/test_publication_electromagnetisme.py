@@ -24,6 +24,7 @@ import sympy as sp
 
 from polytech.electromagnetisme.application.formatage import (
     expression_latex,
+    forme_signee,
     nombre,
 )
 from polytech.electromagnetisme.infrastructure.latex import FichierDeMacros
@@ -147,3 +148,51 @@ def test_republier_un_contenu_different_reecrit_le_fichier(
     publication.publier({"Aa": "1"})
     publication.publier({"Aa": "2"})
     assert r"\newcommand{\Aa}{2}" in chemin.read_text(encoding="utf-8")
+
+
+def test_le_logarithme_naturel_s_ecrit_ln_et_non_log() -> None:
+    r"""Convention francaise, et ambiguite reelle : `log` est le decimal.
+
+    Sympy rend `\log` pour le logarithme naturel, ce qui est l'usage
+    anglo-saxon. En notation francaise `\log` designe le logarithme
+    **decimal** et `\ln` le naturel : composer `\log` dans un corrige
+    francais ecrirait donc une autre fonction que celle calculee.
+
+    Le cas se presente au potentiel du cylindre charge, qui est
+    logarithmique. Aucune autre macro du depot n'en contient, de sorte
+    que ce changement de notation ne touche rien d'existant.
+    """
+    rendu = expression_latex(sp.log(sp.Symbol("x", positive=True)))
+    assert r"\ln" in rendu
+    assert r"\log" not in rendu
+
+
+def test_la_forme_signee_sort_le_moins_devant_la_fraction() -> None:
+    """`-(A+B)` doit se composer `-frac{...}` et non `frac{-...}`.
+
+    `sp.together` reunit bien les termes mais laisse le signe **dans le
+    numerateur** : `frac{I(-R^2 - y(a-y))}{2 pi R^2 y}`. Les corriges
+    manuscrits ecrivent au contraire le moins devant la fraction, et le
+    numerateur en positif -- ce qui se lit mieux et evite de chercher ou
+    le signe se trouve.
+
+    Le cas se presente aux sept regions de l'exercice 7, dont les trois
+    expressions sont toutes negatives.
+    """
+    rayon, ordonnee = sp.symbols("R y", positive=True)
+    expression = -1 / ordonnee - 1 / rayon
+    rendu = forme_signee(expression)
+    assert rendu.startswith("- \\frac")
+    assert "-" not in rendu[len("- \\frac") :]
+
+
+def test_la_forme_signee_laisse_une_expression_positive_intacte() -> None:
+    """Sur une expression positive, elle ne doit rien signer.
+
+    Sans quoi elle introduirait un signe absent de l'original -- une
+    mise en forme ne doit jamais changer la valeur, seulement ou le
+    signe se lit.
+    """
+    ordonnee = sp.Symbol("y", positive=True)
+    rendu = forme_signee(1 / ordonnee + 2 / ordonnee)
+    assert not rendu.startswith("-")

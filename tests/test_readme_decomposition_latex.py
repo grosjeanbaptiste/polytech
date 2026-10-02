@@ -96,3 +96,22 @@ def test_la_decomposition_fait_bien_le_total_annonce() -> None:
     assert trouve is not None
     somme = 4 + 1 + NUMERAUX[trouve.group(1)] + int(trouve.group(2))
     assert somme == int(total.group(1))
+
+
+MENTIONS = re.compile(r"(\d+) documents LaTeX")
+"""Toute mention du total, en gras ou non, ou qu'elle soit dans le README."""
+
+
+def test_toutes_les_mentions_du_total_s_accordent() -> None:
+    """Le total est ecrit a plusieurs endroits, et un seul etait garde.
+
+    La table des outils disait encore « compose les 410 documents LaTeX »
+    quand l'annonce en gras en comptait 418 : la garde du total cherchait
+    la premiere occurrence et s'arretait la. Un nombre ecrit deux fois est
+    deux nombres a tenir.
+    """
+    texte = README.read_text(encoding="utf-8")
+    annonce = ANNONCE.search(texte)
+    assert annonce is not None
+    mentions = {int(m) for m in MENTIONS.findall(texte)}
+    assert mentions == {int(annonce.group(1))}

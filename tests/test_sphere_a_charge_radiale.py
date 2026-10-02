@@ -28,9 +28,11 @@ a l'exterieur : le maximum est en `r = R` exactement, ce qui se verifie.
 
 from __future__ import annotations
 
+import pytest
 import sympy as sp
 
 from polytech.electromagnetisme.domain.electrostatique.sphere_radiale import (
+    _constante_de,
     champ_exterieur,
     champ_par_gauss,
     champ_par_poisson,
@@ -198,3 +200,23 @@ def test_le_champ_est_maximal_exactement_sur_la_surface() -> None:
     )
     assert sp.simplify(dedans).is_positive
     assert sp.simplify(dehors).is_negative
+
+
+def test_une_resolution_sans_constante_unique_est_refusee() -> None:
+    """La garde de `_constante_de`, eprouvee -- sinon elle serait muette.
+
+    Elle repere la constante d'integration par difference : les symboles
+    de la solution moins ceux qu'on connait. Si la difference n'en donne
+    pas exactement un, quelque chose a change -- une version de sympy qui
+    nomme ses constantes autrement, ou une equation qui en introduit deux.
+
+    Rendre un symbole arbitraire dans ce cas laisserait passer le defaut
+    en silence : la substitution porterait sur le mauvais symbole, et le
+    champ sortirait avec son terme divergent intact. C'est exactement ce
+    qui est arrive au premier jet de ce module.
+
+    On l'eprouve en lui donnant une expression a deux symboles inconnus.
+    """
+    premier, second = sp.symbols("K_1 K_2")
+    with pytest.raises(ValueError, match="une seule constante attendue"):
+        _constante_de(premier + second, frozenset())

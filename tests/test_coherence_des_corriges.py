@@ -271,8 +271,19 @@ LIGATURES_A_COMPOSER = (
     ("œ", r"\oe{}"),
     ("æ", r"\ae{}"),
     ("—", "---"),
+    ("«", r"\og"),
+    ("»", r"\fg{}"),
 )
 """Caracteres que la police T1 ne porte pas, et leur ligature LaTeX.
+
+Les guillemets francais sont le cas le plus sournois des cinq : la police
+ne les **perd** pas, elle les **remplace**. Leurs deux points de code
+tombent, dans le codage T1, sur les positions de « n accent aigu » et de
+« z point suscrit » -- si bien que le PDF composait `ń ... ż` autour de
+chaque citation, sans le moindre avertissement de lualatex. Onze corriges
+sur seize en portaient, et la garde des « Missing character » ne pouvait
+rien y voir : aucun caractere ne manquait. Le defaut n'a ete vu qu'en
+regardant une page rendue.
 
 Meme defaut que le tiret cadratin litteral, deja garde pour le corrige
 de mecanique des fluides : sous lualatex, une police T1 n'a pas ces
@@ -313,3 +324,28 @@ def test_aucun_document_n_emploie_de_ligature_litterale(
         if litteral in ligne and not ligne.lstrip().startswith("%")
     ]
     assert fautives == [], f"{travail} : employer {ligature} plutot que {litteral!r}"
+
+
+ENVIRONNEMENTS_DE_FIGURE = (r"\begin{tikzpicture}", r"\begin{circuitikz}")
+"""Ce qui compte pour une figure : un dessin compose, pas une image citee."""
+
+
+@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+def test_le_corrige_porte_au_moins_une_figure(travail: str) -> None:
+    """« De la meme facon que le devoir de fluides » : donc avec une figure.
+
+    Le devoir de fluides en porte cinq. Le defaut avait ete releve une
+    premiere fois sur l'exercice 1 de Thevenin-Norton, corrige a la main,
+    et il est revenu sur les **quatorze** corriges suivants : aucun ne
+    dessinait la geometrie sur laquelle il raisonnait, alors que chacun
+    de ces exercices commence par un schema dans son manuscrit. Une
+    correction qui n'est tenue par aucune garde ne vaut que pour le
+    document ou elle a ete faite.
+
+    Les commentaires sont exclus : citer l'environnement dans une notice
+    ne dessine rien.
+    """
+    contenu = "\n".join(_lignes_de_contenu(_document_du_travail(travail)))
+    assert any(env in contenu for env in ENVIRONNEMENTS_DE_FIGURE), (
+        f"{travail} : aucune figure, alors que le raisonnement porte sur un schema"
+    )

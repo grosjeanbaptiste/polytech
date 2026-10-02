@@ -22,6 +22,18 @@ from typing import TYPE_CHECKING, Final
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+from polytech.electromagnetisme.application.macros_champ_06 import (
+    macros_champ_six,
+)
+from polytech.electromagnetisme.application.macros_champ_07 import (
+    macros_champ_sept,
+)
+from polytech.electromagnetisme.application.macros_champ_08 import (
+    macros_champ_huit,
+)
+from polytech.electromagnetisme.application.macros_champ_12 import (
+    macros_champ_douze,
+)
 from polytech.electromagnetisme.application.macros_exercice_06 import (
     macros_donnees_six,
     macros_exercice_six,
@@ -47,6 +59,12 @@ from polytech.electromagnetisme.application.macros_statique_05 import (
 )
 from polytech.electromagnetisme.application.macros_statique_07 import (
     macros_statique_sept,
+)
+from polytech.electromagnetisme.application.macros_statique_08 import (
+    macros_statique_huit,
+)
+from polytech.electromagnetisme.application.macros_statique_11 import (
+    macros_statique_un_un,
 )
 from polytech.electromagnetisme.application.macros_thevenin import (
     macros_donnees,
@@ -84,6 +102,12 @@ JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "exs-04-forces-16": macros_forces_seize,
     "exs-02-statique-05": macros_statique_cinq,
     "exs-02-statique-07": macros_statique_sept,
+    "exs-02-statique-08": macros_statique_huit,
+    "exs-02-statique-1-1-poisson": macros_statique_un_un,
+    "exs-03-champ-magnetique-06": macros_champ_six,
+    "exs-03-champ-magnetique-07": macros_champ_sept,
+    "exs-03-champ-magnetique-08": macros_champ_huit,
+    "exs-03-champ-magnetique-12": macros_champ_douze,
     "exs-03-circuits-magnetiques-06": _jeu_exercice_six,
     "exs-04-transitoire-05": macros_transitoire_cinq,
     "exs-03-thevenin-norton-01": _jeu_thevenin_norton,
