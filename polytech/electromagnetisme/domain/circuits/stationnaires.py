@@ -75,6 +75,17 @@ class Norton:
             resistance=self.resistance,
         )
 
+    def conductance(self) -> float:
+        """`G_0 = 1 / R`, en siemens.
+
+        La transcription l'ecrit `1 ohm^-1`. Le cours la donne parce
+        qu'une source de courant en parallele se decrit naturellement par
+        une conductance, de meme qu'une source de tension en serie se
+        decrit par une resistance -- les deux ecritures duales ont chacune
+        leur grandeur naturelle.
+        """
+        return 1.0 / self.resistance
+
 
 def source_de_tension_et_source_de_courant(
     tension: float,
@@ -91,3 +102,19 @@ def source_de_tension_et_source_de_courant(
         tension_a_vide=tension + resistance * courant,
         resistance=resistance,
     )
+
+
+def puissance_echangee(tension: float, courant: float) -> float:
+    """`P = U I`, en convention **recepteur**.
+
+    Le signe porte tout le sens, et c'est le point de la question (e) de
+    l'exercice : une puissance negative signifie que l'element **delivre**
+    au reste du circuit. La transcription conclut `P_12 = -1 kW` et
+    commente « la source de courant fournit de la puissance au reste du
+    circuit ».
+
+    Un corrige qui rendrait `+1 kW` serait juste en grandeur et faux en
+    sens -- la seule erreur de cet exercice qu'un controle de valeur
+    absolue ne verrait pas.
+    """
+    return tension * courant
