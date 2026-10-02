@@ -26,6 +26,9 @@ from polytech.electromagnetisme.application.formatage import (
     forme_logarithmique,
     nombre,
 )
+from polytech.electromagnetisme.application.macros_seance_21_spire import (
+    macros_de_la_spire,
+)
 from polytech.electromagnetisme.domain.magnetostatique.couple_des_bobines import (
     couple_a_courants_constants,
     pente_par_radian,
@@ -117,3 +120,8 @@ def macros_des_trois_autres() -> dict[str, str]:
         **_macros_de_la_spire_tournante(),
         **_macros_du_couple(),
     }
+
+
+def macros_de_la_seance_deux_un() -> dict[str, str]:
+    """Les quatre exercices de la seance 2.1, reunis pour son document."""
+    return {**macros_de_la_spire(), **macros_des_trois_autres()}
