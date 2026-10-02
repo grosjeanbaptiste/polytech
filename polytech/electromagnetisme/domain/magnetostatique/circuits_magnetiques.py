@@ -149,3 +149,43 @@ def potentiel_scalaire_magnetique(champ: float, longueur: float) -> float:
         msg = f"longueur negative : {longueur} m"
         raise ValueError(msg)
     return champ * longueur
+
+
+def champ_pour_les_amperes_tours(amperes_tours: float, longueur: float) -> float:
+    """`H = N I / l` : le champ d'une branche sous force magnetomotrice donnee.
+
+    Les ampere-tours sont **partages** entre les branches : le theoreme
+    d'Ampere sur deux contours entourant le meme enroulement donne la
+    meme force magnetomotrice. Connaissant `H l` d'une branche, on obtient
+    donc le champ de l'autre sans rien savoir de son materiau -- et c'est
+    ce qui permet de remonter a son induction par la courbe.
+    """
+    if longueur <= 0:
+        msg = f"longueur de contour nulle ou negative : {longueur} m"
+        raise ValueError(msg)
+    return amperes_tours / longueur
+
+
+def inductance_depuis_les_flux(
+    spires: int,
+    flux_de_branche: tuple[float, ...],
+    courant: float,
+) -> float:
+    """`L = N Phi_total / I`, en henrys.
+
+    Le flux **total**, somme des flux de branche, et non celui d'une
+    seule : sur le circuit de l'exercice 6, ne garder que la branche sans
+    entrefer donnerait une inductance sept fois trop petite, et ne garder
+    que l'autre la sous-estimerait de quinze pour cent -- ce qui est bien
+    plus insidieux qu'un facteur sept.
+    """
+    if courant <= 0:
+        msg = f"courant nul ou negatif : {courant} A"
+        raise ValueError(msg)
+    if not flux_de_branche:
+        msg = "aucun flux de branche : le circuit ne porte pas d'inductance"
+        raise ValueError(msg)
+    if spires <= 0:
+        msg = f"nombre de spires nul ou negatif : {spires}"
+        raise ValueError(msg)
+    return spires * sum(flux_de_branche) / courant

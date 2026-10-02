@@ -22,6 +22,10 @@ from typing import TYPE_CHECKING, Final
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+from polytech.electromagnetisme.application.macros_exercice_06 import (
+    macros_donnees_six,
+    macros_exercice_six,
+)
 from polytech.electromagnetisme.application.macros_exercice_08 import (
     macros_donnees_huit,
     macros_exercice_huit,
@@ -42,7 +46,13 @@ def _jeu_exercice_huit() -> dict[str, str]:
     return {**macros_donnees_huit(), **macros_exercice_huit()}
 
 
+def _jeu_exercice_six() -> dict[str, str]:
+    """L'exercice 6 : l'inductance d'un circuit magnetique a deux branches."""
+    return {**macros_donnees_six(), **macros_exercice_six()}
+
+
 JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
+    "exs-03-circuits-magnetiques-06": _jeu_exercice_six,
     "exs-03-thevenin-norton-01": _jeu_thevenin_norton,
     "exs-03-thevenin-08": _jeu_exercice_huit,
 }
