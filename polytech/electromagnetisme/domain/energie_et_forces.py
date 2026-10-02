@@ -73,3 +73,30 @@ def les_deux_signes_s_opposent(energie: sp.Expr) -> bool:
     """
     somme = force_a_courant_constant(energie) + force_a_flux_constant(energie)
     return bool(sp.simplify(somme) == 0)
+
+
+def force_sur_une_armature(
+    tension: float,
+    variation_de_capacite: float,
+    deplacement: float,
+) -> float:
+    """`|F| = (1/2) U^2 |Delta C| / Delta x`, en newtons.
+
+    La forme du manuscrit, par **difference finie** et non par derivee --
+    et l'enonce ecrit bien `~=`. Ce n'est pas une approximation de
+    paresse : la capacite d'un condensateur plan varie lineairement avec
+    l'ecartement, et pour une fonction affine la secante **est** la
+    tangente. Un test le prouve en comparant les deux chemins, et montre
+    que la coincidence cesse sur une capacite quadratique -- la
+    justification porte donc sur la linearite, non sur la petitesse du
+    deplacement.
+
+    Rend un **module**. Le sens ne se perd pas pour autant : la capacite
+    croit quand l'ecartement diminue, donc une armature est toujours
+    attiree. C'est le document qui porte cette lecture, l'enonce ne
+    demandant que la grandeur.
+    """
+    if deplacement == 0:
+        msg = "deplacement nul : la difference finie y divise par zero"
+        raise ValueError(msg)
+    return abs(tension**2 * variation_de_capacite / (2 * deplacement))
