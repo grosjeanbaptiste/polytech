@@ -54,6 +54,12 @@ from polytech.electromagnetisme.application.macros_forces_15 import (
 from polytech.electromagnetisme.application.macros_forces_16 import (
     macros_forces_seize,
 )
+from polytech.electromagnetisme.application.macros_seance_21_autres import (
+    macros_des_trois_autres,
+)
+from polytech.electromagnetisme.application.macros_seance_21_spire import (
+    macros_de_la_spire,
+)
 from polytech.electromagnetisme.application.macros_statique_05 import (
     macros_statique_cinq,
 )
@@ -90,6 +96,11 @@ def _jeu_exercice_six() -> dict[str, str]:
     return {**macros_donnees_six(), **macros_exercice_six()}
 
 
+def _jeu_seance_deux_un() -> dict[str, str]:
+    """La seance 2.1 : quatre exercices dans un seul document."""
+    return {**macros_de_la_spire(), **macros_des_trois_autres()}
+
+
 def _jeu_forces_six() -> dict[str, str]:
     """L'exercice 6 du chapitre IV : force sur une armature de condensateur."""
     return macros_forces_six()
@@ -109,6 +120,7 @@ JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "exs-03-champ-magnetique-08": macros_champ_huit,
     "exs-03-champ-magnetique-12": macros_champ_douze,
     "exs-03-circuits-magnetiques-06": _jeu_exercice_six,
+    "exs-03-stationnaire-2-1": _jeu_seance_deux_un,
     "exs-04-transitoire-05": macros_transitoire_cinq,
     "exs-03-thevenin-norton-01": _jeu_thevenin_norton,
     "exs-03-thevenin-08": _jeu_exercice_huit,

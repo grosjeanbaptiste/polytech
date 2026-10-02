@@ -73,3 +73,25 @@ def forme_signee(expression: sp.Expr) -> str:
     forme ne doit jamais introduire un signe absent de l'original.
     """
     return expression_latex(-sp.together(-expression))
+
+
+def forme_logarithmique(expression: sp.Expr, rapport: sp.Expr) -> str:
+    r"""Rend `k \ln(rapport)`, le coefficient devant et le rapport tel quel.
+
+    Sympy integre `1/x` en une difference de logarithmes, puis la
+    recombine en logarithme d'une puissance : forme exacte, mais que
+    personne n'ecrit. Le rapport est donc **donne** par l'appelant --
+    lui seul sait si le manuscrit ecrit `ln(d/(a+d))` ou son inverse.
+
+    Refuse une expression qui n'est pas un multiple de ce logarithme :
+    le « coefficient » contiendrait alors lui-meme un logarithme, et la
+    forme rendue serait fausse sans le dire.
+    """
+    developpe = sp.expand_log(expression, force=True)
+    logarithme = sp.expand_log(sp.log(rapport), force=True)
+    coefficient = sp.simplify(sp.factor(developpe) / sp.factor(logarithme))
+    if coefficient.has(sp.log):
+        msg = f"{expression} n'est pas un multiple de ln({rapport})"
+        raise ValueError(msg)
+    produit = sp.Mul(coefficient, sp.log(rapport), evaluate=False)
+    return expression_latex(produit)

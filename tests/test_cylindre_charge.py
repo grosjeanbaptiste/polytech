@@ -56,11 +56,11 @@ def test_la_densite_lineique_est_la_charge_par_unite_de_longueur() -> None:
 def test_la_densite_surfacique_se_repartit_sur_toute_la_surface_laterale() -> None:
     """`sigma = Q / (2 pi R L)`, et le denominateur est une **aire**.
 
-    Le manuscrit l'ecrit `(Q/L) x 1/(2 pi R)` en annotant le second
-    facteur « surface du cylindre de longueur L ». Le produit est juste,
-    mais l'annotation ne l'est pas : `1/(2 pi R)` n'est pas une surface
-    -- c'est l'inverse d'une longueur. L'aire laterale est `2 pi R L`, et
-    c'est elle qui divise la charge.
+    Le manuscrit l'ecrit `(Q/L) x L x 1/(2 pi R L)` et barre les deux
+    `L` : c'est bien la charge totale divisee par l'aire laterale, et
+    son annotation « surface du cylindre de hauteur L » porte sur
+    `2 pi R L`. Ce test a d'abord repris une accusation d'annotation
+    fautive ; elle venait d'une transcription incomplete, non du scan.
     """
     attendue = CHARGE / (2 * sp.pi * RAYON * LONGUEUR)
     obtenue = densite_surfacique(CHARGE, LONGUEUR, RAYON)

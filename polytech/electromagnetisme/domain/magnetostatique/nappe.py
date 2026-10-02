@@ -1,36 +1,30 @@
-"""Une nappe de conducteurs en progression geometrique -- exercice 8.
+"""Dix spires emboitees, de largeurs doublees -- exercice 8.
 
-Dix paires de conducteurs portant chacune `3 A`, placees de part et
-d'autre de l'axe a des abscisses doublant a chaque fois. Le champ au
-centre est la somme de vingt contributions.
+L'enonce du recueil : dix spires rectangulaires infiniment longues, de
+largeurs 2, 4, 8, ... 1024 cm, dans le plan `Oxy` avec `Oy` pour axe de
+symetrie, toutes parcourues dans le sens anti-horlogique par 3 A. Le
+champ au centre est la somme de vingt contributions, deux par spire.
 
-**Les deux cotes s'ajoutent, et il faut dire pourquoi.** Les courants
-sont opposes **et** les positions symetriques : les deux inversions de
-signe se detruisent, et les contributions s'additionnent. Avec une seule
-inversion elles s'annuleraient et le champ au centre serait nul --
-`champ_d_un_seul_cote` rend le facteur deux verifiable plutot que
-suppose.
+**La distance n'est pas la largeur.** L'axe partage chaque spire : ses
+deux longs cotes sont a la **demi-largeur**, soit 1, 2, 4, ... 512 cm.
+Prendre la largeur pour la distance divise le champ par deux, exactement
+-- doubler toutes les distances d'une progression de raison deux revient
+a decaler l'indice d'un cran. `demi_largeurs` rend ce pas explicite.
 
-**Pourquoi ce module distingue deux calculs du meme champ.** Le resultat
-encadre par le manuscrit est juste, mais le chemin qui y mene porte deux
-erreurs qui se compensent exactement :
-
-* sa somme ecrit les distances `2^i x 10^-2` pour `i` de un a dix, soit
-  `2` a `1024` cm, alors que la figure commence a `1` cm -- la somme des
-  inverses y vaut donc la **moitie** de la vraie ;
-* sa ligne de developpement ecrit `6/pi` la ou sa propre ligne de formule
-  donne `3/pi` -- le `2` du `2 pi` a disparu, soit le **double**.
-
-`champ_par_le_developpement_du_manuscrit` reproduit la seconde erreur,
-pour que la compensation se mesure au lieu de s'affirmer. Un resultat
-juste obtenu par un chemin faux est plus dangereux qu'un resultat faux :
-rien ne le signale, et qui reprend une seule des deux lignes se trompe du
-facteur deux.
+**Les deux cotes s'ajoutent, et il faut dire pourquoi.** Dans une spire
+parcourue en sens anti-horlogique, le courant monte d'un cote et descend
+de l'autre : les courants sont opposes **et** les positions symetriques.
+Les deux inversions de signe se detruisent, et les contributions
+s'additionnent. `champ_d_un_seul_cote` rend le facteur deux verifiable.
 
 **Tout est en rationnels exacts.** Les distances sont des puissances de
-deux sur cent, et la somme geometrique a une forme fermee : aucune
-etape n'a besoin de flottants, et l'egalite des deux calculs se verifie
-donc exactement.
+deux sur cent, et la somme geometrique a une forme fermee : aucune etape
+n'a besoin de flottants.
+
+Ce module a porte une fonction `champ_par_le_developpement_du_manuscrit`,
+qui reproduisait une « erreur » imputee au manuscrit. Le manuscrit n'en
+commet pas : c'est la transcription de l'agent qui avait perdu son
+facteur un demi. La fonction est retiree avec la these qu'elle servait.
 """
 
 from __future__ import annotations
@@ -50,14 +44,28 @@ def distances_geometriques(
 ) -> tuple[sp.Expr, ...]:
     """Les `nombre` distances `2^k x 1 cm`, en metres et en exact.
 
-    `premier_exposant` vaut zero pour la lecture de la figure -- le
-    premier conducteur a un centimetre -- et un pour la lecture de la
-    somme du manuscrit, qui commence a deux.
+    `premier_exposant` vaut zero pour les distances a l'axe -- le
+    premier conducteur est a un centimetre -- et un pour les largeurs de
+    l'enonce, qui commencent a deux.
     """
     return tuple(
         sp.Integer(RAISON) ** exposant * CENTIMETRE
         for exposant in range(premier_exposant, premier_exposant + nombre)
     )
+
+
+def largeurs_des_spires(nombre: int) -> tuple[sp.Expr, ...]:
+    """Les largeurs de l'enonce : 2, 4, 8... cm, en metres et en exact."""
+    return distances_geometriques(1, nombre)
+
+
+def demi_largeurs(largeurs: tuple[sp.Expr, ...]) -> tuple[sp.Expr, ...]:
+    """La distance de chaque long cote a l'axe : la moitie de la largeur.
+
+    C'est le facteur un demi que le manuscrit ecrit sous son trait de
+    fraction, annote « distance entre le conducteur et l'axe y ».
+    """
+    return tuple(largeur / 2 for largeur in largeurs)
 
 
 def somme_des_inverses(distances: tuple[sp.Expr, ...]) -> sp.Expr:
@@ -68,9 +76,8 @@ def somme_des_inverses(distances: tuple[sp.Expr, ...]) -> sp.Expr:
 def somme_fermee(premier_exposant: int, nombre: int) -> sp.Expr:
     """`100 . 2^(1 - premier) . (1 - 2^-nombre)` : la serie geometrique.
 
-    Forme fermee, independante du calcul explicite. Le manuscrit
-    l'emploie dans sa note de verification sans la demontrer ; les deux
-    doivent coincider exactement.
+    Forme fermee, independante du calcul explicite : les deux doivent
+    coincider exactement.
     """
     premier_terme = 1 / (sp.Integer(RAISON) ** premier_exposant * CENTIMETRE)
     return premier_terme * RAISON * (1 - sp.Rational(1, RAISON**nombre))
@@ -94,22 +101,10 @@ def champ_de_la_nappe(
 ) -> sp.Expr:
     """`sum 2 I / (2 pi d) = (I/pi) sum 1/d` : les deux cotes.
 
-    C'est la ligne de **formule** du manuscrit, qui est juste.
+    C'est la formule du manuscrit, les distances etant les
+    demi-largeurs.
     """
     return 2 * champ_d_un_seul_cote(courant, distances)
-
-
-def champ_par_le_developpement_du_manuscrit(
-    courant: sp.Expr,
-    distances: tuple[sp.Expr, ...],
-) -> sp.Expr:
-    """`(2 I / pi) sum 1/d` : la ligne de **developpement** du manuscrit.
-
-    Le double de sa propre ligne de formule : le `2` du `2 pi` a disparu.
-    Reproduit ici pour que la compensation avec l'erreur de distances se
-    mesure -- non pour etre employe.
-    """
-    return 2 * champ_de_la_nappe(courant, distances)
 
 
 def champ_de_la_nappe_infinie(
@@ -120,8 +115,7 @@ def champ_de_la_nappe_infinie(
 
     La serie converge, et dix paires en donnent deja plus de 99,9 pour
     cent : une onzieme paire changerait le resultat de moins d'un
-    millieme. C'est pourquoi l'enonce peut s'arreter a dix, et le
-    manuscrit ne le dit pas.
+    millieme. C'est pourquoi l'enonce peut s'arreter a dix.
     """
     premier_terme = 1 / (sp.Integer(RAISON) ** premier_exposant * CENTIMETRE)
     return courant / sp.pi * premier_terme * RAISON

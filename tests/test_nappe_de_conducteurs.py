@@ -1,32 +1,28 @@
-"""L'exercice 8 : une nappe de conducteurs en progression geometrique.
+"""L'exercice 8 : dix spires rectangulaires emboitees, de largeurs doublees.
 
-Dix paires de conducteurs, chacune portant `3 A`, placees de part et
-d'autre de l'axe a des abscisses doublant a chaque fois. On cherche le
-champ au centre.
+L'enonce du recueil : dix spires rectangulaires infiniment longues, de
+**largeurs** 2, 4, 8, ... 1024 cm, placees dans le plan `Oxy` avec `Oy`
+pour axe de symetrie, toutes parcourues dans le sens anti-horlogique par
+3 A. On demande le champ au point `(0, 0)`.
 
-Le resultat encadre par le manuscrit -- `190,8 A/m` -- est **juste**. Mais
-le chemin qui y mene porte **deux erreurs qui se compensent exactement**,
-et ce fichier le demontre.
+Chaque spire a donc ses deux longs cotes a la **demi-largeur** de l'axe :
+1, 2, 4, ... 512 cm. C'est le seul piege de l'exercice -- prendre la
+largeur pour la distance divise le resultat par deux, exactement -- et le
+manuscrit ne s'y trompe pas : il ecrit le facteur un demi sous son trait
+de fraction, annote « distance entre le conducteur et l'axe y ».
 
-**La premiere erreur est dans les distances.** La figure place les
-conducteurs a `+-1, +-2, +-4, +-8...` cm. La somme du manuscrit, elle,
-ecrit les distances `2^i x 10^-2` pour `i` de un a dix, soit `2` a
-`1024` cm -- le premier conducteur a saute. La somme des inverses y vaut
-donc la **moitie** de la vraie.
+**Ce fichier a d'abord affirme le contraire, et c'etait une faute de
+l'agent.** Sa transcription du manuscrit avait perdu ce facteur un demi.
+Le calcul independant, voyant alors la formule donner la moitie de la
+valeur encadree, en avait conclu que le manuscrit portait « deux erreurs
+qui se compensent exactement » -- these d'un corrige entier, deux tests a
+l'appui. La contradiction venait de la transcription, non du manuscrit.
+Elle n'a ete levee qu'en ouvrant le recueil, qui parle de largeurs, puis
+en relisant le scan.
 
-**La seconde est dans le facteur.** La ligne de formule du manuscrit
-ecrit `(3 x 2) / (2 pi d)`, soit `3/(pi d)` -- c'est juste. Sa ligne de
-developpement ecrit `(6/pi) x somme`, soit **le double**. Le `2` du
-`2 pi` a disparu.
-
-**Et les deux se compensent.** Doubler le facteur et diviser la somme par
-deux rend exactement la bonne valeur. Le resultat encadre est donc juste,
-alors qu'aucune des deux lignes qui y menent ne l'est -- et un etudiant
-qui reprend l'une sans l'autre se trompe du facteur deux.
-
-C'est la raison d'etre de ce corrige : un resultat juste obtenu par un
-chemin faux est plus dangereux qu'un resultat faux, parce que rien ne
-le signale.
+La lecon vaut pour tous les corriges : quand un calcul contredit un
+manuscrit, on relit le **scan** avant de conclure. Une transcription est
+une lecture, et c'est la lecture qui s'etait trompee.
 """
 
 from __future__ import annotations
@@ -39,8 +35,9 @@ from polytech.electromagnetisme.domain.magnetostatique.nappe import (
     champ_d_un_seul_cote,
     champ_de_la_nappe,
     champ_de_la_nappe_infinie,
-    champ_par_le_developpement_du_manuscrit,
+    demi_largeurs,
     distances_geometriques,
+    largeurs_des_spires,
     somme_des_inverses,
     somme_fermee,
 )
@@ -72,8 +69,7 @@ def test_la_forme_fermee_egale_la_somme_explicite() -> None:
 
     La somme explicite additionne dix termes ; la forme fermee applique la
     formule de la serie geometrique. Qu'elles coincident verifie la
-    formule, que le manuscrit emploie dans sa note de verification sans
-    la demontrer.
+    formule.
     """
     for premier in (DEPUIS_UN_CENTIMETRE, DEPUIS_DEUX_CENTIMETRES):
         distances = distances_geometriques(premier, NOMBRE_DE_PAIRES)
@@ -115,40 +111,55 @@ def test_partir_de_deux_centimetres_donne_la_moitie() -> None:
     assert sp.simplify(depuis_un - 2 * depuis_deux) == 0
 
 
-def test_les_deux_erreurs_du_manuscrit_se_compensent_exactement() -> None:
-    """Le coeur de ce corrige : facteur double, somme moitie, resultat juste.
+def test_les_largeurs_sont_celles_de_l_enonce() -> None:
+    """De 2 a 1024 cm, en doublant : dix largeurs, lues dans le recueil."""
+    largeurs = largeurs_des_spires(NOMBRE_DE_PAIRES)
+    assert len(largeurs) == NOMBRE_DE_PAIRES
+    assert largeurs[0] == sp.Rational(2, 100)
+    assert largeurs[-1] == sp.Rational(1024, 100)
 
-    La ligne de developpement du manuscrit emploie `6/pi` au lieu de
-    `3/pi` -- le double -- et l'applique aux distances partant de `2 cm`
-    -- dont la somme des inverses est la moitie. Le produit retombe sur
-    la bonne valeur.
+
+def test_la_distance_a_l_axe_est_la_demi_largeur() -> None:
+    """L'axe `Oy` partage chaque spire : ses cotes sont a la demi-largeur.
+
+    Les demi-largeurs sont donc exactement les distances que la figure du
+    manuscrit porte sur son axe : 1, 2, 4, 8... cm.
     """
-    par_le_manuscrit = champ_par_le_developpement_du_manuscrit(
-        COURANT,
-        distances_geometriques(DEPUIS_DEUX_CENTIMETRES, NOMBRE_DE_PAIRES),
-    )
-    juste = champ_de_la_nappe(
-        COURANT,
-        distances_geometriques(DEPUIS_UN_CENTIMETRE, NOMBRE_DE_PAIRES),
-    )
-    assert sp.simplify(par_le_manuscrit - juste) == 0
+    distances = demi_largeurs(largeurs_des_spires(NOMBRE_DE_PAIRES))
+    assert distances == distances_geometriques(DEPUIS_UN_CENTIMETRE, NOMBRE_DE_PAIRES)
 
 
-def test_le_developpement_du_manuscrit_double_sa_propre_formule() -> None:
-    """Et la compensation n'est pas fortuite : c'est deux fois deux.
+def test_la_formule_du_manuscrit_donne_la_valeur_qu_il_encadre() -> None:
+    """`sum (3 x 2) / (2 pi . 2^i . 10^-2 . 1/2)`, pour `i` de un a dix.
 
-    Applique aux **memes** distances, le developpement du manuscrit rend
-    exactement le double de ce que sa ligne de formule rend. Les deux
-    lignes du meme corrige se contredisent donc, independamment de la
-    question des distances.
+    Ecrite terme a terme, telle que le scan la porte, sans passer par les
+    fonctions du domaine : c'est l'oracle. Le facteur un demi y est, et
+    avec lui la formule rend bien `190,8`.
     """
-    distances = distances_geometriques(DEPUIS_DEUX_CENTIMETRES, NOMBRE_DE_PAIRES)
-    par_la_formule = champ_de_la_nappe(COURANT, distances)
-    par_le_developpement = champ_par_le_developpement_du_manuscrit(
-        COURANT,
-        distances,
+    centieme = sp.Rational(1, 100)
+    somme = sum(
+        (
+            sp.Integer(3) * 2 / (2 * sp.pi * 2**rang * centieme * sp.Rational(1, 2))
+            for rang in range(1, NOMBRE_DE_PAIRES + 1)
+        ),
+        start=sp.Integer(0),
     )
-    assert sp.simplify(par_le_developpement - 2 * par_la_formule) == 0
+    distances = demi_largeurs(largeurs_des_spires(NOMBRE_DE_PAIRES))
+    assert sp.simplify(somme - champ_de_la_nappe(COURANT, distances)) == 0
+    assert round(float(somme), 1) == float(ENCADRE_PAR_LE_MANUSCRIT)
+
+
+def test_prendre_la_largeur_pour_la_distance_donne_la_moitie() -> None:
+    """Le piege de l'enonce, chiffre : exactement la moitie.
+
+    C'est aussi ce que donnait la formule du manuscrit **sans** son
+    facteur un demi -- donc ce que la transcription fautive faisait
+    calculer, et d'ou venait la fausse contradiction.
+    """
+    largeurs = largeurs_des_spires(NOMBRE_DE_PAIRES)
+    par_les_largeurs = champ_de_la_nappe(COURANT, largeurs)
+    juste = champ_de_la_nappe(COURANT, demi_largeurs(largeurs))
+    assert sp.simplify(juste - 2 * par_les_largeurs) == 0
 
 
 def test_les_deux_cotes_contribuent_a_parts_egales() -> None:
@@ -170,7 +181,7 @@ def test_dix_paires_donnent_presque_tout_le_champ_d_une_nappe_infinie() -> None:
 
     Consequence : ajouter une onzieme paire, a `1024 cm`, changerait le
     resultat de moins d'un millieme. C'est pourquoi l'enonce peut
-    s'arreter a dix sans rien perdre -- et le manuscrit ne le dit pas.
+    s'arreter a dix sans rien perdre.
     """
     distances = distances_geometriques(DEPUIS_UN_CENTIMETRE, NOMBRE_DE_PAIRES)
     fini = champ_de_la_nappe(COURANT, distances)

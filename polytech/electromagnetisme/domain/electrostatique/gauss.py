@@ -84,3 +84,39 @@ def champ_par_projection(
     distance = distance_au_point(hauteur, abscisse)
     sinus = hauteur / distance
     return -2 * champ_d_une_charge(charge, distance) * sinus
+
+
+def charge_dans_une_boule_uniforme(
+    charge_totale: sp.Expr,
+    rayon_de_la_sphere: sp.Expr,
+    rayon: sp.Expr,
+) -> sp.Expr:
+    """La charge enlacee par une sphere de Gauss de rayon `r <= R`.
+
+    La sphere de l'enonce est **uniformement** chargee : sa densite est
+    la charge totale sur le volume, et la charge enlacee s'obtient en
+    l'integrant sur des coquilles `4 pi s^2 ds`.
+    """
+    coquille = sp.Symbol("s_coquille", positive=True)
+    volume = sp.Rational(4, 3) * sp.pi * rayon_de_la_sphere**3
+    densite = charge_totale / volume
+    return sp.integrate(densite * 4 * sp.pi * coquille**2, (coquille, 0, rayon))
+
+
+def champ_hors_d_une_sphere_uniforme(
+    charge_totale: sp.Expr,
+    rayon_de_la_sphere: sp.Expr,
+    distance: sp.Expr,
+) -> sp.Expr:
+    """Le champ a la distance `r >= R` du centre de la sphere chargee.
+
+    Une sphere de Gauss exterieure enlace **toute** la charge, quel que
+    soit `R` : le champ est celui d'une charge ponctuelle placee au
+    centre. C'est ce resultat qui ramene l'exercice 7 a l'exercice 5.
+    """
+    enlacee = charge_dans_une_boule_uniforme(
+        charge_totale,
+        rayon_de_la_sphere,
+        rayon_de_la_sphere,
+    )
+    return sp.simplify(champ_d_une_charge(enlacee, distance))

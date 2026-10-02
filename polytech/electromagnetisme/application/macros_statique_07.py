@@ -22,6 +22,7 @@ from polytech.electromagnetisme.application.formatage import expression_latex
 from polytech.electromagnetisme.domain.electrostatique.gauss import (
     champ_d_une_charge,
     champ_par_projection,
+    charge_dans_une_boule_uniforme,
     distance_au_point,
     divergence_du_champ_radial,
 )
@@ -49,6 +50,11 @@ def _macros_de_gauss() -> dict[str, str]:
     champ = champ_d_une_charge(CHARGE, RAYON)
     return {
         "StatiqueSeptChampDUneCharge": expression_latex(champ),
+        "StatiqueSeptChargeEnlacee": expression_latex(
+            charge_dans_une_boule_uniforme(
+                CHARGE, sp.Symbol("R", positive=True), RAYON
+            ),
+        ),
         "StatiqueSeptFlux": expression_latex(
             sp.simplify(champ * 4 * sp.pi * RAYON**2),
         ),

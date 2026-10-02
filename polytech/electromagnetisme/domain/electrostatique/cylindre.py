@@ -49,10 +49,11 @@ def densite_surfacique(
 ) -> sp.Expr:
     """`sigma = Q / (2 pi R L)` : la charge divisee par l'**aire** laterale.
 
-    Le manuscrit l'ecrit `(Q/L) x 1/(2 pi R)` en annotant le second
-    facteur « surface du cylindre de longueur L ». Le produit est juste,
-    l'annotation non : `1/(2 pi R)` est l'inverse d'une longueur. L'aire
-    laterale est `2 pi R L`.
+    Le manuscrit l'ecrit en trois facteurs, `(Q/L) x L x 1/(2 pi R L)`,
+    puis barre les deux `L` : la charge totale sur l'aire laterale, dont
+    l'annotation « surface du cylindre de hauteur L » couvre `2 pi R L`.
+    Cette docstring a pretendu l'annotation fautive ; elle ne l'est pas.
+    L'erreur venait d'une transcription qui avait saute les `L` barres.
     """
     return charge / (2 * sp.pi * rayon * longueur)
 

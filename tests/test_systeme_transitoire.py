@@ -19,9 +19,9 @@ Les quatre derivations independantes :
   nul a cet instant, donc la (I) se reduit a
   `E_1 + (E_2 - E_1) = R_1 i_1`.
 
-C'est cette derniere qui revele la contradiction du manuscrit : il
-annonce `i_1(0) = 0`, et le courant **saute** a `E_2 / R_1`. Les deux ne
-se contredisent que si l'on confond zero-moins et zero-plus.
+C'est cette derniere qui montre ce que la notation du manuscrit cache :
+il annonce `i_1(0) = 0`, et le courant **saute** a `E_2 / R_1`. Les deux
+sont vrais, l'un a zero-moins et l'autre a zero-plus.
 """
 
 from __future__ import annotations

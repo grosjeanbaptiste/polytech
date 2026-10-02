@@ -23,7 +23,9 @@ import sympy as sp
 
 from polytech.electromagnetisme.domain.electrostatique.gauss import (
     champ_d_une_charge,
+    champ_hors_d_une_sphere_uniforme,
     champ_par_projection,
+    charge_dans_une_boule_uniforme,
     distance_au_point,
     divergence_du_champ_radial,
 )
@@ -120,3 +122,38 @@ def test_la_densite_encadree_par_le_manuscrit_sept_est_celle_du_cinq() -> None:
     )
     par_le_cinq = densite_induite(CHARGE, HAUTEUR, ABSCISSE, sp.Integer(0))
     assert sp.simplify(encadre_par_le_sept - par_le_cinq) == 0
+
+
+RAYON_DE_LA_SPHERE = sp.Symbol("R", positive=True)
+
+
+def test_la_boule_entiere_porte_toute_la_charge() -> None:
+    """En integrant la densite uniforme jusqu'au bord, on retrouve `Q`.
+
+    L'enonce du recueil ne parle pas d'une charge ponctuelle mais d'une
+    **sphere isolante uniformement chargee**, de rayon `R`. C'est pour
+    cela que le manuscrit ouvre sur le theoreme de Gauss : il faut
+    d'abord etablir qu'elle agit, au-dehors, comme une charge ponctuelle.
+    """
+    enlacee = charge_dans_une_boule_uniforme(
+        CHARGE, RAYON_DE_LA_SPHERE, RAYON_DE_LA_SPHERE
+    )
+    assert sp.simplify(enlacee - CHARGE) == 0
+
+
+def test_a_l_interieur_la_charge_enlacee_croit_comme_le_cube_du_rayon() -> None:
+    """`Q r^3 / R^3` : le rapport des volumes, la densite etant uniforme."""
+    enlacee = charge_dans_une_boule_uniforme(CHARGE, RAYON_DE_LA_SPHERE, RAYON)
+    assert sp.simplify(enlacee - CHARGE * RAYON**3 / RAYON_DE_LA_SPHERE**3) == 0
+
+
+def test_hors_de_la_sphere_le_champ_ne_depend_plus_de_son_rayon() -> None:
+    """Le champ exterieur est celui d'une charge ponctuelle au centre.
+
+    C'est ce qui rend l'exercice 7 identique a l'exercice 5 : le rayon
+    `R` disparait, et il ne reste que la charge totale et la distance au
+    centre. La methode des images peut alors s'appliquer telle quelle.
+    """
+    champ = champ_hors_d_une_sphere_uniforme(CHARGE, RAYON_DE_LA_SPHERE, RAYON)
+    assert RAYON_DE_LA_SPHERE not in champ.free_symbols
+    assert sp.simplify(champ - champ_d_une_charge(CHARGE, RAYON)) == 0

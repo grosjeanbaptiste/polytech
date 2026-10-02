@@ -1,10 +1,12 @@
 """Les deux theoremes de valeur, et la condition que le cours ne dit pas.
 
-Ils servent l'exercice 5 du regime transitoire, ou ils tranchent une
-contradiction du corrige manuscrit : celui-ci pose `i_2(0) = 0` au debut
-puis encadre `i_2(0) = E_2 / (R_2 + R_3)` a la fin. Les deux ne peuvent
-pas etre vrais. Les theoremes de valeur disent lequel est quoi, en
-calculant les deux limites a partir de la **meme** transformee.
+Ils servent l'exercice 5 du regime transitoire, ou ils levent une
+ambiguite de notation du corrige manuscrit : celui-ci note `i_2(0) = 0`
+la valeur initiale, puis `i_2(0) = E_2 / (R_2 + R_3)` la valeur de
+regime que la troisieme question de l'enonce demande. Les deux sont
+justes, mais ne parlent pas du meme instant. Les theoremes de valeur
+disent lequel est lequel, en calculant les deux limites a partir de la
+**meme** transformee.
 
 Et ils ne sont pas gratuits : le theoreme de la valeur finale demande que
 la limite temporelle existe. Pour un oscillateur non amorti elle n'existe

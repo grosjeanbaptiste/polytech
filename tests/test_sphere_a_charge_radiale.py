@@ -8,14 +8,14 @@ cote, une integrale triple en spheriques de l'autre.
 
 Trois choses restent a dire, et ce sont elles que ce fichier etablit.
 
-**Le passage a `C = 0` du manuscrit est un raisonnement inverse.** Il
-ecrit « en `r = 0`, `E_r = 0`, donc `C = 0` » -- mais on ne peut pas
-evaluer `r^2 E_r = C` en zero pour en conclure que `C` est nul : il
-faudrait deja savoir que `E_r` y est borne. Le vrai argument est
-l'inverse : le terme ecarte est `C/r^2`, qui **diverge** a l'origine, et
-rien ne peut y produire un champ infini puisqu'il n'y a pas de charge
-ponctuelle au centre. La resolution symbolique exhibe ce terme, ce qui
-rend l'argument visible au lieu de le supposer.
+**Le passage a `C = 0` du manuscrit tient en une ligne.** Il ecrit
+« en `r = 0`, `E_r = 0`, donc `C = 0` ». C'est juste : par symetrie, un
+champ radial borne est nul au centre. Ce que la ligne ne montre pas, c'est
+le terme ecarte, `C/r^2`, qui **diverge** a l'origine, et que rien ne
+peut produire puisqu'il n'y a pas de charge ponctuelle au centre. La
+resolution symbolique exhibe ce terme, ce qui rend l'argument visible.
+Ce fichier a d'abord parle d'un « raisonnement inverse » : c'etait
+excessif, le manuscrit est elliptique et non fautif.
 
 **Le champ exterieur est exactement celui d'une charge ponctuelle.** Le
 manuscrit l'obtient sans le nommer. C'est pourtant le fait le plus utile
@@ -126,9 +126,8 @@ def test_le_terme_ecarte_satisfait_pourtant_l_equation_homogene() -> None:
 
     Sa divergence spherique est nulle : il est donc solution de
     l'equation sans source, et c'est exactement pourquoi il apparait dans
-    la solution generale. Le rejeter demande un argument **physique**, et
-    c'est ce qui rend la lacune du manuscrit interessante plutot que
-    anecdotique.
+    la solution generale. Le rejeter demande un argument **physique**,
+    que la ligne du manuscrit suppose sans l'ecrire.
     """
     assert (
         sp.simplify(

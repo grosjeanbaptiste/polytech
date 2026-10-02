@@ -24,6 +24,8 @@ part, avec leur raison.
 from __future__ import annotations
 
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -349,3 +351,94 @@ def test_le_corrige_porte_au_moins_une_figure(travail: str) -> None:
     assert any(env in contenu for env in ENVIRONNEMENTS_DE_FIGURE), (
         f"{travail} : aucune figure, alors que le raisonnement porte sur un schema"
     )
+
+
+LETTRES_ETRANGERES = range(0x100, 0x250)
+"""Latin etendu A et B : aucune lettre du francais n'y vit, sauf `œ`."""
+
+LIGATURES_FRANCAISES = frozenset("œŒ")
+
+
+@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+def test_le_pdf_ne_porte_aucune_lettre_que_le_francais_n_emploie_pas(
+    travail: str,
+) -> None:
+    """Un caractere **remplace** ne laisse aucune trace dans le journal.
+
+    Sous lualatex, une police T1 est une police a 256 positions. Un point
+    de code Unicode qu'elle ne connait pas n'est pas toujours perdu : s'il
+    est inferieur a 256, il tombe sur la position de meme numero, qui
+    porte une autre lettre. Les guillemets francais sortaient ainsi en
+    `n accent aigu` et `z point suscrit`, et le prefixe « micro » de
+    siunitx en `t cedille` -- soixante microhenrys devenaient `60 tH`.
+
+    Aucun avertissement : rien ne manque, donc la garde des « Missing
+    character » ne voit rien. Ce test regarde le resultat, la ou les
+    gardes de source ne regardent que les causes deja connues : il a
+    attrape le prefixe « micro », que la garde des guillemets ne pouvait
+    pas prevoir.
+
+    Il lit un PDF, donc il se suspend quand le PDF ou `pdftotext` manque
+    -- un clone frais n'a ni l'un ni forcement l'autre. C'est une
+    verification, non une mesure : rien du depot n'en depend.
+    """
+    pdfs = sorted((TRAVAUX / travail).glob("*.pdf"))
+    lecteur = shutil.which("pdftotext")
+    if not pdfs or lecteur is None:
+        pytest.skip(f"{travail} : PDF ou pdftotext absent")
+    lu = subprocess.run(  # noqa: S603 -- binaire resolu par which, arguments fixes
+        [lecteur, str(pdfs[0]), "-"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    etrangeres = sorted(
+        {
+            caractere
+            for caractere in lu.stdout
+            if ord(caractere) in LETTRES_ETRANGERES
+            and caractere not in LIGATURES_FRANCAISES
+        },
+    )
+    assert etrangeres == [], f"{travail} : la police a substitue {etrangeres}"
+
+
+RECUEIL = "Exs_Notes_manuscrites.pdf"
+"""Le recueil d'exercices : il porte les enonces, les figures, les reponses."""
+
+SANS_ENONCE_AU_RECUEIL = {
+    "exs-02-statique-1-1-poisson": (
+        "le manuscrit s'intitule « Par Poisson, ext. » et ne renvoie a aucun "
+        "exercice numerote du recueil ; son enonce n'existe que par lui"
+    ),
+}
+"""Les corriges dont l'enonce ne figure pas au recueil, et pourquoi."""
+
+
+@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+def test_le_corrige_remonte_au_recueil_et_non_au_seul_manuscrit(travail: str) -> None:
+    """L'enonce se lit dans le recueil ; le manuscrit n'en est que la solution.
+
+    Les seize premiers corriges d'electromagnetisme ont ete ecrits sans
+    ouvrir le recueil. Leur enonce etait donc **reconstitue** d'apres le
+    manuscrit, et trois defauts en sont sortis, tous de l'agent :
+
+    - un enonce faux -- la « charge ponctuelle » de l'exercice 7 de
+      statique est une sphere isolante chargee, ce qui est justement la
+      raison pour laquelle le manuscrit commence par Gauss ;
+    - des figures dites « de principe » alors que la figure officielle
+      existe : le tore a deux parties du circuit magnetique, l'electro-
+      aimant a noyau plongeur, les armatures de revolution ;
+    - une these entiere batie sur une transcription fautive : l'exercice
+      8 des champs porte sur des spires de **largeurs** 2, 4, 8 cm..., le
+      manuscrit divise bien par deux, et le corrige l'accusait de deux
+      erreurs qui se compensent.
+
+    Citer le recueil ne prouve pas qu'on l'a lu ; ne pas le citer prouve
+    qu'on ne l'a pas ouvert.
+    """
+    contenu = "\n".join(_lignes_de_contenu(_document_du_travail(travail)))
+    if travail in SANS_ENONCE_AU_RECUEIL:
+        assert RECUEIL not in contenu, f"{travail} : exemption devenue inutile"
+        return
+    assert RECUEIL in contenu, f"{travail} : le recueil n'est pas cite"

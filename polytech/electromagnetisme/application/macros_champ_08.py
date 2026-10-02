@@ -1,17 +1,18 @@
-"""Macros de l'exercice 8 : une nappe de conducteurs en progression.
+"""Macros de l'exercice 8 : dix spires emboitees, de largeurs doublees.
 
 Premier exercice **numerique** de la serie des champs magnetiques : le
 jeu publie des valeurs et non des expressions.
 
-Il publie **trois** champs pour le meme probleme, et c'est tout l'objet du
-corrige : celui que la figure donne, celui que la somme du manuscrit
-donne, et celui que son developpement donne. Les deux erreurs se
-compensent, et les trois valeurs cote a cote le montrent.
+Il publie le champ juste et celui qu'on obtient en prenant la largeur
+d'une spire pour sa distance a l'axe -- la moitie. C'est le piege de
+l'enonce, et les deux valeurs cote a cote le montrent mieux qu'un
+avertissement.
 
-Les donnees de l'enonce et les deux sommes geometriques sont dans
-`macros_champ_08_sommes`, d'ou ce module les reprend : la coupure separe
-ce qui releve de la **lecture** de l'enonce de ce qui releve du
-**raisonnement**.
+Ce jeu a porte une macro qui chiffrait une « erreur du manuscrit ». Le
+manuscrit n'en commet pas ; la macro est retiree avec la these.
+
+Les donnees de l'enonce et les sommes geometriques sont dans
+`macros_champ_08_sommes`.
 
 Le prefixe est `ChampHuit`.
 """
@@ -22,8 +23,8 @@ from polytech.electromagnetisme.application.formatage import nombre
 from polytech.electromagnetisme.application.macros_champ_08_sommes import (
     COURANT,
     DEPUIS_UN_CENTIMETRE,
-    distances_de_la_figure,
-    distances_de_la_somme,
+    distances_a_l_axe,
+    largeurs_de_l_enonce,
     macros_de_l_enonce,
     macros_des_sommes,
 )
@@ -31,7 +32,6 @@ from polytech.electromagnetisme.domain.magnetostatique.nappe import (
     champ_d_un_seul_cote,
     champ_de_la_nappe,
     champ_de_la_nappe_infinie,
-    champ_par_le_developpement_du_manuscrit,
 )
 
 DECIMALES_DU_CHAMP = 1
@@ -46,33 +46,28 @@ second chiffre est donc necessaire pour que l'ecart se voie.
 """
 
 
-def _macros_des_trois_champs() -> dict[str, str]:
-    """Le juste, celui de la somme du manuscrit, celui de son developpement."""
-    figure = distances_de_la_figure()
-    manuscrit = distances_de_la_somme()
+def _macros_du_champ() -> dict[str, str]:
+    """Le champ juste, celui d'un seul cote, et celui du piege."""
+    distances = distances_a_l_axe()
     return {
         "ChampHuitJuste": nombre(
-            float(champ_de_la_nappe(COURANT, figure)),
-            DECIMALES_DU_CHAMP,
-        ),
-        "ChampHuitParLaFormuleSurLaSommeDuManuscrit": nombre(
-            float(champ_de_la_nappe(COURANT, manuscrit)),
-            DECIMALES_DU_CHAMP,
-        ),
-        "ChampHuitParLeDeveloppement": nombre(
-            float(champ_par_le_developpement_du_manuscrit(COURANT, manuscrit)),
+            float(champ_de_la_nappe(COURANT, distances)),
             DECIMALES_DU_CHAMP,
         ),
         "ChampHuitUnSeulCote": nombre(
-            float(champ_d_un_seul_cote(COURANT, figure)),
+            float(champ_d_un_seul_cote(COURANT, distances)),
+            DECIMALES_DU_CHAMP,
+        ),
+        "ChampHuitParLesLargeurs": nombre(
+            float(champ_de_la_nappe(COURANT, largeurs_de_l_enonce())),
             DECIMALES_DU_CHAMP,
         ),
     }
 
 
 def _macros_de_la_convergence() -> dict[str, str]:
-    """La nappe infinie, et la part qu'en donnent dix paires."""
-    fini = champ_de_la_nappe(COURANT, distances_de_la_figure())
+    """La suite infinie de spires, et la part qu'en donnent les dix."""
+    fini = champ_de_la_nappe(COURANT, distances_a_l_axe())
     infini = champ_de_la_nappe_infinie(COURANT, DEPUIS_UN_CENTIMETRE)
     return {
         "ChampHuitNappeInfinie": nombre(float(infini), DECIMALES_DE_LA_LIMITE),
@@ -85,10 +80,10 @@ def _macros_de_la_convergence() -> dict[str, str]:
 
 
 def macros_champ_huit() -> dict[str, str]:
-    """L'enonce, les sommes, les trois champs et la convergence."""
+    """L'enonce, les sommes, le champ et la convergence."""
     return {
         **macros_de_l_enonce(),
         **macros_des_sommes(),
-        **_macros_des_trois_champs(),
+        **_macros_du_champ(),
         **_macros_de_la_convergence(),
     }

@@ -119,3 +119,16 @@ def test_un_deplacement_nul_est_refuse_par_les_deux_calculs() -> None:
     for calcul in (quotient_des_differences, force_moyenne):
         with pytest.raises(ValueError, match="deplacement nul"):
             calcul(energie, ECARTEMENT, ECARTEMENT)
+
+
+def test_pour_les_donnees_de_l_enonce_l_ecart_serait_d_un_onzieme() -> None:
+    """Dix millimetres d'ecartement, un de deplacement : `1/11`, soit 9 %.
+
+    L'enonce du recueil donne `d = 10 mm` et un deplacement de `1 mm`.
+    Ses armatures sont de revolution, non planes : la loi `C(d)` n'est
+    pas connue. Mais **si** le condensateur etait plan, l'ecart entre la
+    force au depart et la force moyenne serait d'un onzieme -- ordre de
+    grandeur de ce que le « legerement » de l'enonce neglige.
+    """
+    ecart = ecart_relatif_sur_l_ecartement(sp.Rational(10, 1000), sp.Rational(1, 1000))
+    assert ecart == sp.Rational(1, 11)

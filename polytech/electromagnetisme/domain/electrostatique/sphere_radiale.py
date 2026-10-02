@@ -12,14 +12,15 @@ differentielle, `champ_par_gauss` integre la densite sur un volume en
 coordonnees spheriques. Qu'elles s'accordent est donc une verification et
 non une tautologie.
 
-**Le point ou le manuscrit raisonne a l'envers.** Il ecrit « en `r = 0`,
-`E_r = 0`, donc `C = 0` » -- mais on ne peut pas evaluer `r^2 E_r = C` en
-zero pour en deduire que `C` est nul : il faudrait deja savoir que `E_r`
-y est borne. L'argument correct est l'inverse. Le terme ecarte est
-`C/r^2`, il **diverge** a l'origine, et rien ne peut y produire un champ
-infini faute de charge ponctuelle au centre. `terme_divergent_ecarte` le
-rend explicite -- et il satisfait bel et bien l'equation sans source, ce
-qui montre que son rejet demande un argument physique.
+**Le passage a `C = 0`.** Le manuscrit ecrit « en `r = 0`, `E_r = 0`,
+donc `C = 0` ». L'argument est juste : par symetrie, un champ radial
+**borne** est nul au centre. Ce qu'il ne dit pas, c'est ce que vaudrait
+le terme ecarte : `C/r^2`, qui **diverge** a l'origine, et que rien ne
+peut produire faute de charge ponctuelle au centre.
+`terme_divergent_ecarte` le rend explicite -- et il satisfait bel et
+bien l'equation sans source, ce qui montre que son rejet demande un
+argument physique. Cette docstring a qualifie l'argument du manuscrit de
+« raisonnement a l'envers » ; le reproche etait excessif.
 """
 
 from __future__ import annotations

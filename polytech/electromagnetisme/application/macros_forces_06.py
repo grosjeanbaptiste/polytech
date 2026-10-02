@@ -14,7 +14,9 @@ immediatement si la force compte dans un dimensionnement mecanique.
 
 S'y ajoute l'ecart relatif entre la force moyenne -- ce que le quotient
 de l'enonce donne -- et la force au depart, quand c'est l'ecartement qui
-varie. Il est litteral, l'enonce ne donnant pas l'ecartement.
+varie : sous forme litterale, puis chiffre pour les dix millimetres que
+donne le recueil -- au cas ou le condensateur serait plan, ce qu'il n'est
+pas.
 """
 
 from __future__ import annotations
@@ -45,8 +47,11 @@ DEPLACEMENT: Final = 1e-3
 PESANTEUR: Final = 9.81
 """Pour convertir la force en une masse equivalente, en m/s^2."""
 
-ECARTEMENT: Final = sp.Symbol("e", positive=True)
-"""L'ecartement de depart, que l'enonce ne donne pas : il reste litteral."""
+ECARTEMENT: Final = sp.Symbol("d", positive=True)
+"""La distance entre armatures, sous le nom que le recueil lui donne."""
+
+DISTANCE_INITIALE: Final = sp.Rational(10, 1000)
+"""`d = 10 mm`, donnee de l'enonce du recueil -- que le manuscrit n'emploie pas."""
 
 PAS: Final = sp.Symbol(r"\Delta x", positive=True)
 """Le deplacement, sous le nom que l'enonce lui donne."""
@@ -77,5 +82,16 @@ def macros_forces_six() -> dict[str, str]:
         ),
         "ForceSixEcartRelatifSurLEcartement": expression_latex(
             ecart_relatif_sur_l_ecartement(ECARTEMENT, PAS),
+        ),
+        "ForceSixDistanceEnMillimetres": nombre(float(DISTANCE_INITIALE) * 1e3, 0),
+        "ForceSixEcartSiPlan": nombre(
+            float(
+                ecart_relatif_sur_l_ecartement(
+                    DISTANCE_INITIALE,
+                    sp.Rational(DEPLACEMENT).limit_denominator(10**6),
+                ),
+            )
+            * 100,
+            1,
         ),
     }

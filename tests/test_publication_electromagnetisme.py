@@ -24,6 +24,7 @@ import sympy as sp
 
 from polytech.electromagnetisme.application.formatage import (
     expression_latex,
+    forme_logarithmique,
     forme_signee,
     nombre,
 )
@@ -196,3 +197,37 @@ def test_la_forme_signee_laisse_une_expression_positive_intacte() -> None:
     ordonnee = sp.Symbol("y", positive=True)
     rendu = forme_signee(1 / ordonnee + 2 / ordonnee)
     assert not rendu.startswith("-")
+
+
+def test_un_multiple_de_logarithme_se_rend_coefficient_fois_logarithme() -> None:
+    r"""`k (ln d - ln(a + d))` se compose `k \ln(d / (a + d))`.
+
+    Sympy integre `1/x` en une **difference** de logarithmes, et la
+    recombine en un logarithme de puissance -- forme exacte, illisible,
+    et que personne n'ecrit. Le rapport voulu est donc donne par
+    l'appelant : c'est lui qui sait lequel le manuscrit emploie.
+    """
+    a, d, k = sp.symbols("a d k", positive=True)
+    expression = k * sp.log(d) - k * sp.log(a + d)
+    rendu = forme_logarithmique(expression, d / (a + d))
+    assert rendu == r"k \ln{\left(\frac{d}{a + d} \right)}"
+
+
+def test_le_rapport_inverse_change_le_signe_du_coefficient() -> None:
+    """`ln(d/(a+d)) = -ln((a+d)/d)` : le meme nombre, ecrit des deux facons."""
+    a, d, k = sp.symbols("a d k", positive=True)
+    expression = k * sp.log(d) - k * sp.log(a + d)
+    rendu = forme_logarithmique(expression, (a + d) / d)
+    assert rendu == r"- k \ln{\left(\frac{a + d}{d} \right)}"
+
+
+def test_une_expression_qui_n_est_pas_un_multiple_du_logarithme_est_refusee() -> None:
+    """Sans quoi le « coefficient » contiendrait lui-meme un logarithme.
+
+    L'outil ne doit pas rendre une forme fausse en silence : si
+    l'expression n'est pas proportionnelle au logarithme annonce, il le
+    dit.
+    """
+    a, d, k = sp.symbols("a d k", positive=True)
+    with pytest.raises(ValueError, match="pas un multiple"):
+        forme_logarithmique(k * sp.log(d), d / (a + d))
