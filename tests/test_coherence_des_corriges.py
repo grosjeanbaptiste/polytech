@@ -178,6 +178,10 @@ def test_le_document_nomme_ses_origines(travail: str) -> None:
     assert "polytech.electromagnetisme" in texte
 
 
+PREAMBULE = TRAVAUX / "preambule.tex"
+"""Le preambule partage par les vingt et un corriges d'electromagnetisme."""
+
+
 @pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
 def test_le_pdf_est_compile_apres_ses_macros(travail: str) -> None:
     """Bout en bout : le PDF existe et n'est pas anterieur a ses valeurs.
@@ -192,3 +196,120 @@ def test_le_pdf_est_compile_apres_ses_macros(travail: str) -> None:
     pdf = pdfs[0]
     assert pdf.read_bytes().startswith(b"%PDF")
     assert pdf.stat().st_mtime >= (dossier / "resultats.tex").stat().st_mtime
+
+
+@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+def test_le_pdf_est_compile_apres_le_preambule_partage(travail: str) -> None:
+    r"""Et pas anterieur au preambule, qui est une source comme une autre.
+
+    Trou constate le jour ou le preambule a gagne la macro `\oiint` : la
+    garde precedente ne regarde que `resultats.tex`, si bien que les dix
+    PDF deja composes restaient « a jour » alors qu'ils avaient ete
+    produits par un preambule anterieur. Un changement de preambule qui
+    deplacerait une marge ou changerait une police passerait donc
+    inapercu sur tous les documents a la fois.
+
+    Le preambule etant partage, cette garde vaut pour les vingt et un
+    corriges a venir : une seule ligne modifiee la fera tomber partout,
+    ce qui est exactement ce qu'on veut -- il faut alors tout
+    recomposer.
+    """
+    dossier = TRAVAUX / travail
+    pdfs = sorted(dossier.glob("*.pdf"))
+    if not pdfs:
+        pytest.skip(f"{travail} : PDF absent, recompiler le document")
+    assert pdfs[0].stat().st_mtime >= PREAMBULE.stat().st_mtime
+
+
+AVERTISSEMENTS_DE_TEX = (
+    ("Missing character", "un glyphe absent de la police, perdu en silence"),
+    ("Undefined", "un renvoi mort"),
+    ("Overfull", "du texte qui deborde dans la marge"),
+    ("Underfull", "une ligne lachee, aux espaces distendus"),
+    ("has been deprecated", "une commande que le paquet ne maintient plus"),
+)
+"""Les cinq familles d'avertissement qui signalent un defaut visible.
+
+Reprises du controle qui existait pour le corrige de mecanique des
+fluides. Celui-ci ne portait que sur les quatre documents de ce
+dossier-la : les corriges d'electromagnetisme y echappaient tous, et
+neuf debordements de marge y ont vecu sans etre vus -- un par document,
+tous dans la section « Les origines », ou un chemin de fichier en
+`\\texttt` ne se coupe nulle part.
+
+Le perimetre est donc desormais le **registre**, comme pour les autres
+gardes de ce fichier : un corrige a venir est couvert du seul fait de
+s'y inscrire.
+"""
+
+
+@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize(("motif", "ce_que_cela_signale"), AVERTISSEMENTS_DE_TEX)
+def test_la_compilation_ne_laisse_aucun_avertissement(
+    travail: str,
+    motif: str,
+    ce_que_cela_signale: str,
+) -> None:
+    """Un avertissement de TeX est un defaut differe, pas un bruit de fond.
+
+    « Missing character » en est le cas extreme : le caractere disparait
+    du PDF sans que rien n'echoue. « Overfull » est le plus visible : du
+    texte sort dans la marge, et le lecteur le voit avant tout le reste.
+    """
+    dossier = TRAVAUX / travail
+    journaux = [
+        fichier for fichier in sorted(dossier.glob("*.log")) if fichier.stem != "texput"
+    ]
+    if not journaux:
+        pytest.skip(f"{travail} : journal absent, lancer lualatex d'abord")
+    contenu = journaux[0].read_text(encoding="utf-8", errors="replace")
+    occurrences = contenu.count(motif)
+    assert occurrences == 0, f"{travail} : {occurrences} fois, {ce_que_cela_signale}"
+
+
+LIGATURES_A_COMPOSER = (
+    ("œ", r"\oe{}"),
+    ("æ", r"\ae{}"),
+    ("—", "---"),
+)
+"""Caracteres que la police T1 ne porte pas, et leur ligature LaTeX.
+
+Meme defaut que le tiret cadratin litteral, deja garde pour le corrige
+de mecanique des fluides : sous lualatex, une police T1 n'a pas ces
+points de code et le caractere **disparait du PDF sans que rien
+n'echoue**. « nœuds » devenait « nuds », et trois occurrences avaient
+passe deux relectures.
+
+La garde est ecrite ici et non dans l'audit des fluides parce que son
+perimetre doit etre le registre : chaque corrige a venir est couvert du
+seul fait de s'y inscrire. C'est la lecon des neuf debordements de
+marge, qui vivaient dans un angle mort du meme genre.
+"""
+
+
+@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize(("litteral", "ligature"), LIGATURES_A_COMPOSER)
+def test_aucun_document_n_emploie_de_ligature_litterale(
+    travail: str,
+    litteral: str,
+    ligature: str,
+) -> None:
+    """Le caractere n'est admis que dans les commentaires LaTeX.
+
+    Dans un commentaire il ne se compose pas, donc il ne peut pas
+    disparaitre -- et interdire aux commentaires de nommer le caractere
+    dont ils expliquent l'absence serait absurde.
+    """
+    document = _document_du_travail(travail)
+    # On numerote sur le fichier entier et non sur les lignes retenues :
+    # un rang calcule apres filtrage ne designerait aucune ligne reelle,
+    # et le message enverrait le lecteur au mauvais endroit.
+    fautives = [
+        f"ligne {rang} : {ligne.strip()[:58]}"
+        for rang, ligne in enumerate(
+            document.read_text(encoding="utf-8").splitlines(),
+            1,
+        )
+        if litteral in ligne and not ligne.lstrip().startswith("%")
+    ]
+    assert fautives == [], f"{travail} : employer {ligature} plutot que {litteral!r}"

@@ -107,3 +107,43 @@ def test_l_expression_latex_ne_resimplifie_pas() -> None:
     assert expression_latex(r * i + 0) == "I R"
     garde = sp.UnevaluatedExpr(r + r)
     assert "R" in expression_latex(garde)
+
+
+def test_republier_un_contenu_identique_ne_touche_pas_le_fichier(
+    tmp_path: Path,
+) -> None:
+    """Sinon la date de modification bouge, et neuf PDF passent pour perimes.
+
+    Defaut constate le jour du dixieme corrige : regenerer les macros
+    reecrivait les neuf `resultats.tex` existants a l'identique, poussant
+    leur date de modification. La garde « le PDF n'est pas anterieur a
+    ses valeurs » tombait alors pour les neuf travaux d'un coup, alors
+    qu'aucune valeur n'avait change.
+
+    Le remede n'est pas de recompiler neuf documents a chaque passage,
+    c'est de ne pas ecrire quand il n'y a rien a ecrire. La date de
+    modification redevient alors ce qu'elle pretend etre : la date du
+    dernier **changement** de valeur.
+    """
+    chemin = tmp_path / "resultats.tex"
+    publication = FichierDeMacros(chemin=chemin)
+    publication.publier({"Aa": "1"})
+    date = chemin.stat().st_mtime_ns
+    publication.publier({"Aa": "1"})
+    assert chemin.stat().st_mtime_ns == date
+
+
+def test_republier_un_contenu_different_reecrit_le_fichier(
+    tmp_path: Path,
+) -> None:
+    """Le revers de la garde precedente, sans lequel elle serait nuisible.
+
+    Ne plus ecrire quand rien ne change ne doit pas devenir ne plus
+    ecrire du tout : une valeur qui bouge doit arriver dans le fichier,
+    sinon le document composerait l'ancienne.
+    """
+    chemin = tmp_path / "resultats.tex"
+    publication = FichierDeMacros(chemin=chemin)
+    publication.publier({"Aa": "1"})
+    publication.publier({"Aa": "2"})
+    assert r"\newcommand{\Aa}{2}" in chemin.read_text(encoding="utf-8")
