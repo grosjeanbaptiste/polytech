@@ -90,3 +90,24 @@ def pulsation_propre(inductance: float, capacite: float) -> sp.Expr:
         msg = f"L = {inductance} H et C = {capacite} F doivent etre positifs"
         raise ValueError(msg)
     return 1 / sp.sqrt(inductance * capacite)
+
+
+def instant_du_seuil(
+    valeur_finale: sp.Expr,
+    constante: sp.Expr,
+    seuil: sp.Expr,
+) -> sp.Expr:
+    """L'instant ou une montee du premier ordre, partie de zero, vaut `seuil`.
+
+    `t = -tau ln(1 - s / y_inf)`. La forme fermee evite de resoudre une
+    equation transcendante, et elle dit ce que l'equation cache : la
+    montee n'atteint jamais sa valeur finale, donc un seuil qui l'egale
+    ou la depasse n'a pas d'instant.
+    """
+    if not (seuil > 0):
+        msg = f"seuil nul ou negatif : {seuil}"
+        raise ValueError(msg)
+    if not (seuil < valeur_finale):
+        msg = f"seuil jamais atteint : {seuil} pour une valeur finale {valeur_finale}"
+        raise ValueError(msg)
+    return -constante * sp.log(1 - seuil / valeur_finale)

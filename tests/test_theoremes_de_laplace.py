@@ -19,9 +19,11 @@ from __future__ import annotations
 
 import sympy as sp
 
+from polytech.electromagnetisme.domain.symboles import TEMPS
 from polytech.electromagnetisme.domain.transitoire.laplace import (
     VARIABLE,
     ecart_des_degres,
+    original,
     valeur_finale,
     valeur_initiale,
 )
@@ -124,3 +126,40 @@ def test_un_ecart_de_degres_superieur_a_un_annonce_un_depart_de_zero() -> None:
     transformee = CONSTANTE / (VARIABLE + AMORTISSEMENT) ** 2
     assert ecart_des_degres(transformee) == 2
     assert sp.simplify(valeur_initiale(transformee)) == 0
+
+
+def test_l_original_d_un_etablissement_de_courant_est_une_exponentielle() -> None:
+    """`E / (p (R + p L))` revient a `(E/R) (1 - exp(-R t / L))`.
+
+    Le retour dans le temps est la derniere etape de toute resolution par
+    Laplace, et celle ou les corriges manuscrits decomposent en elements
+    simples a la main. L'oracle est la reponse du premier ordre.
+    """
+    tension, resistance, inductance = sp.symbols("E R L", positive=True)
+    transformee = tension / (VARIABLE * (resistance + VARIABLE * inductance))
+    attendu = tension / resistance * (1 - sp.exp(-resistance * TEMPS / inductance))
+    assert sp.simplify(original(transformee) - attendu) == 0
+
+
+def test_l_original_d_une_constante_sur_p_est_cette_constante() -> None:
+    """`a / p` revient a `a` : un echelon, pour `t > 0`."""
+    hauteur = sp.Symbol("a", positive=True)
+    assert sp.simplify(original(hauteur / VARIABLE) - hauteur) == 0
+
+
+def test_l_original_respecte_les_deux_theoremes_de_valeur() -> None:
+    """Les limites de l'original sont celles que les theoremes annoncent.
+
+    Trois calculs distincts -- deux limites en `p`, une inversion -- et
+    ils doivent s'accorder aux deux bouts.
+    """
+    tension, resistance, capacite = sp.symbols("E R C", positive=True)
+    transformee = tension / (VARIABLE * (1 + VARIABLE * resistance * capacite))
+    temporel = original(transformee)
+    assert (
+        sp.simplify(sp.limit(temporel, TEMPS, 0, "+") - valeur_initiale(transformee))
+        == 0
+    )
+    assert (
+        sp.simplify(sp.limit(temporel, TEMPS, sp.oo) - valeur_finale(transformee)) == 0
+    )

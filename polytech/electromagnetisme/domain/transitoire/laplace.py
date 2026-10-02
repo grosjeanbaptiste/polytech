@@ -31,6 +31,8 @@ from typing import Final
 
 import sympy as sp
 
+from polytech.electromagnetisme.domain.symboles import TEMPS
+
 VARIABLE: Final = sp.Symbol("p", positive=True)
 """La variable de Laplace. Prise positive : les limites sont reelles."""
 
@@ -78,3 +80,31 @@ def ecart_des_degres(transformee: sp.Expr) -> int:
         sp.Poly(numerateur, VARIABLE),
     )
     return int(degre)
+
+
+def original(transformee: sp.Expr) -> sp.Expr:
+    """La fonction du temps dont `transformee` est l'image, pour `t > 0`.
+
+    C'est la derniere etape d'une resolution par Laplace. Un corrige
+    manuscrit la fait par decomposition en elements simples ; ici c'est
+    l'inversion symbolique, qui ne partage rien avec cette decomposition.
+
+    Le resultat vaut pour les instants positifs : l'echelon unite que
+    l'inversion ajoute est remplace par un, ce qu'il vaut alors.
+    """
+    temps = sp.Symbol("t", positive=True)
+    inverse = sp.inverse_laplace_transform(transformee, VARIABLE, temps)
+    return _exposants_reduits(sp.simplify(inverse.subs(temps, TEMPS)))
+
+
+def _exposants_reduits(expression: sp.Expr) -> sp.Expr:
+    """Reduit chaque exposant d'exponentielle a sa fraction la plus simple.
+
+    L'inversion rend volontiers `exp(-t (a + b)^2 / (c (a + b)))`, que la
+    simplification generale ne reconnait pas pour `exp(-t (a + b) / c)`.
+    Deux ecritures du meme amortissement ne se compareraient alors pas.
+    """
+    return expression.replace(
+        lambda terme: isinstance(terme, sp.exp),
+        lambda terme: sp.exp(sp.factor(sp.cancel(terme.args[0]))),
+    )

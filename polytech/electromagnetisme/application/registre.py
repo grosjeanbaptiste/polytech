@@ -60,6 +60,9 @@ from polytech.electromagnetisme.application.macros_seance_21_autres import (
 from polytech.electromagnetisme.application.macros_seance_24 import (
     macros_de_la_seance_deux_quatre,
 )
+from polytech.electromagnetisme.application.macros_seance_31 import (
+    macros_de_la_seance_trois_un,
+)
 from polytech.electromagnetisme.application.macros_statique_05 import (
     macros_statique_cinq,
 )
@@ -117,6 +120,7 @@ JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "exs-03-circuits-magnetiques-06": _jeu_exercice_six,
     "exs-03-stationnaire-2-1": macros_de_la_seance_deux_un,
     "exs-03-stationnaire-2-4": macros_de_la_seance_deux_quatre,
+    "exs-04-variable-3-1": macros_de_la_seance_trois_un,
     "exs-04-transitoire-05": macros_transitoire_cinq,
     "exs-03-thevenin-norton-01": _jeu_thevenin_norton,
     "exs-03-thevenin-08": _jeu_exercice_huit,

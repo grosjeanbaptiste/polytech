@@ -442,3 +442,41 @@ def test_le_corrige_remonte_au_recueil_et_non_au_seul_manuscrit(travail: str) ->
         assert RECUEIL not in contenu, f"{travail} : exemption devenue inutile"
         return
     assert RECUEIL in contenu, f"{travail} : le recueil n'est pas cite"
+
+
+DECIMALE = re.compile(r"-?(\d+\.\d+(e-?\d+)?|\d+e-?\d+)")
+"""Une valeur a point decimal ou a exposant : ce que siunitx doit composer."""
+
+PAR_SIUNITX = re.compile(r"\\(num|qty|numrange|qtyrange)\{\s*-?\s*$")
+"""Ce qui doit preceder immediatement la macro : une commande de siunitx."""
+
+ETIQUETTES = {
+    "DeuxQuatreSeance": "le numero de la seance 2.4 : une etiquette, non une mesure",
+}
+"""Les macros a point qui ne sont pas des nombres, et pourquoi."""
+
+
+@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+def test_toute_valeur_decimale_est_composee_par_siunitx(travail: str) -> None:
+    r"""Une macro numerique nue compose un point decimal, ou pire un `1e4`.
+
+    Les valeurs sont publiees dans la syntaxe d'entree de siunitx : point
+    decimal, exposant en `e`. C'est `\num` ou `\qty` qui en font une
+    virgule et une puissance de dix. Employee nue en mode mathematique,
+    la macro compose sa syntaxe d'entree telle quelle : `2.5 p + 53.1`
+    dans un document francais, et `(1e4)^2` pour dix kilovolts au carre.
+
+    Vingt-quatre emplois de ce genre vivaient dans cinq corriges. Aucun
+    journal ne les signale : la compilation reussit, et le resultat se
+    lit presque. Ils ont ete vus sur une page rendue.
+    """
+    contenu = "\n".join(_lignes_de_contenu(_document_du_travail(travail)))
+    nues = []
+    for nom, valeur in macros_du_travail(travail).items():
+        if nom in ETIQUETTES or DECIMALE.fullmatch(valeur) is None:
+            continue
+        for emploi in re.finditer(rf"\\{nom}(?![A-Za-z])", contenu):
+            avant = contenu[max(0, emploi.start() - 14) : emploi.start()]
+            if PAR_SIUNITX.search(avant) is None:
+                nues.append(nom)
+    assert sorted(set(nues)) == [], f"{travail} : employer \\num autour de ces macros"
