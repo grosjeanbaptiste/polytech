@@ -24,6 +24,7 @@ from typing import Final
 RACINE = Path(__file__).resolve().parent.parent
 README = RACINE / "README.md"
 TRAVAUX = RACINE / "travaux" / "Electromagnetisme"
+TRAVAUX_SIGNAUX = RACINE / "travaux" / "SignauxSystemes"
 
 NUMERAUX: Final = {
     "un": 1,
@@ -53,19 +54,37 @@ NUMERAUX: Final = {
 ANNONCE = re.compile(r"\*\*(\d+) documents LaTeX\*\*")
 DECOMPOSITION = re.compile(
     r"les quatre de l'activité\s+d'intégration de mécanique des fluides, "
-    r"celui du TP 1 de thermique, les\s+([\w-]+(?: et un)?) corrigés "
+    r"celui du TP 1 de thermique, (?:une?|[\w-]+)\s+corrigés? de signaux, "
+    r"les\s+([\w-]+(?: et un)?) corrigés "
     r"d'électromagnétisme déjà écrits, et les (\d+) planches",
 )
 
 
-def _corriges_d_electromagnetisme() -> int:
+def _corriges_de(matiere: Path) -> int:
     """Les dossiers de travail qui portent un document compose."""
     return sum(
         1
-        for dossier in TRAVAUX.iterdir()
+        for dossier in matiere.iterdir()
         if dossier.is_dir()
         and any(f.name != "resultats.tex" for f in dossier.glob("*.tex"))
     )
+
+
+def _corriges_d_electromagnetisme() -> int:
+    """Les corriges d'electromagnetisme, un par dossier de travail."""
+    return _corriges_de(TRAVAUX)
+
+
+SIGNAUX = re.compile(r"(une?|[\w-]+)\s+corrigés? de signaux")
+"""Le terme des signaux, ecrit en lettres comme celui d'electromagnetisme."""
+
+
+def test_le_nombre_de_corriges_de_signaux_annonce_en_lettres_est_exact() -> None:
+    """Le TP 1 de signaux a ouvert un second terme qui bougera, lui aussi."""
+    trouve = SIGNAUX.search(README.read_text(encoding="utf-8"))
+    assert trouve is not None
+    annonce = 1 if trouve.group(1) in {"un", "une"} else NUMERAUX[trouve.group(1)]
+    assert annonce == _corriges_de(TRAVAUX_SIGNAUX)
 
 
 def test_la_decomposition_est_bien_presente_dans_le_readme() -> None:
@@ -85,7 +104,7 @@ def test_le_nombre_de_corriges_annonce_en_lettres_est_exact() -> None:
 
 
 def test_la_decomposition_fait_bien_le_total_annonce() -> None:
-    """Quatre, plus un, plus les corriges, plus les planches.
+    """Quatre, plus un, plus les deux comptes de corriges, plus les planches.
 
     C'est le controle que le lecteur ferait, et il doit aboutir.
     """
@@ -94,7 +113,8 @@ def test_la_decomposition_fait_bien_le_total_annonce() -> None:
     trouve = DECOMPOSITION.search(texte)
     assert total is not None
     assert trouve is not None
-    somme = 4 + 1 + NUMERAUX[trouve.group(1)] + int(trouve.group(2))
+    signaux = _corriges_de(TRAVAUX_SIGNAUX)
+    somme = 4 + 1 + signaux + NUMERAUX[trouve.group(1)] + int(trouve.group(2))
     assert somme == int(total.group(1))
 
 

@@ -26,19 +26,68 @@ from __future__ import annotations
 import re
 import shutil
 import subprocess
+import tomllib
 from pathlib import Path
 
 import pytest
 
-from polytech.electromagnetisme.application.generation import GenererMacros
-from polytech.electromagnetisme.application.registre import (
-    JEUX_DE_MACROS,
-    macros_du_travail,
-)
-from polytech.electromagnetisme.infrastructure.latex import FichierDeMacros
+from polytech.electromagnetisme.application import generation as generation_em
+from polytech.electromagnetisme.application import registre as registre_em
+from polytech.electromagnetisme.infrastructure import latex as latex_em
+from polytech.signaux.application import generation as generation_signaux
+from polytech.signaux.application import registre as registre_signaux
+from polytech.signaux.infrastructure import latex as latex_signaux
 
 RACINE = Path(__file__).resolve().parent.parent
 TRAVAUX = RACINE / "travaux" / "Electromagnetisme"
+TRAVAUX_SIGNAUX = RACINE / "travaux" / "SignauxSystemes"
+
+DOSSIERS = {
+    **{slug: TRAVAUX / slug for slug in registre_em.JEUX_DE_MACROS},
+    **{slug: TRAVAUX_SIGNAUX / slug for slug in registre_signaux.JEUX_DE_MACROS},
+}
+"""Chaque travail garde, et son dossier : les deux matieres a la fois.
+
+Les gardes de ce fichier etaient ecrites pour l'electromagnetisme. Le
+premier corrige de signaux -- le TP 1 -- les recoit telles quelles plutot
+qu'une copie : une garde recopiee derive, et c'est l'origine de ce
+fichier. Les noms de dossier ne se recouvrent pas d'une matiere a
+l'autre, et un test le verifie.
+"""
+
+BIBLIOTHEQUE = {
+    **dict.fromkeys(registre_em.JEUX_DE_MACROS, "polytech.electromagnetisme"),
+    **dict.fromkeys(registre_signaux.JEUX_DE_MACROS, "polytech.signaux"),
+}
+"""Le contexte qui calcule les valeurs de chaque travail."""
+
+
+def macros_du_travail(travail: str) -> dict[str, str]:
+    """Les macros du travail, prises au registre de sa matiere."""
+    if travail in registre_signaux.JEUX_DE_MACROS:
+        return registre_signaux.macros_du_travail(travail)
+    return registre_em.macros_du_travail(travail)
+
+
+def _regenerer(travail: str, chemin: Path) -> None:
+    """Regenere les macros du travail par la commande de sa matiere."""
+    if travail in registre_signaux.JEUX_DE_MACROS:
+        generation_signaux.GenererMacros(
+            publication=latex_signaux.FichierDeMacros(chemin=chemin),
+            travail=travail,
+        ).executer()
+        return
+    generation_em.GenererMacros(
+        publication=latex_em.FichierDeMacros(chemin=chemin),
+        travail=travail,
+    ).executer()
+
+
+def test_aucun_dossier_n_appartient_aux_deux_matieres() -> None:
+    """Sans quoi un travail serait garde avec les macros de l'autre."""
+    communs = set(registre_em.JEUX_DE_MACROS) & set(registre_signaux.JEUX_DE_MACROS)
+    assert communs == set()
+
 
 LONGUEUR_EXAMINEE = 3
 """En dessous, un nombre est trop commun pour qu'on puisse l'interdire."""
@@ -73,9 +122,7 @@ dit lesquels comptent.
 def _document_du_travail(travail: str) -> Path:
     """Le seul `.tex` du dossier qui ne soit pas un fragment genere."""
     candidats = [
-        f
-        for f in sorted((TRAVAUX / travail).glob("*.tex"))
-        if f.name != "resultats.tex"
+        f for f in sorted(DOSSIERS[travail].glob("*.tex")) if f.name != "resultats.tex"
     ]
     if len(candidats) != 1:
         msg = f"{travail} : un seul document attendu, trouve {candidats}"
@@ -96,7 +143,7 @@ def _lignes_de_contenu(document: Path) -> list[str]:
     ]
 
 
-@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize("travail", sorted(DOSSIERS))
 def test_le_document_inclut_ses_macros_et_le_preambule(travail: str) -> None:
     """Sans ces deux lignes, rien ne compilerait ou rien ne serait defini."""
     texte = _document_du_travail(travail).read_text(encoding="utf-8")
@@ -104,19 +151,16 @@ def test_le_document_inclut_ses_macros_et_le_preambule(travail: str) -> None:
     assert r"\input{../preambule}" in texte
 
 
-@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize("travail", sorted(DOSSIERS))
 def test_le_fichier_de_macros_est_a_jour(travail: str, tmp_path: Path) -> None:
     """Regenerer ne doit rien changer : sinon la lib a derive du document."""
     frais = tmp_path / "resultats.tex"
-    GenererMacros(
-        publication=FichierDeMacros(chemin=frais),
-        travail=travail,
-    ).executer()
-    attendu = (TRAVAUX / travail / "resultats.tex").read_text(encoding="utf-8")
+    _regenerer(travail, frais)
+    attendu = (DOSSIERS[travail] / "resultats.tex").read_text(encoding="utf-8")
     assert frais.read_text(encoding="utf-8") == attendu
 
 
-@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize("travail", sorted(DOSSIERS))
 def test_chaque_macro_publiee_est_consommee(travail: str) -> None:
     """Une macro publiee et jamais citee est un calcul fait pour rien."""
     texte = _document_du_travail(travail).read_text(encoding="utf-8")
@@ -126,7 +170,7 @@ def test_chaque_macro_publiee_est_consommee(travail: str) -> None:
     assert oubliees == []
 
 
-@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize("travail", sorted(DOSSIERS))
 def test_aucune_valeur_calculee_n_est_ecrite_en_chiffres(travail: str) -> None:
     """La garde centrale, et elle se deduit des macros du travail.
 
@@ -154,7 +198,7 @@ def test_aucune_valeur_calculee_n_est_ecrite_en_chiffres(travail: str) -> None:
     assert fautes == []
 
 
-@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize("travail", sorted(DOSSIERS))
 def test_le_document_annonce_sa_complementarite(travail: str) -> None:
     """La consigne est explicite : ces corriges **completent** l'officiel.
 
@@ -166,7 +210,7 @@ def test_le_document_annonce_sa_complementarite(travail: str) -> None:
     assert "Ce que le corrigé officiel donne" in texte
 
 
-@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize("travail", sorted(DOSSIERS))
 def test_le_document_nomme_ses_origines(travail: str) -> None:
     """Rien ne doit tomber du ciel : l'enonce, les calculs, les nombres.
 
@@ -177,21 +221,17 @@ def test_le_document_nomme_ses_origines(travail: str) -> None:
     texte = _document_du_travail(travail).read_text(encoding="utf-8")
     assert "Les origines" in texte
     assert "transcriptions/" in texte or "cours-markdown" in texte
-    assert "polytech.electromagnetisme" in texte
+    assert BIBLIOTHEQUE[travail] in texte
 
 
-PREAMBULE = TRAVAUX / "preambule.tex"
-"""Le preambule partage par les vingt et un corriges d'electromagnetisme."""
-
-
-@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize("travail", sorted(DOSSIERS))
 def test_le_pdf_est_compile_apres_ses_macros(travail: str) -> None:
     """Bout en bout : le PDF existe et n'est pas anterieur a ses valeurs.
 
     Une macro mal nommee ferait echouer lualatex, donc laisserait le PDF
     absent ou perime -- c'est ce que cette garde attrape.
     """
-    dossier = TRAVAUX / travail
+    dossier = DOSSIERS[travail]
     pdfs = sorted(dossier.glob("*.pdf"))
     if not pdfs:
         pytest.skip(f"{travail} : PDF absent, recompiler le document")
@@ -200,7 +240,7 @@ def test_le_pdf_est_compile_apres_ses_macros(travail: str) -> None:
     assert pdf.stat().st_mtime >= (dossier / "resultats.tex").stat().st_mtime
 
 
-@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize("travail", sorted(DOSSIERS))
 def test_le_pdf_est_compile_apres_le_preambule_partage(travail: str) -> None:
     r"""Et pas anterieur au preambule, qui est une source comme une autre.
 
@@ -216,11 +256,12 @@ def test_le_pdf_est_compile_apres_le_preambule_partage(travail: str) -> None:
     ce qui est exactement ce qu'on veut -- il faut alors tout
     recomposer.
     """
-    dossier = TRAVAUX / travail
+    dossier = DOSSIERS[travail]
     pdfs = sorted(dossier.glob("*.pdf"))
     if not pdfs:
         pytest.skip(f"{travail} : PDF absent, recompiler le document")
-    assert pdfs[0].stat().st_mtime >= PREAMBULE.stat().st_mtime
+    preambule = DOSSIERS[travail].parent / "preambule.tex"
+    assert pdfs[0].stat().st_mtime >= preambule.stat().st_mtime
 
 
 AVERTISSEMENTS_DE_TEX = (
@@ -245,7 +286,7 @@ s'y inscrire.
 """
 
 
-@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize("travail", sorted(DOSSIERS))
 @pytest.mark.parametrize(("motif", "ce_que_cela_signale"), AVERTISSEMENTS_DE_TEX)
 def test_la_compilation_ne_laisse_aucun_avertissement(
     travail: str,
@@ -258,7 +299,7 @@ def test_la_compilation_ne_laisse_aucun_avertissement(
     du PDF sans que rien n'echoue. « Overfull » est le plus visible : du
     texte sort dans la marge, et le lecteur le voit avant tout le reste.
     """
-    dossier = TRAVAUX / travail
+    dossier = DOSSIERS[travail]
     journaux = [
         fichier for fichier in sorted(dossier.glob("*.log")) if fichier.stem != "texput"
     ]
@@ -300,7 +341,7 @@ marge, qui vivaient dans un angle mort du meme genre.
 """
 
 
-@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize("travail", sorted(DOSSIERS))
 @pytest.mark.parametrize(("litteral", "ligature"), LIGATURES_A_COMPOSER)
 def test_aucun_document_n_emploie_de_ligature_litterale(
     travail: str,
@@ -332,7 +373,7 @@ ENVIRONNEMENTS_DE_FIGURE = (r"\begin{tikzpicture}", r"\begin{circuitikz}")
 """Ce qui compte pour une figure : un dessin compose, pas une image citee."""
 
 
-@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize("travail", sorted(DOSSIERS))
 def test_le_corrige_porte_au_moins_une_figure(travail: str) -> None:
     """« De la meme facon que le devoir de fluides » : donc avec une figure.
 
@@ -359,7 +400,7 @@ LETTRES_ETRANGERES = range(0x100, 0x250)
 LIGATURES_FRANCAISES = frozenset("œŒ")
 
 
-@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize("travail", sorted(DOSSIERS))
 def test_le_pdf_ne_porte_aucune_lettre_que_le_francais_n_emploie_pas(
     travail: str,
 ) -> None:
@@ -382,7 +423,7 @@ def test_le_pdf_ne_porte_aucune_lettre_que_le_francais_n_emploie_pas(
     -- un clone frais n'a ni l'un ni forcement l'autre. C'est une
     verification, non une mesure : rien du depot n'en depend.
     """
-    pdfs = sorted((TRAVAUX / travail).glob("*.pdf"))
+    pdfs = sorted(DOSSIERS[travail].glob("*.pdf"))
     lecteur = shutil.which("pdftotext")
     if not pdfs or lecteur is None:
         pytest.skip(f"{travail} : PDF ou pdftotext absent")
@@ -415,7 +456,7 @@ SANS_ENONCE_AU_RECUEIL = {
 """Les corriges dont l'enonce ne figure pas au recueil, et pourquoi."""
 
 
-@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize("travail", sorted(DOSSIERS))
 def test_le_corrige_remonte_au_recueil_et_non_au_seul_manuscrit(travail: str) -> None:
     """L'enonce se lit dans le recueil ; le manuscrit n'en est que la solution.
 
@@ -438,6 +479,12 @@ def test_le_corrige_remonte_au_recueil_et_non_au_seul_manuscrit(travail: str) ->
     qu'on ne l'a pas ouvert.
     """
     contenu = "\n".join(_lignes_de_contenu(_document_du_travail(travail)))
+    if travail in registre_signaux.JEUX_DE_MACROS:
+        enonce = tomllib.loads(
+            (DOSSIERS[travail] / "activite.toml").read_text(encoding="utf-8")
+        )["enonce"]
+        assert enonce in contenu, f"{travail} : son enonce n'est pas cite"
+        return
     if travail in SANS_ENONCE_AU_RECUEIL:
         assert RECUEIL not in contenu, f"{travail} : exemption devenue inutile"
         return
@@ -460,7 +507,7 @@ ETIQUETTES = {
 """Les macros a point qui ne sont pas des nombres, et pourquoi."""
 
 
-@pytest.mark.parametrize("travail", sorted(JEUX_DE_MACROS))
+@pytest.mark.parametrize("travail", sorted(DOSSIERS))
 def test_toute_valeur_decimale_est_composee_par_siunitx(travail: str) -> None:
     r"""Une macro numerique nue compose un point decimal, ou pire un `1e4`.
 

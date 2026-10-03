@@ -3,7 +3,7 @@ name = "polytech"
 version = "0.1.0"
 description = "Bibliotheques du cursus Polytech, un contexte borne par matiere"
 requires-python = ">=3.12"
-dependencies = ["sympy>=1.13", "pymupdf4llm>=0.0.17"]
+dependencies = ["sympy>=1.13", "pymupdf4llm>=0.0.17", "numpy>=2.0", "scipy>=1.14"]
 
 [tool.ruff]
 line-length = 88
@@ -46,17 +46,23 @@ ignore = [
 #            tests dont le *pourquoi* ne se lit pas dans le nom en portent
 #            une, et c'est la regle observee dans ce depot.
 "tests/*" = ["S101", "PLR2004", "D100", "D103"]
+# Un script de `travaux/` est autonome : le corrige l'inclut tel quel et
+# un test l'execute par son chemin. Ce n'est pas un paquet, et son
+# dossier -- `lab-01`, au nom du document qu'il resout -- ne pourrait
+# pas en etre un : un tiret n'entre pas dans un nom de module.
+"travaux/*/*/*.py" = ["INP001"]
 
 [tool.mypy]
 strict = true
 warn_unreachable = true
 
-# sympy et mpmath n'exposent ni stubs ni marqueur py.typed. mpmath est
+# sympy, mpmath et scipy n'exposent ni stubs ni marqueur py.typed. scipy
+# sert au seul TP de signaux, dont l'enonce impose `scipy.signal`. mpmath est
 # livre avec sympy, et sert aux deux recoupements numeriques du corps
 # noir ; l'ecart reste circonscrit a ces paquets tiers, et le code de la
 # bibliotheque demeure en mode strict.
 [[tool.mypy.overrides]]
-module = ["sympy.*", "mpmath.*", "pymupdf.*", "pymupdf4llm.*"]
+module = ["sympy.*", "mpmath.*", "pymupdf.*", "pymupdf4llm.*", "scipy.*"]
 ignore_missing_imports = true
 
 # LatexPrinter n'est pas annote en amont : heriter d'un `Any` est le seul
