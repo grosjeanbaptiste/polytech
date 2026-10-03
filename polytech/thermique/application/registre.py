@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-from polytech.thermique.application import macros_tp_02, macros_tp_03
+from polytech.thermique.application import macros_tp_02, macros_tp_03, macros_tp_04
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "tp-02-camion-refrigere": macros_tp_02.macros_du_tp_deux,
     "tp-03-capteur-solaire": macros_tp_03.macros_du_tp_trois,
+    "tp-04-echangeur": macros_tp_04.macros_du_tp_quatre,
 }
 
 
