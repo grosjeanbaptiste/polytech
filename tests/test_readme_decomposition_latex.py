@@ -48,8 +48,12 @@ NUMERAUX: Final = {
     "dix-neuf": 19,
     "vingt": 20,
     "vingt et un": 21,
+    "vingt-deux": 22,
+    "vingt-trois": 23,
+    "vingt-quatre": 24,
+    "vingt-cinq": 25,
 }
-"""De un a vingt et un : la campagne compte vingt et un exercices au plus."""
+"""De un a vingt-cinq : les seances, puis les laboratoires, s'y ajoutent."""
 
 ANNONCE = re.compile(r"\*\*(\d+) documents LaTeX\*\*")
 DECOMPOSITION = re.compile(
