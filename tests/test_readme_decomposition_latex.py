@@ -25,6 +25,7 @@ RACINE = Path(__file__).resolve().parent.parent
 README = RACINE / "README.md"
 TRAVAUX = RACINE / "travaux" / "Electromagnetisme"
 TRAVAUX_SIGNAUX = RACINE / "travaux" / "SignauxSystemes"
+TRAVAUX_THERMIQUE = RACINE / "travaux" / "ThermiqueFondements"
 
 NUMERAUX: Final = {
     "un": 1,
@@ -58,7 +59,8 @@ NUMERAUX: Final = {
 ANNONCE = re.compile(r"\*\*(\d+) documents LaTeX\*\*")
 DECOMPOSITION = re.compile(
     r"les quatre de l'activité\s+d'intégration de mécanique des fluides, "
-    r"celui du TP 1 de thermique, (?:une?|[\w-]+)\s+corrigés? de signaux, "
+    r"(?:celui du TP 1|[\w-]+ corrigés) de thermique,\s+"
+    r"(?:une?|[\w-]+)\s+corrigés? de signaux, "
     r"les\s+([\w-]+(?: et un)?) corrigés "
     r"d'électromagnétisme déjà écrits, et les (\d+) planches",
 )
@@ -91,6 +93,16 @@ def test_le_nombre_de_corriges_de_signaux_annonce_en_lettres_est_exact() -> None
     assert annonce == _corriges_de(TRAVAUX_SIGNAUX)
 
 
+THERMIQUE = re.compile(r"([\w-]+) corrigés de thermique")
+"""Le terme de la thermique, qui a cesse d'etre un document unique au TP 2."""
+
+
+def test_le_nombre_de_corriges_de_thermique_annonce_en_lettres_est_exact() -> None:
+    trouve = THERMIQUE.search(README.read_text(encoding="utf-8"))
+    assert trouve is not None
+    assert NUMERAUX[trouve.group(1)] == _corriges_de(TRAVAUX_THERMIQUE)
+
+
 def test_la_decomposition_est_bien_presente_dans_le_readme() -> None:
     """Sans elle, les deux tests suivants passeraient a vide.
 
@@ -118,7 +130,8 @@ def test_la_decomposition_fait_bien_le_total_annonce() -> None:
     assert total is not None
     assert trouve is not None
     signaux = _corriges_de(TRAVAUX_SIGNAUX)
-    somme = 4 + 1 + signaux + NUMERAUX[trouve.group(1)] + int(trouve.group(2))
+    thermique = _corriges_de(TRAVAUX_THERMIQUE)
+    somme = 4 + thermique + signaux + NUMERAUX[trouve.group(1)] + int(trouve.group(2))
     assert somme == int(total.group(1))
 
 

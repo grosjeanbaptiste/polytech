@@ -37,14 +37,21 @@ from polytech.electromagnetisme.infrastructure import latex as latex_em
 from polytech.signaux.application import generation as generation_signaux
 from polytech.signaux.application import registre as registre_signaux
 from polytech.signaux.infrastructure import latex as latex_signaux
+from polytech.thermique.application import registre as registre_thermique
+from polytech.thermique.application.generation_du_travail import (
+    GenererMacrosDuTravail as GenererThermique,
+)
+from polytech.thermique.infrastructure import latex as latex_thermique
 
 RACINE = Path(__file__).resolve().parent.parent
 TRAVAUX = RACINE / "travaux" / "Electromagnetisme"
 TRAVAUX_SIGNAUX = RACINE / "travaux" / "SignauxSystemes"
+TRAVAUX_THERMIQUE = RACINE / "travaux" / "ThermiqueFondements"
 
 DOSSIERS = {
     **{slug: TRAVAUX / slug for slug in registre_em.JEUX_DE_MACROS},
     **{slug: TRAVAUX_SIGNAUX / slug for slug in registre_signaux.JEUX_DE_MACROS},
+    **{slug: TRAVAUX_THERMIQUE / slug for slug in registre_thermique.JEUX_DE_MACROS},
 }
 """Chaque travail garde, et son dossier : les deux matieres a la fois.
 
@@ -58,6 +65,7 @@ l'autre, et un test le verifie.
 BIBLIOTHEQUE = {
     **dict.fromkeys(registre_em.JEUX_DE_MACROS, "polytech.electromagnetisme"),
     **dict.fromkeys(registre_signaux.JEUX_DE_MACROS, "polytech.signaux"),
+    **dict.fromkeys(registre_thermique.JEUX_DE_MACROS, "polytech.thermique"),
 }
 """Le contexte qui calcule les valeurs de chaque travail."""
 
@@ -66,11 +74,19 @@ def macros_du_travail(travail: str) -> dict[str, str]:
     """Les macros du travail, prises au registre de sa matiere."""
     if travail in registre_signaux.JEUX_DE_MACROS:
         return registre_signaux.macros_du_travail(travail)
+    if travail in registre_thermique.JEUX_DE_MACROS:
+        return registre_thermique.macros_du_travail(travail)
     return registre_em.macros_du_travail(travail)
 
 
 def _regenerer(travail: str, chemin: Path) -> None:
     """Regenere les macros du travail par la commande de sa matiere."""
+    if travail in registre_thermique.JEUX_DE_MACROS:
+        GenererThermique(
+            publication=latex_thermique.FichierDeMacros(chemin=chemin),
+            travail=travail,
+        ).executer()
+        return
     if travail in registre_signaux.JEUX_DE_MACROS:
         generation_signaux.GenererMacros(
             publication=latex_signaux.FichierDeMacros(chemin=chemin),
@@ -85,8 +101,12 @@ def _regenerer(travail: str, chemin: Path) -> None:
 
 def test_aucun_dossier_n_appartient_aux_deux_matieres() -> None:
     """Sans quoi un travail serait garde avec les macros de l'autre."""
-    communs = set(registre_em.JEUX_DE_MACROS) & set(registre_signaux.JEUX_DE_MACROS)
-    assert communs == set()
+    tous = [
+        *registre_em.JEUX_DE_MACROS,
+        *registre_signaux.JEUX_DE_MACROS,
+        *registre_thermique.JEUX_DE_MACROS,
+    ]
+    assert len(tous) == len(set(tous))
 
 
 LONGUEUR_EXAMINEE = 3
@@ -491,7 +511,7 @@ def test_le_corrige_remonte_au_recueil_et_non_au_seul_manuscrit(travail: str) ->
     qu'on ne l'a pas ouvert.
     """
     contenu = "\n".join(_lignes_de_contenu(_document_du_travail(travail)))
-    if travail in registre_signaux.JEUX_DE_MACROS:
+    if travail not in registre_em.JEUX_DE_MACROS:
         enonce = tomllib.loads(
             (DOSSIERS[travail] / "activite.toml").read_text(encoding="utf-8")
         )["enonce"]

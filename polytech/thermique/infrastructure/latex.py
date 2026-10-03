@@ -35,7 +35,13 @@ class FichierDeMacros:
         for nom, valeur in sorted(macros.items()):
             self._exiger_nom_valide(nom)
             lignes.append(rf"\newcommand{{\{nom}}}{{{valeur}}}" + "\n")
-        self.chemin.write_text("".join(lignes), encoding="utf-8")
+        contenu = "".join(lignes)
+        # Republier a l'identique ne touche pas le fichier : sinon sa date
+        # avancerait, et le PDF passerait pour perime sans qu'aucune valeur
+        # n'ait change -- le defaut deja corrige en electromagnetisme.
+        if self.chemin.is_file() and self.chemin.read_text(encoding="utf-8") == contenu:
+            return
+        self.chemin.write_text(contenu, encoding="utf-8")
 
     @staticmethod
     def _exiger_nom_valide(nom: str) -> None:
