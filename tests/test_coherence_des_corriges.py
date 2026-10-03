@@ -447,8 +447,12 @@ def test_le_corrige_remonte_au_recueil_et_non_au_seul_manuscrit(travail: str) ->
 DECIMALE = re.compile(r"-?(\d+\.\d+(e-?\d+)?|\d+e-?\d+)")
 """Une valeur a point decimal ou a exposant : ce que siunitx doit composer."""
 
-PAR_SIUNITX = re.compile(r"\\(num|qty|numrange|qtyrange)\{\s*-?\s*$")
-"""Ce qui doit preceder immediatement la macro : une commande de siunitx."""
+PAR_SIUNITX = re.compile(r"\\(num|qty|ang|numrange|qtyrange)\{\s*-?\s*$")
+"""Ce qui doit preceder immediatement la macro : une commande de siunitx.
+
+`\\ang` en est une : un angle en degres se compose comme un nombre, a
+virgule decimale, et c'est la forme qu'emploient les dephasages.
+"""
 
 ETIQUETTES = {
     "DeuxQuatreSeance": "le numero de la seance 2.4 : une etiquette, non une mesure",
