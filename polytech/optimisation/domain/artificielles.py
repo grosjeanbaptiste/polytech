@@ -31,7 +31,8 @@ def sans_colonnes(
     )
 
 
-def _sans_ligne(tableau: TableauSimplexe, indice: int) -> TableauSimplexe:
+def sans_ligne(tableau: TableauSimplexe, indice: int) -> TableauSimplexe:
+    """Le tableau sans la ligne de cette variable de base."""
     ligne = tableau.base.index(indice) + 1
     gardees = [i for i in range(tableau.coefficients.rows) if i != ligne]
     return TableauSimplexe(
@@ -61,7 +62,7 @@ def chasser_les_nulles(
             echange = changer_de_base(tableau, sortante=indice, entrante=pivots[0])
             tableau = sans_colonnes(echange, artificielles)
         else:
-            tableau = _sans_ligne(tableau, indice)
+            tableau = sans_ligne(tableau, indice)
             eliminees += 1
     return tableau, eliminees
 

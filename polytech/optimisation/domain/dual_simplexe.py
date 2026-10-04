@@ -49,10 +49,28 @@ class DualSimplexe:
         ]
         return min(negatifs)[1] if negatifs else None
 
+    def cout_reduit(self, colonne: int) -> sp.Expr:
+        """`c_B B^-1 a_j - c_j` ; les variables d'ecart ont un cout nul."""
+        couts = [*self.programme.objectif, *([0] * self.programme.equations)]
+        de_base = sum(
+            (
+                couts[b] * self.tableau[rang, colonne]
+                for rang, b in enumerate(self.base)
+            ),
+            sp.Integer(0),
+        )
+        return de_base - couts[colonne]
+
     def colonne_entrante(self, sortante: int) -> int:
-        """Le rapport dual : le plus petit `|cout / coefficient|` negatif."""
+        """Le rapport dual : le plus petit `|cout reduit / coefficient|`.
+
+        Sur les seuls coefficients negatifs de la ligne sortante. C'est ce
+        rapport qui garde la base duale admissible (chapitre V.1, cas 2.b) ;
+        choisir sur le coefficient seul retablissait l'admissibilite sans
+        garantir l'optimum.
+        """
         candidates = [
-            (abs(self.tableau[sortante, c]), c)
+            (abs(self.cout_reduit(c) / self.tableau[sortante, c]), c)
             for c in range(self.colonne_du_second_membre)
             if self.tableau[sortante, c] < 0 and c not in self.base
         ]
@@ -62,7 +80,7 @@ class DualSimplexe:
                 f"negatif, donc aucune colonne ne peut y entrer"
             )
             raise ValueError(msg)
-        return max(candidates)[1]
+        return min(candidates)[1]
 
     def pivoter(self) -> DualSimplexe:
         """Une iteration : un pivot, et la base mise a jour."""
