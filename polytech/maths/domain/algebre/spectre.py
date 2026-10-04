@@ -58,3 +58,19 @@ class Spectre:
             raise ValueError(msg)
         passage, diagonale = self.matrice.diagonalize()
         return sp.Matrix(passage), sp.Matrix(diagonale)
+
+
+def diagonalisee_par(matrice: sp.Matrix, passage: sp.Matrix) -> sp.Matrix:
+    """`D = P^-1 A P`, pour une matrice `P` dont les colonnes sont propres.
+
+    Leve si les colonnes ne forment pas une base, ou si le produit n'est
+    pas diagonal : `P` ne porte alors pas des vecteurs propres de `A`.
+    """
+    if passage.det() == 0:
+        msg = "les colonnes de P ne forment pas une base : determinant nul"
+        raise ValueError(msg)
+    produit = passage.inv() * matrice * passage
+    if not produit.is_diagonal():
+        msg = "les colonnes de P ne sont pas des vecteurs propres : P^-1 A P plein"
+        raise ValueError(msg)
+    return sp.Matrix(produit)
