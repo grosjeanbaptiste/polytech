@@ -87,3 +87,22 @@ def colonne_sans_solution_finie(
         if _ameliore(attrait) and not variables_sortantes(tableau, indice):
             return indice
     return None
+
+
+def colonnes_reduisant_la_penalite(
+    tableau: TableauSimplexe,
+    sens: Optimisation,
+) -> tuple[int, ...]:
+    """Les variables hors base dont le terme en `M` ameliore `z`.
+
+    Ce sont elles, et elles seules, qui peuvent encore faire decroitre les
+    variables artificielles : tant qu'il en reste, la phase I n'est pas
+    finie.
+    """
+    return tuple(
+        indice
+        for indice, attrait in zip(
+            tableau.hors_base, _attraits(tableau, sens), strict=True
+        )
+        if ordre(attrait)[0] > 0
+    )

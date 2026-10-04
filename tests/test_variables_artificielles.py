@@ -19,6 +19,7 @@ from polytech.optimisation.domain.artificielles import (
     somme_des_artificielles,
 )
 from polytech.optimisation.domain.contraintes import Optimisation
+from polytech.optimisation.domain.criteres import colonnes_reduisant_la_penalite
 from polytech.optimisation.domain.depart import (
     a_seconds_membres_non_negatifs,
     base_evidente,
@@ -248,3 +249,33 @@ def test_sans_colonnes_retire_les_variables_hors_base_designees() -> None:
     reduit = sans_colonnes(tableau, (3,))
     assert reduit.hors_base == (2, 4)
     assert reduit.coefficients == sp.Matrix([[0, 1, 3], [5, 6, 8]])
+
+
+def test_un_probleme_augmente_non_borne_ne_prouve_pas_que_p_le_soit() -> None:
+    """Le troisieme couple de la page 95 du chapitre IV contredit la page 60.
+
+    `max 2 x1 + 2 x2`, `-x1 + x2 >= 1`, `x1 - x2 >= 1` est impossible. Son
+    probleme augmente, lui, n'est pas borne : le long de `x1 = x2`, `z`
+    croit sans fin tandis que les deux variables artificielles restent a
+    1. Le cours affirme page 60 qu'alors « les variables artificielles
+    sont necessairement toutes nulles » et que `P` est non borne ; c'est
+    faux ici. Tant qu'une artificielle est positive, seuls les termes en
+    `M` decident, et si aucun ne peut plus la reduire, `P` est impossible.
+    """
+    forme = FormeStandard(
+        couts=sp.Matrix([[2, 2, 0, 0]]),
+        matrice=sp.Matrix([[-1, 1, -1, 0], [1, -1, 0, -1]]),
+        seconds_membres=sp.Matrix([1, 1]),
+    )
+    resolution = methode_des_variables_artificielles(forme, MAX)
+    assert resolution.issue is Issue.IMPOSSIBLE
+    assert (
+        somme_des_artificielles(resolution.tableaux[-1], resolution.artificielles) > 0
+    )
+
+
+def test_les_colonnes_qui_reduisent_la_penalite_ont_un_terme_en_m_favorable() -> None:
+    """Page 63, premier tableau : `x1` et `x2` (`-M - 6`, `-M - 5`), pas `x3` (`M`)."""
+    tableaux = methode_des_variables_artificielles(_illustration_a(), MAX).tableaux
+    assert colonnes_reduisant_la_penalite(tableaux[0], MAX) == (1, 2)
+    assert colonnes_reduisant_la_penalite(tableaux[-1], MAX) == ()
