@@ -79,9 +79,11 @@ class SystemeDifferentiel:
             membre = conditions + force.applyfunc(
                 lambda e: sp.laplace_transform(e, TEMPS, IMAGE, noconds=True)
             )
-        resolvante = (IMAGE * sp.eye(self.matrice.rows) - self.matrice).inv()
-        images = resolvante * membre
-        return images.applyfunc(_original)
+        return (self.resolvante() * membre).applyfunc(_original)
+
+    def resolvante(self) -> sp.Matrix:
+        """`(pI - A)^-1`, l'image de `e^(At)`."""
+        return sp.simplify((IMAGE * sp.eye(self.matrice.rows) - self.matrice).inv())
 
 
 def _original(image: sp.Expr) -> sp.Expr:
