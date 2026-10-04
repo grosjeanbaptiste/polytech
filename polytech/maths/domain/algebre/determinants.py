@@ -55,6 +55,22 @@ class Determinant:
         """La transposee de la comatrice, celle que le fascicule note `A tilde`."""
         return self.matrice.adjugate()
 
+    def comatrice(self) -> sp.Matrix:
+        """La matrice des cofacteurs `(-1)^(i+j) M_ij`, notee `A~` aux exercices."""
+        return self.matrice.cofactor_matrix()
+
+    def inverse(self) -> sp.Matrix:
+        """`A^-1 = tA~ / det A` ; leve si le determinant est nul."""
+        determinant = sp.simplify(self.matrice.det())
+        if determinant == 0:
+            msg = "determinant nul : la matrice n'a pas d'inverse"
+            raise ValueError(msg)
+        return self.comatrice().T / determinant
+
+    def condition_de_singularite(self) -> sp.Eq:
+        """`det A = 0`, factorise : la condition pour des solutions non nulles."""
+        return sp.Eq(sp.factor(self.matrice.det()), 0)
+
     def valeurs_singulieres(self, parametre: sp.Symbol) -> tuple[sp.Expr, ...]:
         """Les valeurs du parametre qui annulent le determinant."""
         racines = sp.solve(sp.Eq(self.matrice.det(), 0), parametre)
