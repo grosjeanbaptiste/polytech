@@ -1,4 +1,12 @@
-"""Le theoreme de la valeur finale (exercice II.3).
+"""Les theoremes de la valeur initiale et de la valeur finale.
+
+Un lemme d'abord : si `f` est de type exponentiel, `F(p)` tend vers 0
+quand `Re(p)` tend vers l'infini. Comme `L(f') = p F(p) - f(+0)`, il vient,
+si `f` et `f'` sont de type exponentiel et si la limite existe,
+
+    lim_{p -> +oo} p F(p) = f(+0).
+
+Pour la valeur finale (exercice II.3) :
 
 Si `f` et `f'` sont de type exponentiel **et si `lim f(t)` existe**, alors
 
@@ -38,3 +46,17 @@ def valeur_finale(image: sp.Expr) -> sp.Expr:
         msg = f"theoreme inapplicable : f n'a pas de limite, pole(s) en {genants}"
         raise ValueError(msg)
     return limite_en_zero(image)
+
+
+def limite_a_l_infini(image: sp.Expr) -> sp.Expr:
+    """`lim_{p -> +oo} F(p)`, nulle pour un original de type exponentiel."""
+    return sp.limit(image, IMAGE, sp.oo)
+
+
+def valeur_initiale(image: sp.Expr) -> sp.Expr:
+    """`f(+0) = lim_{p -> +oo} p F(p)` ; leve si cette limite n'est pas finie."""
+    limite = sp.limit(IMAGE * image, IMAGE, sp.oo)
+    if not limite.is_finite:
+        msg = f"p F(p) n'a pas de limite finie a l'infini : {limite}"
+        raise ValueError(msg)
+    return limite
