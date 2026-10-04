@@ -22,6 +22,9 @@ VARIABLE = sp.Symbol("x", real=True)
 INCONNUE = sp.Symbol("y", real=True)
 FONCTION = sp.Function("y")
 
+SONDES = (1, 2, 3, -1, sp.Rational(1, 2))
+"""Les valeurs de `y` ou lire `f(x)` : il en faut une qui n'annule pas `g`."""
+
 
 class Type(Enum):
     """Les quatre types que le cours enumere."""
@@ -39,14 +42,22 @@ class EquationDuPremierOrdre:
     second_membre: sp.Expr
 
     def _separation(self) -> tuple[sp.Expr, sp.Expr] | None:
-        """`(1/g(y), f(x))` si le second membre se factorise, sinon rien."""
-        en_x = sp.simplify(self.second_membre.subs(INCONNUE, 1))
-        if en_x == 0:
-            return None
-        en_y = sp.simplify(self.second_membre / en_x)
-        if en_y.has(VARIABLE) or en_x.has(INCONNUE):
-            return None
-        return sp.simplify(1 / en_y), en_x
+        """`(1/g(y), f(x))` si le second membre se factorise, sinon rien.
+
+        `f(x)` se lit en figeant `y` ; encore faut-il le figer ailleurs
+        qu'en un zero de `g`, ou le second membre s'annule pour tout `x`.
+        Plusieurs valeurs sont donc essayees : sonder en `y = 1` seul
+        ecartait `y' = x (y^2 - 1) / y`, qui est pourtant separable.
+        """
+        for sonde in SONDES:
+            en_x = sp.simplify(self.second_membre.subs(INCONNUE, sonde))
+            if en_x == 0 or en_x.has(sp.zoo, sp.nan):
+                continue
+            en_y = sp.simplify(self.second_membre / en_x)
+            if en_y.has(VARIABLE) or en_x.has(INCONNUE):
+                return None
+            return sp.simplify(1 / en_y), en_x
+        return None
 
     def _est_lineaire(self) -> bool:
         """Vrai si le second membre est affine en `y`."""
