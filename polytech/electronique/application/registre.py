@@ -9,7 +9,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-from polytech.electronique.application import macros_tp_01, macros_tp_02, macros_tp_03
+from polytech.electronique.application import (
+    macros_tp_01,
+    macros_tp_02,
+    macros_tp_03,
+    macros_tp_04,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -18,6 +23,7 @@ JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "tp-01": macros_tp_01.macros_du_tp_un,
     "tp-02": macros_tp_02.macros_du_tp_deux,
     "tp-03": macros_tp_03.macros_du_tp_trois,
+    "tp-04": macros_tp_04.macros_du_tp_quatre,
 }
 """Le nom du dossier de travail designe le jeu qui l'alimente."""
 
