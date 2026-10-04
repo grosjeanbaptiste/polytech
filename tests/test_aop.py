@@ -12,6 +12,7 @@ import pytest
 import sympy as sp
 
 from polytech.electronique.domain.aop import (
+    CONDUCTANCE,
     GAIN,
     aop,
     saturer,
@@ -103,7 +104,15 @@ def test_a_gain_fini_l_inverseur_garde_le_signe_de_sa_boucle() -> None:
     Inverser les entrees de l'AOP rend la contre-reaction positive, et la
     limite `A -> oo` n'en dit rien : elle est la meme. Seul le gain fini
     porte le sens de la boucle.
+
+    La formule est celle d'une sortie sans resistance interne : elle se
+    compare donc au circuit quand la conductance de sortie `G` du modele
+    de Norton tend vers l'infini, le gain `A` restant fini. A `G` fini, la
+    sortie vaut `(1 - A G R2) V_in / (1 + G (R1 + R2) + A G R1)`.
     """
     sortie = resoudre(_inverseur(), 3)[2]
+    a_g_fini = (1 - GAIN * CONDUCTANCE * R2) * VIN
+    a_g_fini /= 1 + CONDUCTANCE * (R1 + R2) + GAIN * CONDUCTANCE * R1
+    assert sp.simplify(sortie - a_g_fini) == 0
     attendu = -GAIN * R2 / (R1 + R2 + GAIN * R1) * VIN
-    assert sp.simplify(sortie - attendu) == 0
+    assert sp.simplify(limite_a_l_infini(sortie, CONDUCTANCE) - attendu) == 0
