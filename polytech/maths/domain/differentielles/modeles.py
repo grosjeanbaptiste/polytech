@@ -22,12 +22,31 @@ import sympy as sp
 
 from polytech.maths.domain.differentielles.autonomes import EquationAutonome
 from polytech.maths.domain.differentielles.lineaire import EquationLineaire
-from polytech.maths.domain.differentielles.premier_ordre import INCONNUE
+from polytech.maths.domain.differentielles.premier_ordre import (
+    FONCTION,
+    INCONNUE,
+    VARIABLE,
+)
 
 
 def force(masse: object, vitesse: object, temps: sp.Symbol) -> sp.Expr:
     """`F = d(m v)/dt`."""
     return sp.diff(sp.sympify(masse) * sp.sympify(vitesse), temps)
+
+
+def pendule(pesanteur: object, longueur: object) -> tuple[sp.Eq, sp.Eq]:
+    """`theta'' + (g/L) sin(theta) = 0`, et sa linearisee pour les petits angles.
+
+    Le sinus est remplace par son developpement au premier ordre en 0 :
+    c'est ce qui rend l'equation lineaire, et ce qui borne sa validite.
+    """
+    angle = FONCTION(VARIABLE)
+    rapport = sp.sympify(pesanteur) / sp.sympify(longueur)
+    petit = sp.Symbol("u")
+    au_premier_ordre = sp.sin(petit).series(petit, 0, 2).removeO().subs(petit, angle)
+    acceleration = angle.diff(VARIABLE, 2)
+    exacte = sp.Eq(acceleration + rapport * sp.sin(angle), 0)
+    return exacte, sp.Eq(acceleration + rapport * au_premier_ordre, 0)
 
 
 def malthus(reproduction: object, pertes: object) -> EquationLineaire:
