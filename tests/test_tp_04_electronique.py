@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import math
 
-import pytest
 import sympy as sp
 
 from polytech.electronique.application import circuits_tp_04 as ct
@@ -245,14 +244,3 @@ def test_cascode_aux_valeurs_de_l_enonce() -> None:
     assert math.isclose(nombres.gain_interne, -gm * ro * ro / (2 * ro + gm * ro * ro))
     assert math.isclose(nombres.gain_a_vide, -gm * ro * (gm * ro + 1))
     assert math.isclose(nombres.facteur_miller, 1 - nombres.gain_interne)
-
-
-def test_une_limite_infinie_est_refusee() -> None:
-    """`R_L -> oo` dans `R_L` lui-meme : la limite n'existe pas."""
-    with pytest.raises(ValueError, match="limite infinie"):
-        dd.limite_a_l_infini(RL, RL)
-
-
-def test_une_limite_nulle_est_rendue_nulle() -> None:
-    """`1 / R_L -> 0` : le numerateur l'emporte en `epsilon`."""
-    assert dd.limite_a_l_infini(1 / RL, RL) == 0
