@@ -13,6 +13,7 @@ from dataclasses import dataclass
 
 import sympy as sp
 
+from polytech.chemistry.domain import gaz as chimie
 from polytech.fluides.domain.grandeurs import (
     PESANTEUR,
     Hauteur,
@@ -20,11 +21,12 @@ from polytech.fluides.domain.grandeurs import (
     Pression,
 )
 
-CONSTANTE_DES_GAZ = 8.314
-"""Constante molaire des gaz parfaits, en J/(mol K).
+CONSTANTE_DES_GAZ = round(chimie.CONSTANTE_DES_GAZ, 3)
+"""Constante molaire des gaz parfaits, en J/(mol K) : 8,314.
 
-Valeur CODATA 2018 arrondie (8,314 462 618... exactement depuis la
-redefinition du SI de 2019).
+Elle vient de la chimie (`polytech.chemistry.domain.gaz`), qui en porte
+la valeur exacte ; le cours l'arrondit a trois decimales, et c'est cet
+arrondi que le devoir emploie.
 """
 
 TEMPERATURE_AMBIANTE = 293.15
@@ -65,8 +67,8 @@ class GazParfait:
         )
 
 
-AIR: GazParfait = GazParfait(masse_molaire=0.029, nom="air")
-"""Air sec, masse molaire moyenne 29 g/mol (valeur normalisee : 28,96)."""
+AIR: GazParfait = GazParfait(masse_molaire=round(chimie.AIR_SEC, 3), nom="air")
+"""Air sec, masse molaire moyenne 29 g/mol : la valeur de la chimie, arrondie."""
 
 
 def part_negligee(
