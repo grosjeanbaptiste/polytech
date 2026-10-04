@@ -16,6 +16,7 @@ from polytech.optimisation.domain.bases import (
     SolutionDeBase,
     solutions_de_base,
     sommets,
+    supprimer_les_equations_redondantes,
 )
 from polytech.optimisation.domain.formes import FormeStandard
 
@@ -135,3 +136,30 @@ def test_une_solution_degeneree_reste_admissible() -> None:
 def test_un_sommet_degenere_n_est_rendu_qu_une_fois() -> None:
     """Le carre a quatre sommets, bien que (1, 1) vienne de trois bases."""
     assert len(sommets(_degenere(), variables=2)) == 4
+
+
+def test_une_equation_redondante_se_supprime_sans_changer_les_solutions() -> None:
+    """Page 42 : l'hypothese `r(T) = m` n'est pas restrictive."""
+    redondante = FormeStandard(
+        couts=sp.Matrix([[1, 1, 0]]),
+        matrice=sp.Matrix([[1, 1, 1], [2, 2, 2], [1, 0, 0]]),
+        seconds_membres=sp.Matrix([4, 8, 1]),
+    )
+    reduite = supprimer_les_equations_redondantes(redondante)
+    assert reduite.matrice == sp.Matrix([[1, 1, 1], [1, 0, 0]])
+    assert reduite.seconds_membres == sp.Matrix([4, 1])
+
+
+def test_un_systeme_non_redondant_reste_intact() -> None:
+    assert supprimer_les_equations_redondantes(_exemple_1()) == _exemple_1()
+
+
+def test_une_equation_contradictoire_est_refusee() -> None:
+    """`x1 + x2 = 1` et `2 x1 + 2 x2 = 3` : aucune solution, rien a supprimer."""
+    impossible = FormeStandard(
+        couts=sp.Matrix([[1, 1]]),
+        matrice=sp.Matrix([[1, 1], [2, 2]]),
+        seconds_membres=sp.Matrix([1, 3]),
+    )
+    with pytest.raises(ValueError, match="systeme impossible"):
+        supprimer_les_equations_redondantes(impossible)

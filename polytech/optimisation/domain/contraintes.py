@@ -66,6 +66,11 @@ class Contrainte:
             return bool(ecart >= 0)
         return bool(ecart == 0)
 
+    def ecart(self, point: Sequence[object]) -> sp.Expr:
+        """La variable d'ecart : `d - t x` pour `<=`, `t x - d` sinon."""
+        difference = self.premier_membre(point) - self.second_membre
+        return -difference if self.sens is Sens.INFERIEUR else difference
+
     def retournee(self) -> Contrainte:
         """La meme contrainte multipliee par `-1` : le sens s'inverse."""
         inverse = {Sens.INFERIEUR: Sens.SUPERIEUR, Sens.SUPERIEUR: Sens.INFERIEUR}

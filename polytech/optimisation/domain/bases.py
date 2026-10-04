@@ -21,12 +21,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from itertools import combinations
-from typing import TYPE_CHECKING
 
 import sympy as sp
 
-if TYPE_CHECKING:
-    from polytech.optimisation.domain.formes import FormeStandard
+from polytech.optimisation.domain.formes import FormeStandard
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,3 +77,26 @@ def sommets(forme: FormeStandard, variables: int) -> tuple[sp.Matrix, ...]:
         if solution.admissible and point not in points:
             points.append(point)
     return tuple(points)
+
+
+def supprimer_les_equations_redondantes(forme: FormeStandard) -> FormeStandard:
+    """Le meme systeme, sans les equations combinaisons lineaires des precedentes.
+
+    L'hypothese `r(T) = m` « n'est pas restrictive puisqu'une telle
+    equation peut etre supprimee sans changer la solution du probleme »
+    (page 42). Encore faut-il qu'elle soit compatible : sinon le systeme
+    n'a aucune solution, et il n'y a rien a supprimer.
+    """
+    etendue = forme.matrice.row_join(forme.seconds_membres)
+    if etendue.rank() > forme.matrice.rank():
+        msg = f"systeme impossible : r(T) = {forme.matrice.rank()} < r(T, d)"
+        raise ValueError(msg)
+    gardees: list[int] = []
+    for ligne in range(forme.matrice.rows):
+        if forme.matrice[[*gardees, ligne], :].rank() > len(gardees):
+            gardees.append(ligne)
+    return FormeStandard(
+        couts=forme.couts,
+        matrice=forme.matrice[gardees, :],
+        seconds_membres=forme.seconds_membres[gardees, :],
+    )
