@@ -31,6 +31,7 @@ from polytech.thermique.domain.rayonnement.corps_noir import (
     LUMIERE,
     PLANCK,
     emittance,
+    longueur_d_onde_du_maximum,
 )
 
 ALPHA: Final = sp.Symbol("alpha", nonnegative=True)
@@ -87,3 +88,16 @@ def exitance_grise(emissivite: float, temperature: float) -> float:
     """`M = epsilon sigma T^4`, en W/m^2."""
     _exiger_un_facteur(emissivite)
     return emissivite * emittance(temperature)
+
+
+def luminance_maximale(temperature: float) -> float:
+    """La luminance de Planck a son sommet, `lambda_max T = 2898 um K`."""
+    return luminance_de_planck(longueur_d_onde_du_maximum(temperature), temperature)
+
+
+def angle_solide(aire: float, rayon: float) -> float:
+    """`omega = dA / r^2`, en steradians : l'aire interceptee sur la sphere unite."""
+    if rayon <= 0:
+        msg = f"rayon nul ou negatif : {rayon} m"
+        raise ValueError(msg)
+    return aire / rayon**2
