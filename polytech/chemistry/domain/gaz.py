@@ -51,3 +51,14 @@ def quantite_de_gaz(pression: float, volume: float, temperature: float) -> float
         msg = f"volume negatif : {volume} m3"
         raise ValueError(msg)
     return pression * volume / (CONSTANTE_DES_GAZ * temperature)
+
+
+def pression_partielle(fraction_molaire: float, pression_totale: float) -> float:
+    """Loi de Dalton : `p_i = x_i p`, dans l'unite de la pression totale."""
+    if not 0 <= fraction_molaire <= 1:
+        msg = f"fraction molaire hors de [0, 1] : {fraction_molaire}"
+        raise ValueError(msg)
+    if pression_totale < 0:
+        msg = f"pression totale negative : {pression_totale}"
+        raise ValueError(msg)
+    return fraction_molaire * pression_totale

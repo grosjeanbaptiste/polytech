@@ -18,6 +18,7 @@ from polytech.chemistry.domain.gaz import (
     CONSTANTE_DES_GAZ,
     constante_specifique,
     masse_volumique_du_gaz_parfait,
+    pression_partielle,
 )
 from polytech.chemistry.domain.matiere import CONSTANTE_D_AVOGADRO
 from polytech.fluides.domain.grandeurs import Pression
@@ -67,3 +68,19 @@ def test_les_deux_contextes_donnent_la_meme_masse_volumique() -> None:
     chimie = masse_volumique_du_gaz_parfait(101_325, 293.15, AIR_SEC)
     mecanique = fluides.AIR.masse_volumique(Pression(pascals=101_325), 293.15)
     assert math.isclose(chimie, mecanique.kg_par_m3, rel_tol=2e-3)
+
+
+def test_la_loi_de_dalton() -> None:
+    """`p_i = x_i p` : les pressions partielles d'un melange font la pression totale.
+
+    Les fumees de la page 175 du syllabus de thermique, tome 1 : 12,5 % de
+    `CO2`, 6,6 % de `H2O`, 1,9 % de `O2` et 79 % de `N2`, sous 1,013 bar.
+    """
+    fractions = (0.125, 0.066, 0.019, 0.79)
+    partielles = [pression_partielle(x, 1.013) for x in fractions]
+    assert math.isclose(sum(partielles), 1.013)
+    assert math.isclose(partielles[0], 0.1266, abs_tol=5e-5)
+    with pytest.raises(ValueError, match="fraction molaire hors de"):
+        pression_partielle(1.2, 1.013)
+    with pytest.raises(ValueError, match="pression totale negative"):
+        pression_partielle(0.5, -1.0)
