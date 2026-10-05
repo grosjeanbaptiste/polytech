@@ -35,3 +35,21 @@ def elements_de_chebyshev(
     for k in range(1, ordre):
         elements.append(4 * a[k - 1] * a[k] / (b[k - 1] * elements[k - 1]))
     return tuple(elements)
+
+
+def charge_de_chebyshev(ondulation_en_decibels: float, ordre: int) -> float:
+    """`g_(N+1)` : 1 aux ordres impairs, `coth^2(beta / 4)` aux ordres pairs.
+
+    La planche 69 imprime `coth(beta / 4)`, sans le carre ; sa table porte
+    1,3554 pour 0,1 dB, qui est bien le carre.
+    """
+    if ondulation_en_decibels <= 0:
+        msg = f"ondulation non positive : {ondulation_en_decibels}"
+        raise ValueError(msg)
+    if ordre < 1:
+        msg = f"ordre inferieur a un : {ordre}"
+        raise ValueError(msg)
+    if ordre % 2:
+        return 1.0
+    beta = math.log(1 / math.tanh(ondulation_en_decibels / CONSTANTE_DE_RIPPLE))
+    return 1 / math.tanh(beta / 4) ** 2
