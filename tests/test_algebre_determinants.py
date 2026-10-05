@@ -267,3 +267,13 @@ def test_la_reponse_de_l_exercice_8() -> None:
     """`x = 0`, `2` ou `-2`."""
     matrice = M([[2, 2, 3, 4], [2, 2 - X**2, 3, 4], [2, 3, 1, 5], [2, 3, 1, 9 - X**2]])
     assert Determinant(matrice).valeurs_singulieres(X) == (-2, 0, 2)
+
+
+def test_les_operations_elementaires_acceptent_une_matrice_immuable() -> None:
+    """Regression : chaque operation rend une copie, meme d'une matrice immuable."""
+    immuable = sp.ImmutableMatrix([[1, 2], [3, 4]])
+    assert permuter(immuable, 0, 1).matrice == M([[3, 4], [1, 2]])
+    assert multiplier(immuable, 0, 5).matrice == M([[5, 10], [3, 4]])
+    assert combiner(immuable, 1, -3, 0).matrice == M([[1, 2], [0, -2]])
+    assert par_echelonnement(immuable) == -2
+    assert immuable == sp.ImmutableMatrix([[1, 2], [3, 4]])

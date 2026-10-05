@@ -32,14 +32,14 @@ class Transformee:
 
 def permuter(matrice: sp.Matrix, premiere: int, seconde: int) -> Transformee:
     """Propriete 1 : le determinant change de signe."""
-    resultat = matrice.copy()
+    resultat = sp.Matrix(matrice)
     resultat.row_swap(premiere, seconde)
     return Transformee(resultat, sp.Integer(-1))
 
 
 def multiplier(matrice: sp.Matrix, ligne: int, alpha: sp.Expr) -> Transformee:
     """Propriete 2 : le determinant est multiplie par `alpha`."""
-    resultat = matrice.copy()
+    resultat = sp.Matrix(matrice)
     resultat[ligne, :] = alpha * matrice[ligne, :]
     return Transformee(resultat, sp.sympify(alpha))
 
@@ -49,7 +49,7 @@ def combiner(matrice: sp.Matrix, ligne: int, beta: sp.Expr, autre: int) -> Trans
     if ligne == autre:
         msg = "une ligne ne se combine pas avec elle-meme : ce serait la multiplier"
         raise ValueError(msg)
-    resultat = matrice.copy()
+    resultat = sp.Matrix(matrice)
     resultat[ligne, :] = matrice[ligne, :] + beta * matrice[autre, :]
     return Transformee(resultat, sp.Integer(1))
 

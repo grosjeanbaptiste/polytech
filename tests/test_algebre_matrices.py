@@ -385,3 +385,13 @@ def test_les_reponses_e_et_f_de_l_exercice_10(ordre: int) -> None:
     anti = M(ordre, ordre, lambda i, j: lambdas[i] if i + j == ordre - 1 else 0)
     attendue = M(ordre, ordre, lambda i, j: 1 / lambdas[j] if i + j == ordre - 1 else 0)
     assert inverse_par_la_matrice_compagnon(anti) == attendue
+
+
+def test_une_matrice_immuable_s_echelonne_comme_une_autre() -> None:
+    """Regression : `sp.expand` rend une matrice immuable, et il fallait permuter."""
+    immuable = sp.ImmutableMatrix([[0, 1, 2], [3, 4, 5]])
+    resultat = echelonner(immuable)
+    assert resultat.operations == ("l1 <-> l2",)
+    assert resultat.matrice == M([[3, 4, 5], [0, 1, 2]])
+    assert echelonner_simplement(immuable) == M([[1, 0, -1], [0, 1, 2]])
+    assert immuable == sp.ImmutableMatrix([[0, 1, 2], [3, 4, 5]])

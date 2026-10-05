@@ -69,7 +69,7 @@ def _combinaison(cible: int, coefficient: sp.Expr, source: int) -> str:
 
 def echelonner(matrice: sp.Matrix) -> MatriceEchelonnee:
     """La demarche II.7.2, operation par operation."""
-    travail, operations, ligne = matrice.copy(), [], 0
+    travail, operations, ligne = sp.Matrix(matrice), [], 0
     for colonne in range(travail.cols):
         candidates = [i for i in range(ligne, travail.rows) if travail[i, colonne] != 0]
         if not candidates:
