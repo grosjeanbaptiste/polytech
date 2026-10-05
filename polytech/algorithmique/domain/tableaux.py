@@ -13,12 +13,18 @@ compile, et ecrase la memoire voisine.
 
 Ce module refuse ce que le C++ laisse passer : une position hors du
 tableau, un ajout dans un tableau plein.
+
+La boucle sur les elements -- `for (auto elem : tab)` -- travaille sur une
+**copie** de chaque case ; avec `auto&`, sur la case elle-meme.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def indice_valide(indice: int, dimension: int) -> bool:
@@ -71,3 +77,17 @@ class TableauStatique:
     def ajouter_a_la_fin(self, valeur: Any) -> None:  # noqa: ANN401 -- tout type
         """Ecrit dans la premiere case libre."""
         self.inserer(self.taille, valeur)
+
+
+def boucle_sur_les_elements(
+    tableau: list[Any], effet: Callable[[Any], Any], *, par_reference: bool
+) -> tuple[Any, ...]:
+    """`for (auto elem : tab) { ...; elem = effet(elem); }` : ce que la boucle a vu.
+
+    Par reference (`auto&`), l'affectation atteint le tableau ; sinon elle
+    se perd avec la copie, a la fin de chaque tour.
+    """
+    vus = tuple(tableau)
+    if par_reference:
+        tableau[:] = [effet(element) for element in vus]
+    return vus
