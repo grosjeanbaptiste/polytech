@@ -27,16 +27,22 @@ from polytech.thermique.domain.echelle_de_newton import (
     degres_newton_depuis_celsius,
 )
 from polytech.thermique.domain.modes import (
+    MODES_DE_TRANSMISSION,
     MODES_FONDAMENTAUX,
     ModeDeConvection,
     coefficient_superpose,
     flux_de_newton,
     gain_de_la_convection,
-    loi_de_newton_valide,
     mode_de_convection,
     mode_dominant,
     puissance_metabolique_au_repos,
     resistance_depuis_l_echange,
+)
+from polytech.thermique.domain.modes_fondamentaux import ModeFondamental
+from polytech.thermique.domain.validite_de_newton import (
+    ECART_MAXIMAL_DE_NEWTON,
+    echange_lineaire,
+    loi_de_newton_valide,
 )
 
 
@@ -167,16 +173,21 @@ def test_un_sujet_etranger_au_cours_est_nomme() -> None:
         chapitre_du_sujet("thermodynamique des gaz reels")
 
 
-def test_les_trois_modes_fondamentaux_sont_nommes() -> None:
-    """« Modes fondamentaux de transfert » : conduction, convection, rayonnement.
+def test_les_deux_modes_fondamentaux_sont_nommes() -> None:
+    """Planche 19 de l'introduction : « 2 modes fondamentaux de transfert ».
 
-    Trois, et pas quatre : le changement de phase n'en est pas un mode
-    distinct, c'est de la convection avec un terme latent. Le chapitre le
-    pose ainsi, et les porter comme donnee evite de les recompter.
+    « 1. Conductibilite thermique, 2. Rayonnement. » La bibliotheque en
+    portait trois, convection comprise ; le syllabus (tome 1, page 10) dit
+    de celle-ci qu'elle « n'est qu'un cas particulier de la conductibilite ».
     """
-    attendu = 3
-    assert len(MODES_FONDAMENTAUX) == attendu
-    assert "rayonnement" in MODES_FONDAMENTAUX
+    assert MODES_FONDAMENTAUX == ("conductibilite", "rayonnement")
+    assert tuple(mode.name.lower() for mode in ModeFondamental) == MODES_FONDAMENTAUX
+
+
+def test_les_trois_transmissions_restent_nommees() -> None:
+    """Tome 1, page 10 : « conductibilite, convection et rayonnement »."""
+    assert MODES_DE_TRANSMISSION == ("conductibilite", "convection", "rayonnement")
+    assert set(MODES_FONDAMENTAUX) < set(MODES_DE_TRANSMISSION)
 
 
 def test_la_resistance_se_deduit_du_coefficient_d_echange() -> None:
@@ -195,21 +206,44 @@ def test_une_resistance_depuis_un_echange_nul_est_refusee() -> None:
         resistance_depuis_l_echange(echange=0.0, aire=2.0)
 
 
-def test_la_loi_de_newton_cesse_de_valoir_a_grand_ecart() -> None:
-    """« Remarques - validite de la loi de Newton » : le chapitre la borne.
+def test_la_loi_de_newton_ne_vaut_que_dans_un_domaine_restreint() -> None:
+    """« Remarques - validite de la loi de Newton », planche d'introduction.
 
-    Elle suppose un coefficient d'echange **constant**, ce qui cesse
-    d'etre vrai quand l'ecart de temperature modifie les proprietes du
-    fluide ou fait dominer le rayonnement. Le seuil retenu est dit.
+    « La loi n'est donc valide que dans un domaine restreint de
+    temperatures. » Le cours ne chiffre pas ce domaine : il se donne, et
+    la bibliotheque n'en invente plus un.
     """
-    assert loi_de_newton_valide(ecart=20.0)
-    assert not loi_de_newton_valide(ecart=500.0)
+    assert loi_de_newton_valide(ecart=20.0, domaine=50.0)
+    assert loi_de_newton_valide(ecart=50.0, domaine=50.0)
+    assert not loi_de_newton_valide(ecart=60.0, domaine=50.0)
+    with pytest.raises(ValueError, match="domaine nul ou negatif"):
+        loi_de_newton_valide(ecart=20.0, domaine=0.0)
+
+
+def test_le_seuil_de_deux_cents_kelvins_n_est_qu_une_convention() -> None:
+    """Le cours ne le donne pas : il reste nomme, et se passe explicitement."""
+    assert loi_de_newton_valide(ecart=200.0, domaine=ECART_MAXIMAL_DE_NEWTON)
+    assert not loi_de_newton_valide(ecart=200.5, domaine=ECART_MAXIMAL_DE_NEWTON)
 
 
 def test_un_ecart_negatif_ne_change_pas_la_validite() -> None:
     """C'est son module qui compte : refroidir ou chauffer est symetrique."""
-    assert loi_de_newton_valide(ecart=-20.0)
-    assert not loi_de_newton_valide(ecart=-500.0)
+    assert loi_de_newton_valide(ecart=-20.0, domaine=50.0)
+    assert not loi_de_newton_valide(ecart=-60.0, domaine=50.0)
+
+
+def test_seule_la_convection_forcee_est_a_peu_pres_lineaire() -> None:
+    """Meme planche : la convection forcee l'est, pas la naturelle.
+
+    « C'est a peu pres le cas pour la convection forcee mais ce n'est pas
+    le cas pour le rayonnement, ni pour la convection naturelle. »
+    """
+    assert echange_lineaire(ModeDeConvection.FORCEE)
+    assert not echange_lineaire(ModeDeConvection.NATURELLE)
+    assert not echange_lineaire(ModeFondamental.RAYONNEMENT)
+    for muet in (ModeDeConvection.MIXTE, ModeFondamental.CONDUCTIBILITE):
+        with pytest.raises(ValueError, match="le cours ne se prononce pas"):
+            echange_lineaire(muet)
 
 
 def test_la_convection_transporte_mieux_que_la_conduction_pure() -> None:

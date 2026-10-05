@@ -11,6 +11,7 @@ l'exercice II.1.1 de la vitre.
 from __future__ import annotations
 
 import math
+from itertools import pairwise
 
 import pytest
 import sympy as sp
@@ -20,6 +21,7 @@ from polytech.thermique.domain.rayonnement.corps_noir import (
     STEFAN_BOLTZMANN,
     WIEN,
     emittance,
+    exitance_spectrale,
     fraction_emise_sous,
     longueur_d_onde_du_maximum,
     luminance_spectrale,
@@ -66,8 +68,9 @@ def test_la_luminance_de_planck_est_l_exitance_spectrale_sur_pi() -> None:
     attendue = 1.191e8 * 2.0**-5 / math.expm1(14388.0 / 3000.0)
     assert luminance * MICRON == pytest.approx(attendue, rel=1e-3)
     assert luminance_de_planck(1e-8, 300.0) == 0.0
-    exitance = luminance_spectrale(2 * MICRON, 1500.0)
+    exitance = exitance_spectrale(2 * MICRON, 1500.0)
     assert math.pi * luminance == pytest.approx(exitance)
+    assert luminance_spectrale(2 * MICRON, 1500.0) == pytest.approx(luminance)
     with pytest.raises(ValueError, match="longueur d'onde nulle ou negative"):
         luminance_de_planck(0.0, 1500.0)
     with pytest.raises(ValueError, match="temperature nulle ou negative"):
@@ -238,3 +241,36 @@ def test_une_raie_etroite_n_echappe_pas_a_l_integrale() -> None:
     assert facteur_global(raie, solaire, (bas, haut)) == pytest.approx(
         attendu, rel=1e-4
     )
+
+
+def test_l_exitance_spectrale_s_integre_en_stefan_boltzmann() -> None:
+    """1.4.1 et 1.4.2 : `M_o = integrale(m_lambda) = sigma T^4`, et `M_o = pi L_o`.
+
+    `corps_noir.luminance_spectrale` rendait l'exitance sous le nom de la
+    luminance : son integrale donnait `sigma T^4` au lieu de `sigma T^4 / pi`.
+    """
+    temperature = 1200.0
+    bornes = (1e-8, WIEN / temperature, 1e-3)
+    exitance = sum(
+        quad(exitance_spectrale, bas, haut, args=(temperature,), limit=200)[0]
+        for bas, haut in pairwise(bornes)
+    )
+    assert exitance == pytest.approx(emittance(temperature), rel=1e-6)
+    luminance = sum(
+        quad(luminance_spectrale, bas, haut, args=(temperature,), limit=200)[0]
+        for bas, haut in pairwise(bornes)
+    )
+    assert luminance == pytest.approx(emittance(temperature) / math.pi, rel=1e-6)
+    with pytest.raises(ValueError, match="longueur d'onde nulle ou negative"):
+        exitance_spectrale(0.0, temperature)
+
+
+def test_l_exitance_spectrale_s_eteint_aux_courtes_longueurs_d_onde() -> None:
+    """La ou `exp(c_2 / lambda T)` deborde le flottant, la limite exacte est zero.
+
+    La fonction levait `OverflowError` : a 300 K, des 0,06 micrometre.
+    """
+    assert exitance_spectrale(1e-8, 300.0) == 0.0
+    assert exitance_spectrale(0.07 * MICRON, 300.0) > 0.0
+    with pytest.raises(ValueError, match="temperature nulle ou negative"):
+        exitance_spectrale(2 * MICRON, 0.0)

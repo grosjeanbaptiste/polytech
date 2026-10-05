@@ -28,6 +28,9 @@ BOLTZMANN: Final = 1.380649e-23
 LUMIERE: Final = 2.99792458e8
 """Vitesse de la lumiere dans le vide, en m/s."""
 
+EXPOSANT_MAXIMAL: Final = 700.0
+"""Au-dela, `exp` deborde le flottant, et la loi de Planck vaut zero."""
+
 
 def emittance(temperature: float) -> float:
     """`sigma T^4`, l'emittance totale du corps noir, en W/m^2."""
@@ -45,14 +48,29 @@ def longueur_d_onde_du_maximum(temperature: float) -> float:
     return WIEN / temperature
 
 
-def luminance_spectrale(longueur_d_onde: float, temperature: float) -> float:
-    """Loi de Planck, en W/(m^2 m) -- emittance par unite de longueur d'onde."""
+def exitance_spectrale(longueur_d_onde: float, temperature: float) -> float:
+    """Loi de Planck, en W/(m^2 m) : `m_lambda = pi l_lambda`, sur l'hemisphere."""
     if longueur_d_onde <= 0:
         msg = f"longueur d'onde nulle ou negative : {longueur_d_onde} m"
         raise ValueError(msg)
-    numerateur = 2.0 * math.pi * PLANCK * LUMIERE**2
+    if temperature <= 0:
+        msg = f"temperature nulle ou negative : {temperature} K"
+        raise ValueError(msg)
     exposant = PLANCK * LUMIERE / (longueur_d_onde * BOLTZMANN * temperature)
-    return numerateur / (longueur_d_onde**5 * (math.expm1(exposant)))
+    if exposant > EXPOSANT_MAXIMAL:
+        return 0.0  # l'exponentielle deborde le flottant : c'est la limite exacte
+    numerateur = 2.0 * math.pi * PLANCK * LUMIERE**2
+    return numerateur / (longueur_d_onde**5 * math.expm1(exposant))
+
+
+def luminance_spectrale(longueur_d_onde: float, temperature: float) -> float:
+    """`l_lambda = m_lambda / pi`, en W/(m^2 m sr) : par unite d'angle solide.
+
+    Elle rendait l'exitance sous ce nom jusqu'au 2026-10-05. Le corps noir
+    suit la loi de Lambert, et le syllabus (tome 1, 1.4.2) ecrit la loi de
+    Planck pour la luminance.
+    """
+    return exitance_spectrale(longueur_d_onde, temperature) / math.pi
 
 
 def absorptivite_de_kirchhoff(emissivite: float) -> float:

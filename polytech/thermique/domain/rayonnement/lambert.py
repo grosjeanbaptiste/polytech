@@ -28,6 +28,7 @@ import sympy as sp
 
 from polytech.thermique.domain.rayonnement.corps_noir import (
     BOLTZMANN,
+    EXPOSANT_MAXIMAL,
     LUMIERE,
     PLANCK,
     emittance,
@@ -40,8 +41,6 @@ PREMIERE_CONSTANTE: Final = 2.0 * PLANCK * LUMIERE**2
 """`c_1 = 2 h c^2`, en W m^2/sr."""
 SECONDE_CONSTANTE: Final = PLANCK * LUMIERE / BOLTZMANN
 """`c_2 = h c / k`, en m K."""
-EXPOSANT_MAXIMAL: Final = 700.0
-"""Au-dela, `exp` deborde le flottant, et la luminance vaut zero."""
 
 
 def exitance_par_integration(luminance: sp.Expr) -> sp.Expr:

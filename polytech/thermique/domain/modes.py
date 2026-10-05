@@ -104,22 +104,16 @@ def mode_dominant(coefficients: dict[str, float]) -> str:
     return ordonnes[0][0]
 
 
-MODES_FONDAMENTAUX: Final = ("conduction", "convection", "rayonnement")
-"""Les trois modes que le chapitre nomme fondamentaux.
+MODES_FONDAMENTAUX: Final = ("conductibilite", "rayonnement")
+"""Les deux modes que le cours nomme fondamentaux (introduction, planche 19).
 
-Trois, et non quatre : le changement de phase n'est pas un mode distinct
-mais de la convection avec un terme latent. Le chapitre le pose ainsi, et
-les porter comme donnee evite de les recompter a chaque bilan.
+Deux, et non trois : la convection « n'est qu'un cas particulier de la
+conductibilite » (syllabus, tome 1, page 10). `ModeFondamental` les porte
+avec leur comportement ; cette donnee en garde les noms.
 """
 
-ECART_MAXIMAL_DE_NEWTON: Final = 200.0
-"""Au-dela, la loi de Newton cesse de valoir, en kelvins.
-
-Le seuil est choisi et dit. La loi suppose un coefficient d'echange
-**constant** ; a grand ecart les proprietes du fluide varient et le
-rayonnement, en puissance quatrieme, finit par dominer. Deux cents kelvins
-est l'ordre de grandeur que le chapitre retient dans ses remarques.
-"""
+MODES_DE_TRANSMISSION: Final = ("conductibilite", "convection", "rayonnement")
+"""Les trois vocables du syllabus, page 10 : ce que le cours etudie tour a tour."""
 
 
 def resistance_depuis_l_echange(echange: float, aire: float) -> float:
@@ -136,16 +130,6 @@ def resistance_depuis_l_echange(echange: float, aire: float) -> float:
         msg = f"aire nulle ou negative : {aire} m^2"
         raise ValueError(msg)
     return 1.0 / (echange * aire)
-
-
-def loi_de_newton_valide(ecart: float) -> bool:
-    """Vrai si l'ecart reste dans le domaine ou le coefficient est constant.
-
-    C'est le sujet de la planche « remarques - validite de la loi de
-    Newton ». Son module seul compte : refroidir et chauffer sont
-    symetriques de ce point de vue.
-    """
-    return abs(ecart) <= ECART_MAXIMAL_DE_NEWTON
 
 
 def gain_de_la_convection(conduction: float, convection: float) -> float:
