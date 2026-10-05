@@ -276,7 +276,9 @@ def test_la_puissance_entiere_de_la_planche_121() -> None:
     """`a^n = 1` si `n = 0`, `a . a^(n-1)` sinon ; et les produits de la planche 102."""
     assert (puissance(2, 10), puissance(5, 3), puissance(7, 0)) == (1024, 125, 1)
     assert puissance(7, 9) == 40_353_607
-    assert TYPES_ENTIERS["int"].ranger(puissance(3, 21)) == 1_870_418_611
+    entiere = puissance(3, 21)
+    assert isinstance(entiere, int)
+    assert TYPES_ENTIERS["int"].ranger(entiere) == 1_870_418_611
     with pytest.raises(ValueError, match="exposant negatif"):
         puissance(2, -1)
 

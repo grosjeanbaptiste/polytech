@@ -64,7 +64,10 @@ def _exposants(y: int, r: int, s: int, *, naturelle: bool) -> dict[sp.Symbol, sp
     temps = -V - (2 * y if naturelle else y) - Z - r - s
     theta = (-y if naturelle else 0) + Q - s
     equations = (V + s, -2 * V + X + y + 2 * Z + 2 * r - s, theta, temps)
-    return sp.solve(equations, (V, X, Z, Q), dict=True)[0]
+    exposants: dict[sp.Symbol, sp.Expr] = sp.solve(equations, (V, X, Z, Q), dict=True)[
+        0
+    ]
+    return exposants
 
 
 def test_les_exposants_des_trois_groupes_de_la_convection_forcee() -> None:

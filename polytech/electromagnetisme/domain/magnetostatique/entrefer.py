@@ -21,13 +21,11 @@ magnetique ferme tient dans ce rapport.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 
 import sympy as sp
 
-PERMEABILITE_DU_VIDE = 4 * math.pi * 1e-7
-"""`mu_0`, en H/m. Duplique du module des constantes, qui porte la meme."""
+from polytech.electromagnetisme.domain.constantes import PERMEABILITE_DU_VIDE
 
 
 def champ_dans_l_entrefer(induction: float) -> float:

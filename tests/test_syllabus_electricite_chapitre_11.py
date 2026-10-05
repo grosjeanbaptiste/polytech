@@ -51,7 +51,7 @@ def test_la_force_volumique_compte_les_courants_fictifs() -> None:
 def test_la_force_volumique_est_celle_de_lorentz_par_unite_de_volume() -> None:
     """Une charge volumique `rho` de vitesse `v` porte le courant `rho v`."""
     charge, vitesse, induction = 3.0, (0.0, 4.0, 0.0), (0.5, 0.0, 2.0)
-    courant = tuple(charge * v for v in vitesse)
+    courant = (charge * vitesse[0], charge * vitesse[1], charge * vitesse[2])
     lorentz = force_electromagnetique(charge, (0.0, 0.0, 0.0), vitesse, induction)
     assert force_volumique(courant, (0, 0, 0), induction) == pytest.approx(lorentz)
 

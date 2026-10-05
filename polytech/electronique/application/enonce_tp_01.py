@@ -14,11 +14,11 @@ Source : `ElectroniqueInstrumentation/TP/TP_1.pdf`.
 
 from __future__ import annotations
 
-import math
 from typing import Final
 
 import sympy as sp
 
+from polytech.electromagnetisme.domain.constantes import PERMEABILITE_DU_VIDE
 from polytech.electronique.domain.laplace import (
     diviseur_de_tension,
     impedances_en_parallele,
@@ -36,7 +36,7 @@ INDUCTION_DE_SATURATION: Final = 1500 * 1e-4
 CHAMP_DE_SATURATION: Final = 2 * 80.0
 """Deux oersteds, a 80 A/m chacun, la conversion de l'enonce."""
 PAS, SPIRES, SECTION = 1e-3, 20, 25e-6
-MU0: Final = 4 * math.pi * 1e-7
+MU0: Final = PERMEABILITE_DU_VIDE
 COTE, RAYON_DU_FIL, RESISTANCES_DE_LA_BOUCLE = 0.05, 0.65e-3, (10.0, 10e6)
 SOURCE, R1, R2, R3, R4 = 5, 1000, 1000, 10_000, 10_000
 

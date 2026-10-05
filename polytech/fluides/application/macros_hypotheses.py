@@ -25,6 +25,7 @@ from polytech.fluides.domain.statique.gaz import (
     part_negligee_litterale,
 )
 from polytech.fluides.domain.statique.stevin import variation_de_pression
+from polytech.thermique.domain.grandeurs import ZERO_ABSOLU
 
 CIEL_GAZEUX = Hauteur(metres=0.5)
 """Hauteur d'air supposee au-dessus de l'eau dans le reservoir."""
@@ -32,7 +33,7 @@ CIEL_GAZEUX = Hauteur(metres=0.5)
 CIEL_GAZEUX_MAJORANT = Hauteur(metres=2.0)
 """Borne haute plausible du ciel gazeux, pour le calcul du pire cas."""
 
-TEMPERATURE_MINIMALE = 273.15
+TEMPERATURE_MINIMALE = ZERO_ABSOLU
 """Borne basse plausible : de l'eau liquide, donc au moins zero Celsius."""
 
 _CENT = 100

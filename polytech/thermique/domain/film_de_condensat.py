@@ -25,7 +25,7 @@ import math
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING
 
-from polytech.thermique.domain.convection.naturelle import PESANTEUR
+from polytech.fluides.domain.grandeurs import PESANTEUR
 
 if TYPE_CHECKING:
     import sympy as sp

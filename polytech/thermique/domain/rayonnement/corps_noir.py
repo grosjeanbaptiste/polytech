@@ -13,6 +13,8 @@ from __future__ import annotations
 import math
 from typing import Final
 
+from polytech.electromagnetisme.domain.constantes import VITESSE_DE_LA_LUMIERE
+
 STEFAN_BOLTZMANN: Final = 5.670374419e-8
 """Constante de Stefan-Boltzmann, en W/(m^2 K^4)."""
 
@@ -25,7 +27,7 @@ PLANCK: Final = 6.62607015e-34
 BOLTZMANN: Final = 1.380649e-23
 """Constante de Boltzmann, en J/K."""
 
-LUMIERE: Final = 2.99792458e8
+LUMIERE: Final = VITESSE_DE_LA_LUMIERE
 """Vitesse de la lumiere dans le vide, en m/s."""
 
 EXPOSANT_MAXIMAL: Final = 700.0

@@ -170,11 +170,11 @@ def test_le_facteur_par_bandes_est_l_integrale() -> None:
 
     for temperature in (300.0, 1000.0, 6000.0):
         par_bandes = facteur_global_par_bandes(PLATRE, temperature)
-        integre = facteur_global(
-            platre,
-            lambda longueur, t=temperature: luminance_de_planck(longueur, t),
-            (4 * MICRON,),
-        )
+
+        def planck(longueur: float, t: float = temperature) -> float:
+            return luminance_de_planck(longueur, t)
+
+        integre = facteur_global(platre, planck, (4 * MICRON,))
         assert par_bandes == pytest.approx(integre, abs=2e-4)
     k = fraction_emise_sous(4 * MICRON, 1000.0)
     attendu = 0.1 * k + 0.9 * (1 - k)

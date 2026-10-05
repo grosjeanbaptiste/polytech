@@ -22,8 +22,8 @@ from __future__ import annotations
 
 from typing import Final
 
+from polytech.fluides.domain.grandeurs import PESANTEUR
 from polytech.thermique.domain.convection.naturelle import (
-    PESANTEUR,
     nusselt_du_cylindre_horizontal,
     nusselt_lame_de_fluide,
 )

@@ -17,7 +17,8 @@ from __future__ import annotations
 import math
 from typing import Final
 
-PESANTEUR: Final = 9.81
+from polytech.fluides.domain.grandeurs import PESANTEUR
+
 """Acceleration de la pesanteur, en m/s^2."""
 
 CONDUCTION_PURE: Final = 1400.0

@@ -123,6 +123,8 @@ def test_l_association_en_serie_depend_du_sens_du_flux_mutuel() -> None:
     opposee = inductance_en_serie(
         (L1, L2), M, premier_par_le_point=True, second_par_le_point=False
     )
+    assert isinstance(aidante, sp.Expr)
+    assert isinstance(opposee, sp.Expr)
     assert aidante == L1 + L2 + 2 * M
     assert opposee == L1 + L2 - 2 * M
     assert aidante != 2 * L1 + 2 * M

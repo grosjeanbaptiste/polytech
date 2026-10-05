@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from itertools import pairwise
 from typing import Final
 
+from polytech.thermique.domain.grandeurs import ZERO_ABSOLU
 from polytech.thermique.domain.tables.interpolation import interpoler
 
 
@@ -56,7 +57,7 @@ def eau_saturee(temperature: float) -> EauSaturee:
     return interpoler(TABLE_DE_L_EAU_SATUREE, temperature)
 
 
-ZERO_CELSIUS: Final = 273.15
+ZERO_CELSIUS: Final = ZERO_ABSOLU
 
 
 def _inverse(temperature: float) -> float:

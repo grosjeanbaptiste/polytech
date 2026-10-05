@@ -64,6 +64,11 @@ SAISIE = (1, 2, 55, 33, 4, 9, 7)
 POULES = [("Poule4", 1000), ("Poule3", 1200), ("Poule2", 180), ("Poule1", 200)]
 
 
+def _lus(conteneur: Sequence) -> tuple[object, ...]:
+    """Une lecture fraiche : mypy garde sinon le type etroit de l'assertion d'avant."""
+    return conteneur.elements
+
+
 def test_les_identifiants_et_les_codes_du_programme_1_6() -> None:
     """Page 18 : trois etudiants -- 1 et A, 2 et B, 3 et C."""
     portees = Portees()
@@ -298,9 +303,9 @@ def test_l_execution_du_programme_4_1() -> None:
     tab.erase(2)
     assert tab.elements == (1, 2, 33, 4, 9)
     tab.insert(tab.size() - 1, 99)
-    assert tab.elements == (1, 2, 33, 4, 99, 9)
+    assert _lus(tab) == (1, 2, 33, 4, 99, 9)
     tab.erase(1, tab.size() - 1)
-    assert tab.elements == (1, 9)
+    assert _lus(tab) == (1, 9)
     tab.clear()
     assert tab.empty()
 
@@ -334,7 +339,7 @@ def test_les_listes_du_programme_4_2() -> None:
     l1.unique()
     assert l1.elements == (0, 1, 2, 3, 4, 5, 7, 9, 18)
     l1.remove(4)
-    assert l1.elements == (0, 1, 2, 3, 5, 7, 9, 18)
+    assert _lus(l1) == (0, 1, 2, 3, 5, 7, 9, 18)
     l2 = Sequence("list")
     for geste, valeur in (
         ("push_front", 5),
@@ -388,7 +393,7 @@ def test_le_parcours_vita_de_l_exercice_4_11() -> None:
     assert liste1.elements == ("A", "B", "C", "D")
     etats = _passer_d_une_liste_a_l_autre(liste1, liste2)
     assert etats[0] == "A B C | D"
-    assert (liste1.elements, liste2.elements) == ((), ("D", "C", "B", "A"))
+    assert (_lus(liste1), _lus(liste2)) == ((), ("D", "C", "B", "A"))
     _passer_d_une_liste_a_l_autre(liste2, liste3)
     assert liste3.elements == ("A", "B", "C", "D")
     with pytest.raises(IndexError, match="conteneur vide"):

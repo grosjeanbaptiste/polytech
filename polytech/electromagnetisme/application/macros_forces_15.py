@@ -23,6 +23,7 @@ from polytech.electromagnetisme.domain.magnetostatique.entrefer import (
     champ_dans_l_entrefer,
     force_a_flux_constant_sur_un_entrefer,
 )
+from polytech.fluides.domain.grandeurs import PESANTEUR
 
 INDUCTION: Final = 1.6
 SECTION: Final = 4e-4
@@ -31,7 +32,6 @@ SPIRES: Final = 500
 LONGUEUR_DU_FER: Final = 2 * 50e-2
 EPAISSEUR: Final = 0.1e-3
 ENTREFERS: Final = 2
-PESANTEUR: Final = 9.81
 
 
 def _circuit(epaisseur: float = EPAISSEUR) -> CircuitAEntrefers:

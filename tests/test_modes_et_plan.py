@@ -29,6 +29,7 @@ from polytech.thermique.domain.echelle_de_newton import (
 from polytech.thermique.domain.modes import (
     MODES_DE_TRANSMISSION,
     MODES_FONDAMENTAUX,
+    RAPPORT_DE_DOMINANCE,
     ModeDeConvection,
     coefficient_superpose,
     flux_de_newton,
@@ -92,18 +93,42 @@ def test_les_trois_modes_de_convection_du_chapitre(
     naturel: float,
     attendu: ModeDeConvection,
 ) -> None:
-    """Le chapitre les distingue, et la frontiere est un rapport.
+    """Le chapitre les distingue par ce qui est negligeable devant quoi.
 
-    Quand l'un des deux coefficients domine l'autre d'un facteur dix, le
-    regime porte son nom ; entre les deux, il est **mixte** -- et le
-    chapitre insiste parce que les correlations ne sont pas les memes.
+    Planche 22 : en convection mixte, les forces d'Archimede sont « non
+    negligeables » a cote du mouvement impose. Le cours ne chiffre pas ce
+    « negligeable » : le rapport de dominance se donne. Avec dix, la
+    convention de la bibliotheque, un regime porte le nom du coefficient
+    qui domine l'autre d'un facteur dix.
     """
-    assert mode_de_convection(force=force, naturel=naturel) == attendu
+    regime = mode_de_convection(
+        force=force, naturel=naturel, dominance=RAPPORT_DE_DOMINANCE
+    )
+    assert regime == attendu
+
+
+def test_le_rapport_de_dominance_deplace_la_frontiere() -> None:
+    """Le meme couple est mixte ou force selon ce qu'on tient pour negligeable."""
+    assert pytest.approx(10.0) == RAPPORT_DE_DOMINANCE
+    assert (
+        mode_de_convection(force=30.0, naturel=10.0, dominance=10.0)
+        is ModeDeConvection.MIXTE
+    )
+    assert (
+        mode_de_convection(force=30.0, naturel=10.0, dominance=3.0)
+        is ModeDeConvection.FORCEE
+    )
+    assert (
+        mode_de_convection(force=10.0, naturel=30.0, dominance=3.0)
+        is ModeDeConvection.NATURELLE
+    )
 
 
 def test_un_coefficient_de_convection_nul_est_refuse() -> None:
     with pytest.raises(ValueError, match="coefficient de convection"):
-        mode_de_convection(force=0.0, naturel=10.0)
+        mode_de_convection(force=0.0, naturel=10.0, dominance=10.0)
+    with pytest.raises(ValueError, match="rapport de dominance non superieur a un"):
+        mode_de_convection(force=5.0, naturel=10.0, dominance=1.0)
 
 
 def test_les_modes_en_parallele_additionnent_leurs_coefficients() -> None:

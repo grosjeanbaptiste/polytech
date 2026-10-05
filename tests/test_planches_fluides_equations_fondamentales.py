@@ -2,7 +2,7 @@
 
 Source : `MecaniqueFluides/SLIDES/Slides_03_Equations_fondamentales.pdf`,
 planches 2 a 54, lues sur les pages rendues (le fichier
-`3_ITREE101_EquationsFondamentales.pdf` lui est identique, octet pour octet).
+`Slides_03_Equations_fondamentales_2.pdf` lui est identique, octet pour octet).
 
 Les oracles du cours : l'ecoulement de Couette des planches 46 a 50, et
 l'exercice du film d'huile de la planche 52, donne sans reponse et resolu

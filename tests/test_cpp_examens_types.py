@@ -33,7 +33,7 @@ PERSONNES = [("Riri", 20), ("Fifi", 40), ("Lou Lou", 25)]
 ETUDIANTS = [("Van Ix", (20, 9)), ("Obelix", (20, 5)), ("Amerix", (15, 0))]
 
 
-def _nom(element: tuple[str, ...]) -> str:
+def _nom(element: tuple[str, object]) -> str:
     return element[0]
 
 

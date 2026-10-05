@@ -182,6 +182,7 @@ def test_le_profil_parabolique_d_un_barreau_generateur() -> None:
     """
     barreau = BarreauGenerateur(generation=Q, rayon=R, conductivite=LAMBDA)
     profil = barreau.profil(RAYON, surface=T0)
+    assert isinstance(profil, sp.Expr)
     cylindrique = sp.diff(profil, RAYON, 2) + sp.diff(profil, RAYON) / RAYON
     assert sp.simplify(cylindrique + Q / LAMBDA) == 0
     assert sp.simplify(cylindrique - Q / LAMBDA) != 0
@@ -198,6 +199,7 @@ def test_le_barreau_au_contact_d_un_fluide() -> None:
     bilan = sp.pi * R**2 * Q - 2 * sp.pi * R * barreau.densite_a_la_surface()
     assert sp.simplify(bilan) == 0
     profil = barreau.profil_dans_un_fluide(RAYON, echange, fluide)
+    assert isinstance(profil, sp.Expr)
     surface = profil.subs(RAYON, R)
     assert (
         sp.simplify(echange * (surface - fluide) - barreau.densite_a_la_surface()) == 0

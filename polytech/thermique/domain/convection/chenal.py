@@ -21,10 +21,10 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
+from polytech.fluides.domain.grandeurs import PESANTEUR
 from polytech.thermique.domain.conduction.ailette_droite import (
     parametre_d_ailette_mince,
 )
-from polytech.thermique.domain.convection.naturelle import PESANTEUR
 
 GROUPE_OPTIMAL = 50.0
 """Page 62 : le maximum de `F(q) q^-1/2`."""

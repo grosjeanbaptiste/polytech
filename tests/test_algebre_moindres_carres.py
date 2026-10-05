@@ -47,10 +47,14 @@ SUR_LA_PERIODE = integral(X, 0, 2 * pi)
 UNITES = tuple(M(2, 2, [int(i == j) for j in range(4)]) for i in range(4))
 
 
+def _rang(famille: tuple[sp.Matrix, ...]) -> int:
+    rang: int = M([list(v) for v in famille]).rank()
+    return rang
+
+
 def _memes(obtenue: tuple[sp.Matrix, ...], officielle: tuple[sp.Matrix, ...]) -> bool:
-    lignes = lambda famille: M([list(v) for v in famille])  # noqa: E731
-    ensemble = lignes((*obtenue, *officielle)).rank()
-    return lignes(obtenue).rank() == ensemble == lignes(officielle).rank()
+    ensemble = _rang((*obtenue, *officielle))
+    return _rang(obtenue) == ensemble == _rang(officielle)
 
 
 def _m(*lignes: list[object]) -> sp.Matrix:

@@ -238,9 +238,12 @@ def test_la_methode_de_ziegler_nichols_de_la_planche_35() -> None:
     gain, integrale, derivee = reglage_de_ziegler_nichols(modele, "PID")
     assert gain == pytest.approx(1.1, abs=0.03)
     assert (integrale, derivee) == (3.0, 0.75)
-    assert reglage_de_ziegler_nichols(modele, "P") == (pytest.approx(0.9), None, None)
+    proportionnel = reglage_de_ziegler_nichols(modele, "P")
+    assert proportionnel[0] == pytest.approx(0.9)
+    assert proportionnel[1:] == (None, None)
     proportionnel_integral = reglage_de_ziegler_nichols(modele, "PI")
-    assert proportionnel_integral == (pytest.approx(0.81), 4.5, None)
+    assert proportionnel_integral[0] == pytest.approx(0.81)
+    assert proportionnel_integral[1:] == (4.5, None)
     with pytest.raises(ValueError, match="controleur inconnu"):
         reglage_de_ziegler_nichols(modele, "PD")
 

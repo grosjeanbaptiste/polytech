@@ -100,9 +100,18 @@ def test_seul_le_rayonnement_traverse_le_vide() -> None:
 
 def test_les_modes_de_convection_de_la_planche_22() -> None:
     """Un ventilateur a 10 m/s domine ; sans lui, ce sont les forces d'Archimede."""
-    assert mode_de_convection(force=80.0, naturel=5.0) is ModeDeConvection.FORCEE
-    assert mode_de_convection(force=0.3, naturel=5.0) is ModeDeConvection.NATURELLE
-    assert mode_de_convection(force=8.0, naturel=5.0) is ModeDeConvection.MIXTE
+    assert (
+        mode_de_convection(force=80.0, naturel=5.0, dominance=10.0)
+        is ModeDeConvection.FORCEE
+    )
+    assert (
+        mode_de_convection(force=0.3, naturel=5.0, dominance=10.0)
+        is ModeDeConvection.NATURELLE
+    )
+    assert (
+        mode_de_convection(force=8.0, naturel=5.0, dominance=10.0)
+        is ModeDeConvection.MIXTE
+    )
 
 
 def test_une_couche_chauffee_par_le_dessus_reste_au_repos() -> None:

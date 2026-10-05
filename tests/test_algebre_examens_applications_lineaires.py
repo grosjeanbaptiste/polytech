@@ -12,6 +12,8 @@ Les sous-questions « relatives au chapitre sur les espaces metriques »
 
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
+
 import pytest
 import sympy as sp
 
@@ -51,6 +53,8 @@ M = sp.Matrix
 R = sp.Rational
 A, B, T = sp.symbols("a b t")
 Famille = tuple[tuple[sp.Expr, ...], ...]
+Vecteurs = Sequence[Sequence[object]]
+type Scalaire = sp.Expr | int
 
 
 def _polynomes(*polynomes: sp.Expr, degre: int) -> Famille:
@@ -61,14 +65,14 @@ def _matrices(*matrices: list[list[object]]) -> Famille:
     return tuple(vecteur_d_une_matrice(M(m)) for m in matrices)
 
 
-def _sur_les_matrices(regle: object) -> ApplicationLineaire:
+def _sur_les_matrices(regle: Callable[[sp.Matrix], sp.Matrix]) -> ApplicationLineaire:
     """La matrice d'une regle sur `R^(2x2)`, lue sur les quatre matrices unites."""
     unites = [M(2, 2, [int(i == j) for j in range(4)]) for i in range(4)]
-    images = [vecteur_d_une_matrice(regle(u)) for u in unites]  # type: ignore[operator]
+    images = [vecteur_d_une_matrice(regle(u)) for u in unites]
     return ApplicationLineaire(M(images).T)
 
 
-def _memes(obtenue: Famille, officielle: Famille) -> bool:
+def _memes(obtenue: Vecteurs, officielle: Vecteurs) -> bool:
     """Deux bases du meme sous-espace : meme longueur, meme espace engendre."""
     if not officielle:
         return obtenue == ()
@@ -106,7 +110,7 @@ def test_l_examen_34_aout_94() -> None:
     assert _memes(f.image(), officielle)
 
 
-def _examen_35(valeur: object) -> ApplicationLineaire:
+def _examen_35(valeur: Scalaire) -> ApplicationLineaire:
     mt = M([[valeur, 1], [1, valeur]])
     return _sur_les_matrices(lambda u: u * mt + mt * u)
 
@@ -139,8 +143,8 @@ def test_l_examen_35_pour_t_nul() -> None:
     assert _examen_35(3).noyau() == ()
 
 
-def _examen_36(a: object, b: object) -> ApplicationLineaire:
-    return _sur_les_matrices(lambda u: a * u + b * u.T)  # type: ignore[operator]
+def _examen_36(a: Scalaire, b: Scalaire) -> ApplicationLineaire:
+    return _sur_les_matrices(lambda u: a * u + b * u.T)
 
 
 def test_l_examen_36_janvier_98() -> None:
@@ -342,7 +346,7 @@ def test_l_examen_42_janvier_02() -> None:
     assert sp.expand(polynome_d_un_vecteur(tuple(composee)) - officielle) == 0
 
 
-def _examen_43(valeur: object) -> ApplicationLineaire:
+def _examen_43(valeur: Scalaire) -> ApplicationLineaire:
     associee = M(
         [
             [-1, -2, valeur - 4, valeur - 3],

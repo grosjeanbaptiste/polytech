@@ -178,7 +178,8 @@ def test_une_affectation_dans_un_test_vaut_la_valeur_affectee() -> None:
     """Planche 34 : `if (i = -2)` est toujours vrai, quel que soit `i`."""
     valeur_affectee = -2
     assert est_vrai(valeur_affectee)
-    comparaison = -1 == -2
+    i = -1
+    comparaison = i == valeur_affectee
     assert not est_vrai(int(comparaison))
 
 

@@ -390,7 +390,10 @@ def test_la_reponse_de_l_exercice_41() -> None:
         assert violation is not None
         return violation.nature
 
-    en = lambda f, x: sp.sympify(f).subs(T, x)  # noqa: E731 -- une evaluation
+    def en(f: sp.Expr, x: object) -> sp.Expr:
+        evaluee: sp.Expr = sp.sympify(f).subs(T, x)
+        return evaluee
+
     assert temoin(lambda f: en(f, 1) == en(f, 0) + 1) == "vecteur nul"
     assert temoin(lambda f: en(f, R(1, 4)) == R(1, 4)) == "vecteur nul"
     positive = lambda f: all(en(f, x) >= 0 for x in (0, R(1, 2), 1))  # noqa: E731

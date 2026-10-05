@@ -25,8 +25,8 @@ import math
 
 import pytest
 
+from polytech.electromagnetisme.domain.constantes import CHARGE_ELEMENTAIRE
 from polytech.electronique.domain.bruit import (
-    CHARGE_ELEMENTAIRE,
     densite_spectrale_de_grenaille,
     densite_spectrale_en_un_sur_f,
     puissance_integree_blanc_et_rose,

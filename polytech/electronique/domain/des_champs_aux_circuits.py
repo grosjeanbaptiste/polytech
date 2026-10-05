@@ -27,6 +27,11 @@ from __future__ import annotations
 import math
 from typing import Final
 
+from polytech.electromagnetisme.domain.constantes import (
+    CHARGE_ELEMENTAIRE,
+    PERMEABILITE_DU_VIDE,
+)
+
 FRACTION_DE_LONGUEUR_D_ONDE: Final = 20
 """La regle de la planche : `l_c < lambda / 20`.
 
@@ -34,7 +39,7 @@ Vingt et non dix : c'est la valeur que le cours ecrit, et la changer
 changerait la frequence a laquelle il faut abandonner Kirchhoff.
 """
 
-CHARGE_DE_L_ELECTRON: Final = 1.602176634e-19
+CHARGE_DE_L_ELECTRON: Final = CHARGE_ELEMENTAIRE
 """`q_e`, en coulombs."""
 
 MASSE_DE_L_ELECTRON: Final = 9.1093837015e-31
@@ -176,8 +181,7 @@ def inductance_cachee_d_une_boucle(aire: float, perimetre: float) -> float:
     if perimetre <= 0:
         msg = f"perimetre nul ou negatif : {perimetre} m"
         raise ValueError(msg)
-    permeabilite = 4 * math.pi * 1e-7
-    return permeabilite * 2 * math.pi * aire / perimetre
+    return PERMEABILITE_DU_VIDE * 2 * math.pi * aire / perimetre
 
 
 def tension_de_defaut_terre_neutre(courant: float, resistance: float) -> float:

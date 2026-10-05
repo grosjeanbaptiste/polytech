@@ -130,9 +130,16 @@ def test_le_travail_ne_depend_pas_du_chemin_suivi() -> None:
         for debut, fin in pairwise(etapes):
             pas = [f - d for d, f in zip(debut, fin, strict=True)]
 
-            def integrande(t: float, debut=debut, pas=pas) -> float:  # noqa: ANN001 -- liaison de boucle
+            def integrande(
+                t: float,
+                debut: tuple[float, float, float] = debut,
+                pas: list[float] = pas,
+            ) -> float:
                 point = [d + t * p for d, p in zip(debut, pas, strict=True)]
-                return sum(e * p for e, p in zip(champ(*point), pas, strict=True))
+                travail: float = sum(
+                    e * p for e, p in zip(champ(*point), pas, strict=True)
+                )
+                return travail
 
             total += float(mpmath.quad(integrande, [0, 1]))
         return charge * total

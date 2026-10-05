@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import math
 from fractions import Fraction
+from typing import cast
 
 import pytest
 import sympy as sp
@@ -177,7 +178,9 @@ def test_toutes_les_possibilites_de_l_exercice_3_4(
 def test_la_discussion_concorde_avec_le_cours_de_mathematique() -> None:
     """Lien : les racines reelles sont celles du syllabus d'algebre."""
     for a, b, c in ((1, -3, 2), (2, 4, -6), (1, -2, 1)):
-        reelles = discuter_le_second_degre(a, b, c).racines
+        racines = discuter_le_second_degre(a, b, c).racines
+        # Discriminant positif ou nul : ces racines-ci sont reelles, donc ordonnables.
+        reelles = cast("tuple[float, ...]", racines)
         assert sorted(reelles) == pytest.approx(
             sorted(set(racines_reelles_du_second_degre(a, b, c)))
         )

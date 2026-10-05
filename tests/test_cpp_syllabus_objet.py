@@ -35,6 +35,11 @@ from polytech.algorithmique.domain.sequences import Sequence
 VECT1_TRIE = [1, 3, 4, 5, 5, 9, 18]
 
 
+def _lus(conteneur: Sequence) -> tuple[object, ...]:
+    """Une lecture fraiche : mypy garde sinon le type etroit de l'assertion d'avant."""
+    return conteneur.elements
+
+
 @pytest.mark.parametrize(
     ("mode", "statut", "attendu"),
     [
@@ -136,7 +141,7 @@ def test_merge_vide_la_liste_fusionnee() -> None:
     assert l2.elements == (0, 1, 2, 2, 3, 3, 4, 5, 5, 7, 7, 9, 18)
     assert l1.empty()
     l2.unique()
-    assert l2.elements == (0, 1, 2, 3, 4, 5, 7, 9, 18)
+    assert _lus(l2) == (0, 1, 2, 3, 4, 5, 7, 9, 18)
 
 
 def test_splice_deplace_une_liste_dans_une_autre() -> None:

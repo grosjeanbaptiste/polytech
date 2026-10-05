@@ -17,6 +17,11 @@ from polytech.algorithmique.domain.boulier import CAPACITE, Boulier
 from polytech.algorithmique.domain.liste_chainee import Cellule, ListeChainee
 
 
+def _billes(boulier: Boulier) -> tuple[object, ...]:
+    """Une lecture fraiche : mypy garde sinon le type etroit de l'assertion d'avant."""
+    return boulier.billes
+
+
 def _liste_de_la_page_101() -> ListeChainee:
     liste = ListeChainee()
     for nom in ("premier", "second", "nom3"):
@@ -86,11 +91,11 @@ def test_le_boulier_de_la_page_96_pas_a_pas() -> None:
     boulier.ajouter_a_gauche("Bleu")
     assert boulier.billes == ("Bleu", "Rouge", "Vert bouteille")
     boulier.ajouter_a_droite("Blanc")
-    assert boulier.billes == ("Bleu", "Rouge", "Vert bouteille", "Blanc")
+    assert _billes(boulier) == ("Bleu", "Rouge", "Vert bouteille", "Blanc")
     assert boulier.ajouter_a_gauche("Jaune") == "Blanc"
-    assert boulier.billes == ("Jaune", "Bleu", "Rouge", "Vert bouteille")
+    assert _billes(boulier) == ("Jaune", "Bleu", "Rouge", "Vert bouteille")
     assert boulier.ajouter_a_gauche("Noire") == "Vert bouteille"
-    assert boulier.billes == ("Noire", "Jaune", "Bleu", "Rouge")
+    assert _billes(boulier) == ("Noire", "Jaune", "Bleu", "Rouge")
 
 
 def test_une_bille_ajoutee_a_droite_chasse_celle_de_gauche() -> None:

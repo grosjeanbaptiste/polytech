@@ -34,6 +34,7 @@ from polytech.electromagnetisme.domain.energie_et_forces import force_sur_une_ar
 from polytech.electromagnetisme.domain.force_moyenne import (
     ecart_relatif_sur_l_ecartement,
 )
+from polytech.fluides.domain.grandeurs import PESANTEUR
 
 TENSION: Final = 10e3
 """`U`, en volts. Donnee de l'enonce."""
@@ -44,7 +45,6 @@ VARIATION_DE_CAPACITE: Final = 4e-12
 DEPLACEMENT: Final = 1e-3
 """`Delta x`, en metres : un millimetre."""
 
-PESANTEUR: Final = 9.81
 """Pour convertir la force en une masse equivalente, en m/s^2."""
 
 ECARTEMENT: Final = sp.Symbol("d", positive=True)

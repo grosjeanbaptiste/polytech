@@ -22,11 +22,12 @@ from enum import Enum
 from typing import Final
 
 RAPPORT_DE_DOMINANCE: Final = 10.0
-"""Au-dela de ce rapport, un mode de convection donne son nom au regime.
+"""Un rapport de dominance **que le cours ne donne pas**.
 
-Le seuil est choisi et dit : entre un dixieme et dix, le chapitre parle de
-convection **mixte**, et ses correlations ne sont ni celles de la
-convection naturelle ni celles de la forcee.
+La planche 22 de l'introduction dit la convection mixte par des forces
+d'Archimede « non negligeables » a cote du mouvement impose, sans
+chiffrer ce « negligeable ». Dix est une convention de la bibliotheque,
+conservee pour qui l'importait ; `mode_de_convection` exige son rapport.
 """
 
 
@@ -53,17 +54,26 @@ def flux_de_newton(echange: float, aire: float, ecart: float) -> float:
     return echange * aire * ecart
 
 
-def mode_de_convection(force: float, naturel: float) -> ModeDeConvection:
-    """Le regime que ces deux coefficients designent."""
+def mode_de_convection(
+    force: float, naturel: float, *, dominance: float
+) -> ModeDeConvection:
+    """Le regime que ces deux coefficients designent.
+
+    `dominance` est le rapport au-dela duquel l'un rend l'autre
+    negligeable : le cours ne le chiffre pas, il se donne.
+    """
     if force <= 0 or naturel <= 0:
         msg = (
             f"coefficient de convection nul ou negatif : force {force}, "
             f"naturel {naturel} W/(m^2 K)"
         )
         raise ValueError(msg)
-    if force >= RAPPORT_DE_DOMINANCE * naturel:
+    if dominance <= 1:
+        msg = f"rapport de dominance non superieur a un : {dominance}"
+        raise ValueError(msg)
+    if force >= dominance * naturel:
         return ModeDeConvection.FORCEE
-    if naturel >= RAPPORT_DE_DOMINANCE * force:
+    if naturel >= dominance * force:
         return ModeDeConvection.NATURELLE
     return ModeDeConvection.MIXTE
 
@@ -156,9 +166,9 @@ def gain_de_la_convection(conduction: float, convection: float) -> float:
 PUISSANCE_METABOLIQUE: Final = 100.0
 """La puissance qu'un corps humain au repos dissipe, en watts.
 
-Ordre de grandeur de la litterature, que le chapitre emploie dans son
-application de physiologie thermique. Aucun mode seul n'y suffirait a
-temperature ambiante : c'est leur superposition qui l'evacue.
+Planche 16 de l'introduction : « metabolisme de base (au repos) :
+Phi ~ 100 W », dans l'application de physiologie thermique. Aucun mode
+seul n'y suffirait a temperature ambiante : leur superposition l'evacue.
 """
 
 

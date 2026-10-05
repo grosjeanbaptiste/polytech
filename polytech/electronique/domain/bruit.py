@@ -21,19 +21,19 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING, Final
 
+from polytech.electromagnetisme.domain.constantes import CHARGE_ELEMENTAIRE
+from polytech.thermique.domain.rayonnement.corps_noir import PLANCK
+
 if TYPE_CHECKING:
     import sympy as sp
 
 FACTEUR_UNILATERAL: Final = 4
 """Deux pour la convention unilaterale, deux pour le theoreme de Nyquist."""
 
-CHARGE_ELEMENTAIRE: Final = 1.602176634e-19
-"""`q`, en coulombs. Le bruit de grenaille la fait apparaitre explicitement."""
-
 FACTEUR_DE_GRENAILLE: Final = 2
 """`2 q I` : un pour la convention unilaterale, un pour le theoreme de Schottky."""
 
-CONSTANTE_DE_PLANCK: Final = 6.62607015e-34
+CONSTANTE_DE_PLANCK: Final = PLANCK
 """`h`, en J s. Le bruit quantique la fait apparaitre."""
 
 FAMILLES_DE_BRUIT: Final = (

@@ -13,6 +13,7 @@ facteur de 0,084 a un millimetre.
 from __future__ import annotations
 
 import math
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -36,6 +37,9 @@ from polytech.thermique.domain.conduction.superposition import (
 )
 from polytech.thermique.domain.inertie import SolideIsotherme
 from polytech.thermique.domain.transitoire import CorpsTransitoire
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 X, TAU = sp.symbols("x tau", positive=True)
 A, LAMBDA = sp.symbols("a lambda", positive=True)
@@ -176,7 +180,7 @@ def test_la_temperature_de_contact_de_deux_solides() -> None:
     assert temperature_de_contact((37.0, 1.0e6), (20.0, 1.0e6)) == pytest.approx(28.5)
 
 
-def _echelon_isotherme(constante: float):  # noqa: ANN202 -- une fonction du temps
+def _echelon_isotherme(constante: float) -> Callable[[float], float]:
     return lambda duree: 1 - math.exp(-duree / constante) if duree > 0 else 0.0
 
 

@@ -142,7 +142,7 @@ def test_le_moment_amperien_d_un_electron_est_oppose_a_la_normale() -> None:
     assert moment == (0, 0, -charge * aire / periode)
     assert aimantation([moment, moment], 4) == (0, 0, -charge * aire / (2 * periode))
     # « Nulle si les moments ont une orientation totalement aleatoire. »
-    oppose = tuple(-composante for composante in moment)
+    oppose = (-moment[0], -moment[1], -moment[2])
     assert aimantation([moment, oppose], 4) == NUL
 
 

@@ -93,6 +93,7 @@ def test_le_moment_induit_est_oppose_a_l_induction() -> None:
     dont la pulsation passe de `omega` a `omega + Delta omega`.
     """
     induit = moment_induit(CHARGE, INDUCTION, RAYON, MASSE)
+    assert isinstance(induit, sp.Expr)
     assert induit == -(CHARGE**2) * INDUCTION * RAYON**2 / (4 * MASSE)
     assert induit.is_negative
 

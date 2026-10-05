@@ -18,6 +18,7 @@ entierement entouree, toutes ses lignes de champ finissent sur la suivante
 from __future__ import annotations
 
 import math
+from typing import TYPE_CHECKING
 
 import pytest
 import sympy as sp
@@ -48,6 +49,9 @@ from polytech.electromagnetisme.domain.electrostatique.potentiel import COULOMB
 from polytech.electromagnetisme.domain.energie_et_forces import (
     energie_d_un_condensateur,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 QUATRE_PI_EPS = 4 * sp.pi * PERMITTIVITE
 
@@ -281,7 +285,9 @@ def test_la_charge_se_repartit_en_raison_directe_des_capacites() -> None:
 
 
 @pytest.mark.parametrize("association", [capacite_en_serie, capacite_en_parallele])
-def test_une_association_vide_ou_a_capacite_nulle_est_refusee(association) -> None:  # noqa: ANN001 -- l'une des deux associations
+def test_une_association_vide_ou_a_capacite_nulle_est_refusee(
+    association: Callable[[list[float]], sp.Expr],
+) -> None:
     """Un condensateur a une capacite strictement positive."""
     with pytest.raises(ValueError, match="aucun condensateur"):
         association([])

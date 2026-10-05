@@ -33,19 +33,23 @@ PARTICIPANT_TXT = (
 )
 L1 = [("Jean", 30), ("Michel", 20), ("Isabelle", 19), ("Lucas", 21), ("Eva", 20)]
 V2 = [("Marie", 25), ("Anne", 28), ("Flavio", 19), ("Alexis", 24)]
+Participant = tuple[str, int]
+Rang = list[Participant]
 
 
-def _age(participant: tuple[str, int]) -> int:
+def _age(participant: Participant) -> int:
     return participant[1]
 
 
-def _apres_les_trois_ajouts_et_la_permutation() -> tuple[list, list]:
+def _apres_les_trois_ajouts_et_la_permutation() -> tuple[Rang, Rang]:
     l1 = [*L1, ("Nicolas", 28), ("Aline", 23)]
     v2 = [*V2, ("Nico", 28)]
     return v2, l1
 
 
-def _oter_les_plus_ages(l1: list, v2: list) -> tuple[list, list, tuple]:
+def _oter_les_plus_ages(
+    l1: Rang, v2: Rang
+) -> tuple[Rang, Rang, tuple[Participant, ...]]:
     doyens = meilleurs([*l1, *v2], _age)
     return (
         list(sans_ceux(l1, lambda p: p in doyens)),

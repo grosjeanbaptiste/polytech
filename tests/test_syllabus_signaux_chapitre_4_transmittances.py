@@ -228,7 +228,9 @@ def test_l_additionneur_pondere_par_r_sur_r_i() -> None:
     contre_reaction, voie = 10e3, 2e3
     par_la_structure = transfert_a_impedances(voie, contre_reaction)
     assert par_la_structure == pytest.approx(-5.0)
-    assert somme_ponderee(contre_reaction, (voie,)) == (pytest.approx(-5.0),)
+    ponderee = somme_ponderee(contre_reaction, (voie,))
+    assert len(ponderee) == 1
+    assert ponderee[0] == pytest.approx(-5.0)
     assert par_la_structure != pytest.approx(-voie / contre_reaction)
 
 

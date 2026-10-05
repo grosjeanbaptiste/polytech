@@ -49,11 +49,15 @@ def _canon(dimension: int) -> tuple[sp.Matrix, ...]:
     return tuple(V(*(int(i == j) for j in range(dimension))) for i in range(dimension))
 
 
+def _rang(famille: tuple[sp.Matrix, ...]) -> int:
+    rang: int = M([list(v) for v in famille]).rank()
+    return rang
+
+
 def _memes(obtenue: tuple[sp.Matrix, ...], officielle: tuple[sp.Matrix, ...]) -> bool:
     """Deux familles de matrices ou de colonnes qui engendrent le meme sous-espace."""
-    lignes = lambda famille: M([list(v) for v in famille])  # noqa: E731
-    ensemble = lignes((*obtenue, *officielle)).rank()
-    return lignes(obtenue).rank() == ensemble == lignes(officielle).rank()
+    ensemble = _rang((*obtenue, *officielle))
+    return _rang(obtenue) == ensemble == _rang(officielle)
 
 
 def _egales(obtenue: tuple[sp.Matrix, ...], officielle: tuple[sp.Matrix, ...]) -> bool:

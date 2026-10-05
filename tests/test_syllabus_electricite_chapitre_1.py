@@ -61,7 +61,7 @@ LIGNE = [k + Fraction(j, k**2) for k in range(1, 5) for j in range(k**2)]
 PERIODE = 2 * sp.pi / PULSATION
 
 
-def _lambda_sur_e(debut: Fraction | int, largeur: Fraction | int) -> Fraction:
+def _lambda_sur_e(debut: Fraction | int, largeur: Fraction | int) -> Fraction | float:
     fenetre = charges_de_la_fenetre(LIGNE, debut, largeur)
     return charge_moyenne([1] * len(fenetre), largeur)
 

@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from typing import Final
 
+from polytech.thermique.domain.grandeurs import ZERO_ABSOLU
 from polytech.thermique.domain.paroi_exposee import ToitExpose
 from polytech.thermique.domain.rayonnement.cordes_croisees import (
     aire_par_les_cordes,
@@ -31,7 +32,7 @@ from polytech.thermique.domain.rayonnement.paroi_adiabatique import (
     EnceinteAParoiAdiabatique,
 )
 
-KELVIN: Final = 273.15
+KELVIN: Final = ZERO_ABSOLU
 SURFACE_DU_TOIT: Final = 5.0 * 2.0
 EPAISSEUR, CONDUCTIVITE, CONVECTION_INTERIEURE = 0.03, 0.035, 8.0
 INTERIEUR, ETE, SOLEIL = -13.0, 30.0, 800.0

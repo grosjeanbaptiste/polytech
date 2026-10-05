@@ -33,6 +33,8 @@ M = sp.Matrix
 R = sp.Rational
 T = INCONNUE
 A, B, L = sp.symbols("a b l")
+type Scalaire = sp.Expr | int
+Solutions = list[dict[sp.Symbol, sp.Expr]]
 DIAG, TRI, NI = (
     Nature.DIAGONALISABLE,
     Nature.TRIANGULARISABLE,
@@ -50,10 +52,13 @@ def _reduite(matrice: sp.Matrix, nature: Nature, valeurs: dict[object, int]) -> 
     return reduction.etapes
 
 
-def _identifie(matrice: sp.Matrix, cible: sp.Expr, inconnues: list[sp.Symbol]) -> list:
+def _identifie(
+    matrice: sp.Matrix, cible: sp.Expr, inconnues: list[sp.Symbol]
+) -> Solutions:
     """Les inconnues pour lesquelles le polynome caracteristique est la cible."""
     ecart = sp.Poly(Spectre(matrice).polynome_caracteristique() - cible, T)
-    return sp.solve(ecart.coeffs(), inconnues, dict=True)
+    solutions: Solutions = sp.solve(ecart.coeffs(), inconnues, dict=True)
+    return solutions
 
 
 def test_l_examen_19_janvier_92() -> None:
@@ -92,7 +97,7 @@ def test_l_examen_22_aout_94() -> None:
     assert sum(geometrique for _, geometrique in multiplicites(a).values()) == 4
 
 
-def _examen_23(a: object) -> sp.Matrix:
+def _examen_23(a: Scalaire) -> sp.Matrix:
     return M([[3 - a, 2 - a, a - 2], [6 - 3 * a, a + 3, -3], [8 - 4 * a, 4, a - 4]])
 
 
@@ -123,7 +128,7 @@ def test_la_puissance_de_l_examen_23() -> None:
 def test_l_examen_24_septembre_95() -> None:
     """Diagonalisable pour tout `a` : `1, 2, a`, une valeur double si `a = 1` ou 2."""
 
-    def matrice(a: object) -> sp.Matrix:
+    def matrice(a: Scalaire) -> sp.Matrix:
         return M(
             [
                 [4 - a, 2 - a, a - 2],
@@ -152,7 +157,7 @@ def test_l_examen_25_janvier_96() -> None:
 def test_l_examen_26_aout_96() -> None:
     """Diagonalisable si `b` hors de 1 et 2, ou si `a = 0` et `b = 1`."""
 
-    def matrice(a: object, b: object) -> sp.Matrix:
+    def matrice(a: Scalaire, b: Scalaire) -> sp.Matrix:
         return M([[b, a, a], [-1, 1, -1], [1, 0, 2]])
 
     polynome = Spectre(matrice(A, B)).polynome_caracteristique()
@@ -174,7 +179,7 @@ def test_l_examen_27_janvier_97(alpha: int) -> None:
 def test_l_examen_28_aout_97() -> None:
     """`alpha = 1` : 2 triple ; sinon `2, 2, alpha + 1` ; une etape a chaque fois."""
 
-    def matrice(a: object) -> sp.Matrix:
+    def matrice(a: Scalaire) -> sp.Matrix:
         return M(
             [
                 [3 - a, 1 - a, a - 1],
@@ -241,7 +246,7 @@ def test_l_examen_33_janvier_00() -> None:
 def test_l_examen_34_aout_00() -> None:
     """Diagonalisable si `a != +-1`, toujours triangularisable."""
 
-    def matrice(a: object) -> sp.Matrix:
+    def matrice(a: Scalaire) -> sp.Matrix:
         return M([[0, 1, 0], [0, 0, 1], [-a, 1, a]])
 
     polynome = Spectre(matrice(A)).polynome_caracteristique()
@@ -257,7 +262,7 @@ def test_l_examen_34_aout_00() -> None:
 def test_l_examen_35_janvier_01() -> None:
     """Valeurs propres positives de somme des carres 12 : `a = 3`, et 2 triple."""
 
-    def matrice(a: object) -> sp.Matrix:
+    def matrice(a: Scalaire) -> sp.Matrix:
         return M([[3 * a, a + 1, -1], [4 - 5 * a, -a, 2 - a], [5 - 3 * a, 2 - a, 0]])
 
     candidats = sp.solve(sp.Eq(trace(matrice(A) ** 2), 12), A)
@@ -271,7 +276,7 @@ def test_l_examen_35_janvier_01() -> None:
 def test_l_examen_36_aout_01() -> None:
     """`|a| > 2` : diagonalisable ; `a = +-2` : triangularisable ; sinon aucun."""
 
-    def matrice(a: object) -> sp.Matrix:
+    def matrice(a: Scalaire) -> sp.Matrix:
         return M([[0, 1, 0], [-1, a, 0], [0, 0, 1]])
 
     assert nature_de_la_reduction(matrice(3)) is DIAG
@@ -288,7 +293,7 @@ def test_l_examen_36_aout_01() -> None:
 def test_l_examen_37_janvier_02() -> None:
     """1 toujours valeur propre ; les autres `a - 1` et `a + 2` ; `a = 2`."""
 
-    def matrice(a: object) -> sp.Matrix:
+    def matrice(a: Scalaire) -> sp.Matrix:
         return M(
             [
                 [a - 1, 2, 1],
@@ -312,7 +317,7 @@ def test_l_examen_37_janvier_02() -> None:
 def test_l_examen_38_janvier_04() -> None:
     """`a > 0` : aucun ; `a = 0` : triangularisable ; `a < 0` : diagonalisable."""
 
-    def matrice(a: object) -> sp.Matrix:
+    def matrice(a: Scalaire) -> sp.Matrix:
         return M([[1, 0, 1], [1 + a, -a, 1 + a], [1 + a, -1 - a, a]])
 
     polynome = Spectre(matrice(A)).polynome_caracteristique()
@@ -331,7 +336,7 @@ def test_l_examen_38_janvier_04() -> None:
 def test_l_examen_39_aout_04() -> None:
     """Pour `a >= 0` : diagonalisable si et seulement si `a != 1`."""
 
-    def matrice(a: object) -> sp.Matrix:
+    def matrice(a: Scalaire) -> sp.Matrix:
         return M(
             [
                 [a, a + 3, 2],
@@ -357,7 +362,7 @@ def test_l_examen_40_janvier_05() -> None:
     reponse officielle est la seule a trois valeurs propres reelles.
     """
 
-    def matrice(a: object, b: object) -> sp.Matrix:
+    def matrice(a: Scalaire, b: Scalaire) -> sp.Matrix:
         return M(
             [
                 [a + b + 1, 4 * b + 1, 2 * b],

@@ -138,7 +138,8 @@ def test_les_rectangles_de_la_planche_61_passent_par_les_accesseurs() -> None:
     assert rectangle.accede("R_Long", "main")
     longueur, largeur = 30, 24
     seconde = (diviser(longueur, 2), largeur * 2)
-    assert seconde == (15, 48)
+    attendue: tuple[float, int] = (15, 48)
+    assert seconde == attendue
     assert longueur * largeur == seconde[0] * seconde[1] == 720
 
 

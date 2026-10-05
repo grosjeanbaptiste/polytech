@@ -9,6 +9,8 @@ officielles des exercices 1 a 22.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 import sympy as sp
 
@@ -39,6 +41,9 @@ from polytech.maths.domain.algebre.stabilite import (
     est_lineaire_homogene,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 M = sp.Matrix
 R = sp.Rational
 I = sp.I  # noqa: E741 -- l'unite imaginaire
@@ -52,7 +57,7 @@ W2 = ((1, 5, 2, -1), (0, -3, 0, 1))
 GRILLE = tuple(M([a, b, c]) for a in (-1, 0, 1) for b in (-1, 0, 1) for c in (-1, 0, 1))
 
 
-def _dans_r3(condition: sp.Basic) -> object:
+def _dans_r3(condition: sp.Basic) -> Callable[[sp.Matrix], bool]:
     """L'appartenance a `{(x1, x2, x3) | condition}`."""
     return lambda v: bool(condition.subs({X1: v[0], X2: v[1], X3: v[2]}))
 

@@ -20,6 +20,7 @@ from polytech.maths.domain.algebre.echelonnement import (
     inverse_par_la_matrice_compagnon,
 )
 from polytech.maths.domain.algebre.matrices import (
+    Matrice,
     addition,
     identite,
     multiplication_par_un_scalaire,
@@ -50,7 +51,8 @@ A_INVERSER = M([[2, 4, 3], [-1, 2, 1], [2, 3, 2]])
 def test_l_addition_et_le_produit_par_un_scalaire_des_pages_18() -> None:
     """II.2.1 et II.2.2 : terme a terme."""
     somme = addition(((2, 1), (-1, 0), (4, -2)), ((0, 3), (2, 4), (7, 0)))
-    assert somme == ((2, 4), (1, 4), (11, -2))
+    attendue: Matrice = ((2, 4), (1, 4), (11, -2))
+    assert somme == attendue
     triple = multiplication_par_un_scalaire(-3, ((2, 1), (6, -7)))
     assert triple == ((-6, -3), (-18, 21))
 

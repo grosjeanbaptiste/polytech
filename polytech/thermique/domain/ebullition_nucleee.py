@@ -27,7 +27,7 @@ import math
 from dataclasses import dataclass
 from typing import Final
 
-from polytech.thermique.domain.convection.naturelle import PESANTEUR
+from polytech.fluides.domain.grandeurs import PESANTEUR
 
 CONSTANTES_DE_ROSENHOW: Final = (0.003, 0.015)
 """Page 86 : la plage de la constante experimentale `B`."""

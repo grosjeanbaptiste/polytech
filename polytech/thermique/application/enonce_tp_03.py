@@ -27,12 +27,13 @@ from polytech.thermique.domain.convection.naturelle import (
     grashof,
     nusselt_lame_de_fluide,
 )
+from polytech.thermique.domain.grandeurs import ZERO_ABSOLU
 from polytech.thermique.domain.rayonnement.vitre_selective import (
     VitreSelective,
     coefficient_entre_plans_gris,
 )
 
-KELVIN: Final = 273.15
+KELVIN: Final = ZERO_ABSOLU
 AIR, AMBIANT, SOLEIL, TEMPERATURE_SOLAIRE = 70 + KELVIN, 20 + KELVIN, 700.0, 6000.0
 DEBIT, CHALEUR_MASSIQUE = 0.056, 1008.0
 VISCOSITE, MASSE_VOLUMIQUE, CONDUCTIVITE_AIR, PRANDTL = 2.036e-5, 1.027, 0.0295, 0.696

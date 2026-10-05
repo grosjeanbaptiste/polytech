@@ -210,8 +210,16 @@ def test_des_charges_et_des_aimants_au_repos_ne_rayonnent_pas() -> None:
 ONDE = sp.cos(sp.Symbol("omega", positive=True) * (TEMPS - X / celerite_dans_le_vide()))
 CHAMP = (0, ONDE, 0)
 MAGNETIQUE = (0, 0, ONDE / impedance_du_vide())
-DEPLACEMENT = tuple(PERMITTIVITE_DU_VIDE * e for e in CHAMP)
-INDUCTION = tuple(PERMEABILITE_DU_VIDE * h for h in MAGNETIQUE)
+DEPLACEMENT = (
+    PERMITTIVITE_DU_VIDE * CHAMP[0],
+    PERMITTIVITE_DU_VIDE * CHAMP[1],
+    PERMITTIVITE_DU_VIDE * CHAMP[2],
+)
+INDUCTION = (
+    PERMEABILITE_DU_VIDE * MAGNETIQUE[0],
+    PERMEABILITE_DU_VIDE * MAGNETIQUE[1],
+    PERMEABILITE_DU_VIDE * MAGNETIQUE[2],
+)
 
 
 def _nul(expression: sp.Expr) -> bool:

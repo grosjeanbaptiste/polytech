@@ -273,6 +273,7 @@ def test_le_theoreme_de_transport_est_la_regle_de_leibniz() -> None:
     entrant = lineique.subs(X, debut) * sp.diff(amont, T)
     sortant = lineique.subs(X, fin) * sp.diff(aval, T)
     par_le_theoreme = variation_du_systeme(du_volume, [entrant], [sortant])
+    assert isinstance(par_le_theoreme, sp.Expr)
     a_l_instant = {debut: amont, fin: aval}
     assert sp.simplify(du_systeme - par_le_theoreme.subs(a_l_instant)) == 0
 

@@ -124,6 +124,7 @@ def test_le_profil_parabolique_du_crayon() -> None:
     rayon = sp.Symbol("r", positive=True)
     q, grand, conductivite = sp.symbols("q R lambda", positive=True)
     profil = BarreauGenerateur(q, grand, conductivite).profil(rayon, surface=0)
+    assert isinstance(profil, sp.Expr)
     cylindrique = sp.diff(rayon * sp.diff(profil, rayon), rayon) / rayon
     assert sp.simplify(cylindrique + q / conductivite) == 0
     assert profil.subs(rayon, grand) == 0
