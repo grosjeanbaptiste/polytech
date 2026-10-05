@@ -28,6 +28,20 @@ def celerite_dans_le_vide() -> float:
     return 1.0 / math.sqrt(PERMITTIVITE_DU_VIDE * PERMEABILITE_DU_VIDE)
 
 
+def celerite_dans_un_milieu(permittivite: object, permeabilite: object) -> sp.Expr:
+    """`v = 1 / racine(epsilon mu)` : la vitesse d'une onde dans un dielectrique.
+
+    Le profil `E(z - v t)` ne resout l'equation d'onde que si
+    `epsilon mu v^2 = 1` : c'est le resultat du changement de variable
+    `w = z - v t`.
+    """
+    facteurs = (sp.sympify(permittivite), sp.sympify(permeabilite))
+    if any(facteur.is_positive is not True for facteur in facteurs):
+        msg = f"permittivite ou permeabilite nulle ou negative : {facteurs}"
+        raise ValueError(msg)
+    return 1 / sp.sqrt(facteurs[0] * facteurs[1])
+
+
 def equation_d_onde(amplitude: sp.Expr, celerite: sp.Expr) -> sp.Expr:
     """`d^2u/dx^2 - (1/c^2) d^2u/dt^2`, qui doit valoir zero."""
     return sp.simplify(
