@@ -40,3 +40,14 @@ def masse_volumique_du_gaz_parfait(
         msg = f"temperature non strictement positive : {temperature}"
         raise ValueError(msg)
     return pression / (constante_specifique(masse_molaire) * temperature)
+
+
+def quantite_de_gaz(pression: float, volume: float, temperature: float) -> float:
+    """`n = P V / (R T)`, en moles ; pression en Pa, volume en m3, temperature en K."""
+    if temperature <= 0:
+        msg = f"temperature non strictement positive : {temperature}"
+        raise ValueError(msg)
+    if volume < 0:
+        msg = f"volume negatif : {volume} m3"
+        raise ValueError(msg)
+    return pression * volume / (CONSTANTE_DES_GAZ * temperature)
