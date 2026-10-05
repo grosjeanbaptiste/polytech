@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import sympy as sp
 
+from polytech.electromagnetisme.domain.magnetostatique.lois import force_de_lorentz
 from polytech.electromagnetisme.domain.symboles import TEMPS
 
 
@@ -34,6 +35,18 @@ def fem_de_deplacement(induction: float, longueur: float, vitesse: float) -> flo
         msg = f"longueur de barre nulle ou negative : {longueur} m"
         raise ValueError(msg)
     return induction * longueur * vitesse
+
+
+def champ_induit_dynamique(
+    vitesse: tuple[float, float, float], induction: tuple[float, float, float]
+) -> tuple[float, float, float]:
+    """`E_d = v x B` : le champ qu'un conducteur entraine a la vitesse `v` voit.
+
+    C'est la force de Lorentz par unite de charge, pour la seule vitesse
+    d'entrainement : le terme de vitesse relative, lui, donne la force de
+    Laplace sur le conducteur.
+    """
+    return force_de_lorentz(1.0, vitesse, induction)
 
 
 def fem_d_un_entrefer_mobile(
