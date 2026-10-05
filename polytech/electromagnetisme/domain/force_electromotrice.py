@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING
 import sympy as sp
 
 from polytech.electromagnetisme.domain.electrostatique.cylindre import PERMITTIVITE
-from polytech.electromagnetisme.domain.symboles import CARTESIENNES
+from polytech.electromagnetisme.domain.electrostatique.potentiel import circulation
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -40,12 +40,7 @@ def fem_le_long_d_un_trajet(
     champ: Vecteur, courbe: Vecteur, parametre: sp.Symbol, debut: object, fin: object
 ) -> sp.Expr:
     """`E_12 = integrale de E_e . dl` le long de la courbe parametree."""
-    sur_la_courbe = dict(zip(CARTESIENNES, courbe, strict=True))
-    local = sp.Matrix(
-        [sp.sympify(c).subs(sur_la_courbe, simultaneous=True) for c in champ]
-    )
-    tangente = sp.Matrix([sp.diff(c, parametre) for c in courbe])
-    return sp.integrate(local.dot(tangente), (parametre, debut, fin))
+    return circulation(champ, courbe, parametre, debut, fin)
 
 
 def moment_de_la_double_couche(fem: object) -> sp.Expr:

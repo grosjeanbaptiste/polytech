@@ -48,6 +48,18 @@ def champ_du_potentiel(potentiel: sp.Expr) -> Vecteur:
     return (x, y, z)
 
 
+def circulation(
+    champ: Vecteur, courbe: Vecteur, parametre: sp.Symbol, debut: object, fin: object
+) -> sp.Expr:
+    """`integrale de champ . dl` le long de la courbe parametree."""
+    sur_la_courbe = dict(zip(CARTESIENNES, courbe, strict=True))
+    local = sp.Matrix(
+        [sp.sympify(c).subs(sur_la_courbe, simultaneous=True) for c in champ]
+    )
+    tangente = sp.Matrix([sp.diff(c, parametre) for c in courbe])
+    return sp.simplify(sp.integrate(local.dot(tangente), (parametre, debut, fin)))
+
+
 def est_une_ligne_de_champ(
     champ: Vecteur, courbe: Vecteur, parametre: sp.Symbol
 ) -> bool:
