@@ -59,7 +59,9 @@ def _reponse(
     return lambda pulsations: np.asarray(fonction(1j * pulsations), dtype=complex)
 
 
-def _phases(ouverte: sp.Expr, valeurs: NDArray[np.complex128]) -> NDArray[np.float64]:
+def arguments_deroules(
+    ouverte: sp.Expr, valeurs: NDArray[np.complex128]
+) -> NDArray[np.float64]:
     """L'argument deroule, cale au depart sur `-90 alpha` degres."""
     sans_delai = ouverte.replace(lambda e: isinstance(e, sp.exp), lambda _: sp.S.One)
     depart = -math.pi / 2 * classe_du_systeme(sans_delai)
@@ -78,7 +80,7 @@ def marges_de_stabilite(ouverte: sp.Expr) -> Marges:
     """Les deux marges de la boucle dont voici la boucle ouverte."""
     reponse = _reponse(ouverte)
     valeurs = reponse(PULSATIONS)
-    phases, journal = _phases(ouverte, valeurs), np.log(PULSATIONS)
+    phases, journal = arguments_deroules(ouverte, valeurs), np.log(PULSATIONS)
     rang = _premier_passage(np.abs(valeurs) - 1)
     if rang is None:
         msg = "le module ne vaut jamais un : la marge de phase n'est pas definie"
