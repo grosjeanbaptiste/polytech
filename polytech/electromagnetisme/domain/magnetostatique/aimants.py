@@ -28,6 +28,8 @@ from __future__ import annotations
 
 from typing import Final
 
+from polytech.electromagnetisme.domain.constantes import PERMEABILITE_DU_VIDE
+
 SPECIFICATIONS: Final = (
     "le produit d'energie maximal (HB)max",
     "l'induction remanente B_r, a champ nul",
@@ -98,7 +100,10 @@ def volume_minimal_de_l_aimant(
     volume_entrefer: float,
     produit: float,
 ) -> float:
-    """Le volume d'aimant qu'un entrefer donne reclame, en metres cubes.
+    """`V = B_e^2 V_e / (mu_0 (-H B))` (12.2.2), en metres cubes.
+
+    Le volume d'aimant qu'un entrefer donne reclame : le bilan (12.2.1),
+    `B H V + B_e H_e V_e = 0`, ou l'entrefer est de l'air.
 
     Inversement proportionnel au produit d'energie du materiau : un
     aimant deux fois meilleur est deux fois plus petit, et c'est l'enjeu
@@ -110,4 +115,5 @@ def volume_minimal_de_l_aimant(
     if volume_entrefer <= 0:
         msg = f"volume d'entrefer nul ou negatif : {volume_entrefer} m^3"
         raise ValueError(msg)
-    return induction_entrefer**2 * volume_entrefer / produit
+    energie_de_l_entrefer = induction_entrefer**2 * volume_entrefer
+    return energie_de_l_entrefer / (PERMEABILITE_DU_VIDE * produit)
