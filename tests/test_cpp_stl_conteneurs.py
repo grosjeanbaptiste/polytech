@@ -33,6 +33,7 @@ from polytech.algorithmique.domain.conteneurs import (
     possede,
 )
 from polytech.algorithmique.domain.sequences import Sequence
+from polytech.algorithmique.domain.tableaux import TableauStatique
 
 NOMS = ("Obelix", "Tintin", "Asterix", "Titeuf", "Titeuf", "Obelix", "Asterix")
 
@@ -425,3 +426,14 @@ def test_la_table_ne_nomme_que_des_conteneurs_du_cours() -> None:
     assert MEMBRES["sort"] == {"forward_list", "list"}
     assert MEMBRES["capacity"] == {"vector"}
     assert MEMBRES["swap"] == connus
+
+
+def test_le_tableau_statique_est_borne_la_ou_le_vecteur_grandit() -> None:
+    """Lien avec `tableaux` : « Nmax » reserve des cases, `vector` en ajoute."""
+    statique = TableauStatique(3, [1, 2, 3])
+    vecteur, liste = Sequence("vector", (1, 2, 3)), Sequence("list", (1, 2, 3))
+    with pytest.raises(OverflowError, match="tableau plein"):
+        statique.ajouter_a_la_fin(4)
+    vecteur.push_back(4)
+    liste.push_front(0)
+    assert (statique.taille, vecteur.size(), liste.size()) == (3, 4, 4)
