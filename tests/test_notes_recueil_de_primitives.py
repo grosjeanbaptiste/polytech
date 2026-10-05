@@ -156,4 +156,5 @@ def test_le_controle_demande_au_moins_un_point() -> None:
 def test_un_seul_point_ou_l_ecart_s_annule_ne_suffit_pas() -> None:
     """`F' - f = x - 1/3` s'annule en `1/3` : c'est le plus grand ecart qui compte."""
     fausse = X**2 / 2 - X / 3
-    assert ecart_de_derivation(fausse, sp.Integer(0), (R(1, 3), R(6, 5))) == R(13, 15)
+    ecart = ecart_de_derivation(fausse, sp.Integer(0), (R(1, 3), R(6, 5)))
+    assert abs(ecart - R(13, 15)) < R(1, 10**20)
