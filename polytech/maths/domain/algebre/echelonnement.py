@@ -31,7 +31,7 @@ class MatriceEchelonnee:
     matrice: sp.Matrix
 
 
-def _pivots(matrice: sp.Matrix) -> list[int | None]:
+def colonnes_des_pivots(matrice: sp.Matrix) -> list[int | None]:
     """Pour chaque ligne, la colonne de son premier element non nul."""
     return [
         next((j for j in range(matrice.cols) if matrice[i, j] != 0), None)
@@ -42,7 +42,7 @@ def _pivots(matrice: sp.Matrix) -> list[int | None]:
 def est_echelonnee(matrice: sp.Matrix) -> bool:
     """Les lignes nulles en bas, et des pivots de colonne strictement croissante."""
     precedent: int | None = -1
-    for pivot in _pivots(matrice):
+    for pivot in colonnes_des_pivots(matrice):
         if pivot is not None and (precedent is None or pivot <= precedent):
             return False
         precedent = pivot
@@ -55,7 +55,7 @@ def est_echelonnee_simple(matrice: sp.Matrix) -> bool:
         return False
     return all(
         matrice[i, pivot] == 1 and sum(1 for x in matrice[:, pivot] if x != 0) == 1
-        for i, pivot in enumerate(_pivots(matrice))
+        for i, pivot in enumerate(colonnes_des_pivots(matrice))
         if pivot is not None
     )
 
@@ -88,7 +88,7 @@ def echelonner(matrice: sp.Matrix) -> MatriceEchelonnee:
 def echelonner_simplement(matrice: sp.Matrix) -> sp.Matrix:
     """Des zeros au-dessus de chaque pivot, de droite a gauche, puis des pivots 1."""
     travail = echelonner(matrice).matrice
-    for i, pivot in reversed(list(enumerate(_pivots(travail)))):
+    for i, pivot in reversed(list(enumerate(colonnes_des_pivots(travail)))):
         if pivot is None:
             continue
         travail[i, :] = sp.simplify(travail[i, :] / travail[i, pivot])
