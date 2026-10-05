@@ -22,6 +22,7 @@ Le `int` y est sur 32 bits, comme sur les machines du cours ; la planche
 
 from __future__ import annotations
 
+import struct
 from dataclasses import dataclass
 from typing import Final
 
@@ -66,6 +67,12 @@ TYPES_ENTIERS: Final = {
 """Le tableau de la planche 11, pour ce qui est des entiers."""
 
 TYPES_REELS: Final = ("float", "double", "long double")
+
+
+def en_simple_precision(valeur: float) -> float:
+    """Le reel tel qu'un `float` le garde : arrondi sur 32 bits."""
+    (arrondi,) = struct.unpack("f", struct.pack("f", valeur))
+    return float(arrondi)
 
 
 def tronquer(valeur: float) -> int:

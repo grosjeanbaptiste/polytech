@@ -8,6 +8,9 @@ elles-memes, et ce que chaque operateur calcule, vivent dans `priorites`.
 L'analyse construit des calculs differes et ne les execute qu'a la demande :
 c'est ce qui laisse `&&`, `||` et le ternaire ne pas evaluer l'operande
 dont ils n'ont pas besoin.
+
+L'operateur virgule, le moins prioritaire de tous, evalue ses operandes de
+gauche a droite et vaut le dernier.
 """
 
 from __future__ import annotations
@@ -27,7 +30,7 @@ if TYPE_CHECKING:
     from polytech.algorithmique.domain.priorites import Calcul
 
 _JETONS: Final = re.compile(
-    r"\s*(\d+\.\d*|\d+|[A-Za-z_]\w*|\|\||&&|[<>=!]=|[-+*/%()<>!?:])|\s*(\S)"
+    r"\s*(\d+\.\d*|\d+|[A-Za-z_]\w*|\|\||&&|[<>=!]=|[-+*/%()<>!?:,])|\s*(\S)"
 )
 _OPERANDE: Final = re.compile(r"\w")
 
@@ -50,6 +53,13 @@ class _Analyse:
         if self.jetons and self.jetons[0] in attendus:
             return self.jetons.pop(0)
         return ""
+
+    def suite(self) -> Calcul:
+        gauche = self.expression()
+        if not self._lu(","):
+            return gauche
+        droite = self.suite()
+        return lambda: (gauche(), droite())[1]
 
     def expression(self) -> Calcul:
         condition = self._classe(0)
@@ -74,7 +84,7 @@ class _Analyse:
             operande = self._unaire()
             return lambda: UNAIRES[operateur](operande())
         if self._lu("("):
-            interieur = self.expression()
+            interieur = self.suite()
             if not self._lu(")"):
                 _refuser("parenthese non fermee")
             return interieur
@@ -99,7 +109,7 @@ class _Analyse:
 def evaluer(expression: str, variables: Mapping[str, float] | None = None) -> Any:  # noqa: ANN401 -- entier, reel ou booleen
     """La valeur de l'expression, comme un programme C++ la calculerait."""
     analyse = _Analyse(expression, variables or {})
-    calcul = analyse.expression()
+    calcul = analyse.suite()
     if analyse.jetons:
         _refuser(f"jeton inattendu {analyse.jetons[0]}")
     return calcul()
