@@ -23,8 +23,17 @@ from sympy.calculus.util import function_range
 def distance_uniforme(
     partielle: sp.Expr, limite: object, variable: sp.Symbol, intervalle: sp.Set
 ) -> sp.Expr:
-    """`sup |S_n - S|` sur l'intervalle."""
-    valeurs = function_range(partielle - sp.sympify(limite), variable, intervalle)
+    """`sup |S_n - S|` sur l'intervalle, morceau par morceau s'il y en a."""
+    ecart = sp.piecewise_fold(partielle - sp.sympify(limite))
+    if not isinstance(ecart, sp.Piecewise):
+        return _plus_grand_ecart(ecart, variable, intervalle)
+    morceaux = ecart.as_expr_set_pairs(intervalle)
+    return sp.Max(*(_plus_grand_ecart(e, variable, ens) for e, ens in morceaux))
+
+
+def _plus_grand_ecart(ecart: sp.Expr, variable: sp.Symbol, ensemble: sp.Set) -> sp.Expr:
+    """`sup |ecart|` sur un ensemble ou l'expression n'a qu'une forme."""
+    valeurs = function_range(ecart, variable, ensemble)
     return sp.Max(sp.Abs(valeurs.inf), sp.Abs(valeurs.sup))
 
 
