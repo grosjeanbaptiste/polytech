@@ -71,3 +71,12 @@ def gain_en_decibels(rapport_de_puissances: float) -> float:
         msg = f"rapport nul ou negatif : {rapport_de_puissances}"
         raise ValueError(msg)
     return 10 * math.log10(rapport_de_puissances)
+
+
+def plage_des_codes(bits: int) -> tuple[int, int]:
+    """Les entiers signes que `b` bits codent : `2^b` niveaux, de `-2^(b-1)`."""
+    if bits <= 0:
+        msg = f"nombre de bits nul ou negatif : {bits}"
+        raise ValueError(msg)
+    moitie = 2 ** (bits - 1)
+    return (-moitie, moitie - 1)

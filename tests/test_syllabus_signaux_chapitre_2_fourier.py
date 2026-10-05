@@ -251,15 +251,24 @@ def test_le_taux_de_distorsion_du_rectangle_periodique() -> None:
 def test_l_estimation_numerique_de_la_porte_a_un_facteur_un_sur_te_pres() -> None:
     """2.1.3 : deux secondes de `rect(t)` a 10 Hz, sommet « 10 fois » la theorie.
 
-    Onze echantillons valent un, bords compris : le sommet brut est 11.
+    Le code du cours, tel quel : `arange(-1, 1, 1 / fe)` puis
+    `where(abs(x) <= 0.5, 1, 0)`. Dix echantillons valent un, et non
+    onze : l'arithmetique flottante place les bords en -0,5000000000000001
+    et 0,4999999999999997, de sorte qu'un seul des deux est retenu. Le
+    sommet vaut donc exactement dix, comme le syllabus le dit.
+
+    Ce test a d'abord affirme le contraire -- onze, avec une tolerance
+    ajoutee a la comparaison. L'ecart etait le mien, non celui du cours.
     """
     cadence = 10.0
     instants = np.arange(-1, 1, 1 / cadence)
-    porte = np.where(np.abs(instants) <= 0.5 + 1e-9, 1.0, 0.0)
-    assert porte.sum() == 11
+    porte = np.where(np.abs(instants) <= 0.5, 1.0, 0.0)
+    assert porte.sum() == 10
+    assert instants[5] < -0.5 < 0.5 > instants[15] > 0.4999
     frequences = np.array([0.0, 1.5, 2.5])
     estime = spectre_estime(porte, cadence, frequences)
-    assert estime[0] == pytest.approx(1.0, abs=0.11)
+    assert estime[0] * cadence == pytest.approx(10.0)
+    assert estime[0] == pytest.approx(1.0)
     assert estime[1:] == pytest.approx(np.abs(np.sinc(frequences[1:])), abs=0.03)
 
 
