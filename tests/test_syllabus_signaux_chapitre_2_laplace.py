@@ -159,6 +159,36 @@ def test_l_exemple_2_16_une_fraction_quelconque() -> None:
     assert sp.simplify(original(image) - attendu) == 0
 
 
+def test_le_residu_d_un_pole_irrationnel() -> None:
+    """Regression : sur `5 / (4 p^2 + 8 p + 1)` le residu sortait indetermine.
+
+    La simplification de `F(p)(p - p_i)` ne factorise pas un denominateur
+    a racines irrationnelles ; `N(p_i) / D'(p_i)` n'en a pas besoin.
+    """
+    image = 5 / (4 * P**2 + 8 * P + 1)
+    pole = -1 + sp.sqrt(3) / 2
+    assert sp.simplify(residu(image, pole) - 5 / (4 * sp.sqrt(3))) == 0
+    attendu = 5 / (4 * sp.sqrt(3)) * (sp.exp(pole * T) - sp.exp((-2 - pole) * T))
+    assert sp.simplify(original(image) - attendu) == 0
+
+
+def test_le_residu_d_une_paire_de_poles_complexes_irrationnels() -> None:
+    """Regression : `5 / (4 p^2 + 2 p + 1)` rendait un original nul."""
+    image = 5 / (4 * P**2 + 2 * P + 1)
+    pole = (-1 + sp.sqrt(3) * sp.I) / 4
+    assert sp.simplify(residu(image, pole) - 5 / (2 * sp.sqrt(3) * sp.I)) == 0
+    attendu = 5 / sp.sqrt(3) * sp.exp(-T / 4) * sp.sin(sp.sqrt(3) * T / 4)
+    assert sp.simplify(original(image) - attendu) == 0
+    assert sp.simplify(transformee_de_laplace(attendu) - image) == 0
+
+
+def test_les_residus_d_un_pole_double_irrationnel() -> None:
+    """`1 / (p^2 - 2)^2` en `racine(2)` : `A_2 = 1/8`, `A_1 = -racine(2) / 16`."""
+    premier, second = residus_d_un_pole_double(1 / (P**2 - 2) ** 2, sp.sqrt(2))
+    assert second == sp.Rational(1, 8)
+    assert sp.simplify(premier + sp.sqrt(2) / 16) == 0
+
+
 def test_le_quotient_range_les_impulsions_par_ordre_de_derivation() -> None:
     """(2.41) : `q_0 + q_1 p` donne `q_0 delta(t) + q_1 delta'(t)`."""
     image = 2 * P + 3 + 1 / (P + 1)

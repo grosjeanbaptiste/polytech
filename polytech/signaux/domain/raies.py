@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING
 import sympy as sp
 
 from polytech.signaux.domain.frequence import FREQUENCE
+from polytech.signaux.domain.symboles import IMAGE
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -68,3 +69,14 @@ def frequence_fondamentale(periode_en_echantillons: int, cadence: float) -> floa
         msg = f"periode nulle ou negative : {periode_en_echantillons} echantillon(s)"
         raise ValueError(msg)
     return cadence / periode_en_echantillons
+
+
+def raie_de_sortie(
+    raie_d_entree: sp.Expr, transmittance: sp.Expr, rang: int, fondamentale: sp.Expr
+) -> sp.Expr:
+    """`Y_k = X_k H(j k omega_0)` : en regime, chaque raie garde sa frequence."""
+    reponse = sp.sympify(transmittance).subs(IMAGE, sp.I * rang * fondamentale)
+    if reponse.has(sp.zoo, sp.nan):
+        msg = f"pole sur la raie de rang {rang} : le regime n'existe pas"
+        raise ValueError(msg)
+    return sp.simplify(raie_d_entree * reponse)

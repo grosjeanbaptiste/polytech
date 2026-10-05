@@ -24,27 +24,45 @@ from polytech.signaux.domain.symboles import TEMPS as T
 DOUBLE = 2
 
 
+def _fraction(image: sp.Expr) -> tuple[sp.Expr, sp.Expr]:
+    numerateur, denominateur = sp.fraction(sp.cancel(image))
+    return (numerateur, denominateur)
+
+
 def _multiplicite(image: sp.Expr, pole: sp.Expr) -> int:
-    denominateur = sp.fraction(sp.cancel(image))[1]
-    return int(sp.roots(sp.Poly(denominateur, P)).get(sp.sympify(pole), 0))
+    racines = sp.roots(sp.Poly(_fraction(image)[1], P))
+    egales = (m for racine, m in racines.items() if sp.simplify(racine - pole) == 0)
+    return int(next(egales, 0))
+
+
+def _en(expression: sp.Expr, pole: sp.Expr, ordre: int = 0) -> sp.Expr:
+    """La derivee d'ordre donne, evaluee au pole."""
+    return sp.diff(expression, P, ordre).subs(P, pole)
 
 
 def residu(image: sp.Expr, pole: sp.Expr) -> sp.Expr:
-    """`A_i = F(p)(p - p_i)` en `p = p_i`, pour un pole simple."""
+    """`A_i = F(p)(p - p_i)` en `p = p_i`, soit `N(p_i) / D'(p_i)`."""
     if _multiplicite(image, pole) != 1:
         msg = f"{pole} n'est pas un pole simple de {image}"
         raise ValueError(msg)
-    return sp.simplify(sp.cancel(image * (P - pole)).subs(P, pole))
+    numerateur, denominateur = _fraction(image)
+    return sp.simplify(_en(numerateur, pole) / _en(denominateur, pole, 1))
 
 
 def residus_d_un_pole_double(image: sp.Expr, pole: sp.Expr) -> tuple[sp.Expr, sp.Expr]:
-    """`(A_1, A_2)` : les coefficients de `1 / (p - p_i)` et de son carre."""
+    """`(A_1, A_2)` : les coefficients de `1 / (p - p_i)` et de son carre.
+
+    Avec `D = (p - p_i)^2 Q`, `Q(p_i)` est la moitie de la derivee seconde
+    de `D` et `Q'(p_i)` le sixieme de sa derivee troisieme : `A_2 = N / Q`,
+    et `A_1` en est la derivee.
+    """
     if _multiplicite(image, pole) != DOUBLE:
         msg = f"{pole} n'est pas un pole double de {image}"
         raise ValueError(msg)
-    reduit = sp.cancel(image * (P - pole) ** 2)
-    premier = sp.simplify(sp.diff(reduit, P).subs(P, pole))
-    return (premier, sp.simplify(reduit.subs(P, pole)))
+    numerateur, denominateur = _fraction(image)
+    reste, pente = _en(denominateur, pole, 2) / 2, _en(denominateur, pole, 3) / 6
+    haut = _en(numerateur, pole, 1) * reste - _en(numerateur, pole) * pente
+    return (sp.simplify(haut / reste**2), sp.simplify(_en(numerateur, pole) / reste))
 
 
 def division(image: sp.Expr) -> tuple[sp.Expr, sp.Expr]:
