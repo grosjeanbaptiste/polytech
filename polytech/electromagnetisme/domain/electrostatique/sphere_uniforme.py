@@ -35,3 +35,14 @@ def potentiel_interieur(charge: object, rayon: object, distance: object) -> sp.E
 def champ_interieur(charge: object, rayon: object, distance: object) -> sp.Expr:
     """`E_r = Q r / (4 pi eps_0 a^3)`, pour `r <= a`."""
     return COULOMB * sp.sympify(charge) * distance / sp.sympify(rayon) ** 3
+
+
+def deplacement_interieur(charge: object, rayon: object, distance: object) -> sp.Expr:
+    """`D_r = Q r / (4 pi a^3)`, pour `r <= a` : il croit lineairement (2.13.10)."""
+    return sp.sympify(charge) * distance / (4 * sp.pi * sp.sympify(rayon) ** 3)
+
+
+def deplacement_radial(densite: object, source: sp.Symbol, distance: object) -> sp.Expr:
+    """`D_r(r) = (1 / r^2) integrale de 0 a r de eta(s) s^2 ds` (2.13.9)."""
+    enlacee = sp.integrate(sp.sympify(densite) * source**2, (source, 0, distance))
+    return sp.simplify(enlacee / sp.sympify(distance) ** 2)
