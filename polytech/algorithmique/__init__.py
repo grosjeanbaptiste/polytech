@@ -16,4 +16,13 @@ Ce qui pourrait legitimement vivre ici un jour : les oracles des TP -- les
 resultats attendus sur les jeux de donnees fournis, calcules
 independamment du code de l'etudiant, pour que le corrige C++ ait quelque
 chose a prouver.
+
+**Depuis le 2026-10-05, le meme principe est etendu aux planches.** La
+consigne de couverture titre par titre demande que toute notion enseignee
+soit portee. Ce contexte ne traduit toujours pas du C++ : il dit ce qu'un
+programme C++ **doit afficher** -- la division entiere qui tronque, le
+`setw` qui s'oublie, l'entier qui deborde -- et ce qu'un algorithme du
+cours doit rendre. Chaque resultat recopie d'une planche a d'abord ete
+confirme en compilant son programme ; la syntaxe pure, elle, porte une
+raison ecrite dans `cursus/notions/ProgrammationAlgorithmique.toml`.
 """
