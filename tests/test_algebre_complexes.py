@@ -341,7 +341,7 @@ def test_la_reponse_de_l_exercice_16() -> None:
 
 
 def test_la_somme_ponderee_de_l_exercice_17_c() -> None:
-    """`1 + 2 eps + ... + n eps^(n-1) = -n/(1 - eps)` si `eps != 1`, sinon `n(n+1)/2`."""
+    """`1 + 2 eps + ... + n eps^(n-1) = -n/(1 - eps)` si `eps != 1`."""
     n = 5
     for eps in racines_de_l_unite(n)[1:]:
         somme = sum((k + 1) * eps**k for k in range(n))
