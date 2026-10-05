@@ -188,7 +188,7 @@ def test_la_zone_tampon_sans_loi_est_refusee() -> None:
 
 def test_la_loi_logarithmique_vaut_au_dela_de_trente() -> None:
     assert vitesse_adimensionnee(100.0) == pytest.approx(
-        math.log(100.0) / 0.41 + 5.0,
+        math.log(100.0) / 0.4 + 5.0,
     )
 
 

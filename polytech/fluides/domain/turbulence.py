@@ -8,9 +8,9 @@ et la moyenne d'un produit n'est **pas** le produit des moyennes -- d'ou
 le tenseur de Reynolds, qui est exactement le terme qui survit.
 
 La loi logarithmique de la sous-couche, `u+ = (1/kappa) ln(y+) + C`, est
-donnee avec les constantes usuelles. Elles ne sont pas lisibles sur les
-planches -- ce sont des valeurs de la litterature, et elles sont signalees
-comme telles.
+donnee avec les constantes de la planche 34 : `kappa = 0,4` et `B = 5,0`.
+Ce module a porte `0,41` en les disant illisibles sur les planches ;
+elles y sont ecrites, et c'est leur valeur qui est retenue.
 """
 
 from __future__ import annotations
@@ -19,11 +19,11 @@ import math
 from dataclasses import dataclass
 from typing import Final
 
-KARMAN: Final = 0.41
-"""Constante de von Karman. Valeur de la litterature, non lisible sur les planches."""
+KARMAN: Final = 0.4
+"""Constante de von Karman : « = 0.4 », planche 34, soit `u+ = 2,5 ln y+ + 5,0`."""
 
 CONSTANTE_LOG: Final = 5.0
-"""Constante additive de la loi logarithmique, meme provenance."""
+"""Constante additive `B` de la loi logarithmique, meme planche."""
 
 LIMITE_SOUS_COUCHE_VISQUEUSE: Final = 5.0
 """`y+ < 5` : la sous-couche visqueuse, ou `u+ = y+`."""
