@@ -53,3 +53,18 @@ def spectre_estime(
         echantillons, worN=frequences, fs=frequence_d_echantillonnage
     )
     return np.asarray(np.abs(reponse) / frequence_d_echantillonnage, dtype=float)
+
+
+def raies_estimees(
+    echantillons: np.ndarray,
+    frequence_d_echantillonnage: float,
+    frequences: np.ndarray,
+) -> np.ndarray:
+    """`|freqz| / N` : l'amplitude des raies d'un signal periodique."""
+    if len(echantillons) == 0:
+        msg = "aucun echantillon : la transformee discrete n'est pas definie"
+        raise ValueError(msg)
+    _, reponse = signal.freqz(
+        echantillons, worN=frequences, fs=frequence_d_echantillonnage
+    )
+    return np.asarray(np.abs(reponse) / len(echantillons), dtype=float)
