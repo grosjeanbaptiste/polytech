@@ -64,7 +64,8 @@ def _impulsions(quotient: sp.Expr) -> sp.Expr:
 def original(image: sp.Expr) -> sp.Expr:
     """`f(t)` pour `t >= 0`, impulsions comprises."""
     quotient, propre = division(image)
-    signal = _impulsions(quotient) if quotient != 0 else sp.S.Zero
+    impulsions = _impulsions(quotient) if quotient != 0 else sp.S.Zero
+    signal = sp.S.Zero
     denominateur = sp.fraction(propre)[1]
     for pole, multiplicite in sp.roots(sp.Poly(denominateur, P)).items():
         if multiplicite == 1:
@@ -75,4 +76,4 @@ def original(image: sp.Expr) -> sp.Expr:
         else:
             msg = f"pole de multiplicite superieure a deux, hors du cours : {pole}"
             raise ValueError(msg)
-    return sp.simplify(signal.rewrite(sp.cos))
+    return impulsions + sp.simplify(sp.expand_complex(signal))

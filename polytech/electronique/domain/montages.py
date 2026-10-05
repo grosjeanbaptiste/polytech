@@ -91,3 +91,11 @@ def integrateur(resistance: float, capacite: float, variable: sp.Expr) -> sp.Exp
         msg = f"capacite nulle ou negative : {capacite} F"
         raise ValueError(msg)
     return -1 / (resistance * capacite * variable)
+
+
+def transfert_a_impedances(entree: sp.Expr, contre_reaction: sp.Expr) -> sp.Expr:
+    """`H = -Z_2 / Z_1` : la structure inverseuse, a impedances quelconques."""
+    if entree == 0:
+        msg = "impedance d'entree nulle : le gain de la structure serait infini"
+        raise ValueError(msg)
+    return -contre_reaction / entree

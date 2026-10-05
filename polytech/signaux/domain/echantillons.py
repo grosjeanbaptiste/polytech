@@ -49,3 +49,13 @@ def deconvoluer(produit: np.ndarray, facteur: np.ndarray) -> np.ndarray:
         msg = f"reste non nul ({np.max(np.abs(reste)):.3g}) : pas un produit exact"
         raise ValueError(msg)
     return np.asarray(quotient, dtype=float)
+
+
+def reponse_par_superposition(
+    entree: np.ndarray, impulsionnelle: np.ndarray, pas: float
+) -> np.ndarray:
+    """`y(t) ~ somme x(t_k) h(t - t_k) Delta` : la convolution, discretisee."""
+    if pas <= 0:
+        msg = f"pas nul ou negatif : {pas} s"
+        raise ValueError(msg)
+    return convoluer(entree, impulsionnelle) * pas
