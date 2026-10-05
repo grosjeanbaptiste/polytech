@@ -45,9 +45,14 @@ def force_surfacique(surfacique: object) -> sp.Expr:
     return sp.sympify(surfacique) * champ_sur_la_surface(surfacique)
 
 
+def charge_surfacique_depuis_le_champ(champ: object) -> sp.Expr:
+    """`sigma = eps_0 E` : la charge que porte un conducteur ou regne ce champ."""
+    return PERMITTIVITE * sp.sympify(champ)
+
+
 def charge_surfacique_maximale(champ_disruptif: object) -> sp.Expr:
     """`sigma = eps_0 E` : la charge au-dela de laquelle le milieu s'ionise."""
-    return PERMITTIVITE * sp.sympify(champ_disruptif)
+    return charge_surfacique_depuis_le_champ(champ_disruptif)
 
 
 def charge_lineique_pour_un_potentiel(

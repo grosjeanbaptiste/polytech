@@ -22,14 +22,20 @@ cote : a cent degres d'ecart un thermocouple ne delivre que quatre a cinq
 millivolts, et une telle tension se perd dans le bruit d'une chaine
 d'acquisition non amplifiee.
 
-Le modele est **lineaire**, comme le « par degre Celsius » du syllabus
-l'indique. La courbe reelle d'un thermocouple ne l'est pas tout a fait,
-mais le syllabus ne donne aucune correction et ce module n'en invente
-pas.
+Le modele de la section 6.8 est **lineaire**, comme son « par degre
+Celsius » l'indique. La section 6.9 donne la correction, que ce module a
+longtemps dit absente du syllabus : pour le couple cuivre-constantan,
+soudure froide a 0 degC, et de 0 a 300 degC,
+
+    E = 41 Theta_c + 0,05 Theta_c^2   [microvolts]                (6.9.1)
+
+Sa pente, `41 + 0,1 Theta_c`, vaut bien 40 a 50 microvolts par degre entre
+0 et 90 degC : les deux sections disent la meme chose.
 """
 
 from __future__ import annotations
 
+import math
 from typing import Final
 
 COEFFICIENT_DU_CUIVRE: Final = 2.2e-6
@@ -75,3 +81,34 @@ def ecart_depuis_la_tension(coefficient: float, tension: float) -> float:
         msg = f"coefficient de Seebeck nul ou negatif : {coefficient} V/K"
         raise ValueError(msg)
     return tension / coefficient
+
+
+PLAGE_DE_LA_LOI_QUADRATIQUE: Final = (0.0, 300.0)
+"""« De 0 a 300 degC » : hors de la, la relation (6.9.1) n'est pas donnee."""
+
+_LINEAIRE: Final = 41e-6
+_QUADRATIQUE: Final = 0.05e-6
+
+
+def fem_du_couple_cuivre_constantan(chaude: float) -> float:
+    """`E = 41 Theta_c + 0,05 Theta_c^2` microvolts, rendue en volts (6.9.1)."""
+    bas, haut = PLAGE_DE_LA_LOI_QUADRATIQUE
+    if not bas <= chaude <= haut:
+        msg = f"temperature hors de l'intervalle de 0 a 300 degC : {chaude}"
+        raise ValueError(msg)
+    return _LINEAIRE * chaude + _QUADRATIQUE * chaude**2
+
+
+def sensibilite_du_couple_cuivre_constantan(chaude: float) -> float:
+    """`dE/dTheta_c = 41 + 0,1 Theta_c` microvolts par degre, en V/degC."""
+    return _LINEAIRE + 2 * _QUADRATIQUE * chaude
+
+
+def temperature_de_la_soudure_chaude(fem: float) -> float:
+    """La temperature qui donne cette force electromotrice : (6.9.1) inversee."""
+    maximale = fem_du_couple_cuivre_constantan(PLAGE_DE_LA_LOI_QUADRATIQUE[1])
+    if not 0 <= fem <= maximale:
+        msg = f"force electromotrice hors de la plage du couple : {fem} V"
+        raise ValueError(msg)
+    discriminant = _LINEAIRE**2 + 4 * _QUADRATIQUE * fem
+    return (math.sqrt(discriminant) - _LINEAIRE) / (2 * _QUADRATIQUE)

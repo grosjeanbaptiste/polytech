@@ -65,6 +65,29 @@ def force_a_flux_constant(energie: sp.Expr) -> sp.Expr:
     return sp.simplify(-sp.diff(energie, DEPLACEMENT))
 
 
+def force_a_charges_constantes(energie: sp.Expr) -> sp.Expr:
+    """`F = -(dW_e/dx)_Q` : a charges constantes, le travail se prend sur le champ.
+
+    Premier theoreme du paragraphe 5.2 du syllabus : les conducteurs sont
+    isoles des sources, et l'energie du champ diminue du travail fourni.
+    """
+    return sp.simplify(-sp.diff(energie, DEPLACEMENT))
+
+
+def force_a_potentiels_constants(energie: sp.Expr) -> sp.Expr:
+    """`F = +(dW_e/dx)_U` : a potentiels constants, l'energie du champ augmente.
+
+    Second theoreme du paragraphe 5.2 : le paradoxe n'est qu'apparent, les
+    sources fournissant a la fois le travail et l'accroissement d'energie.
+    """
+    return sp.simplify(sp.diff(energie, DEPLACEMENT))
+
+
+def bilan_a_potentiels_constants(travail: sp.Expr) -> tuple[sp.Expr, sp.Expr]:
+    """`((dW_e)_U, dW_s) = (dT, -2 dT)` : le gain du champ, la perte des sources."""
+    return (travail, -2 * travail)
+
+
 def les_deux_signes_s_opposent(energie: sp.Expr) -> bool:
     """Vrai si les deux methodes donnent des forces opposees.
 
