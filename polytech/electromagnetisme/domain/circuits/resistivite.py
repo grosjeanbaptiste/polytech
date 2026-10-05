@@ -60,3 +60,16 @@ def resistance_d_un_ruban(
         msg = f"largeur nulle ou negative : {largeur} m"
         raise ValueError(msg)
     return superficielle * longueur / largeur
+
+
+def resistivite_de_matthiessen(*, impuretes: float, phonons: float) -> float:
+    """`rho = rho_i + rho_ph` : les defauts du reseau, et ses vibrations.
+
+    Regle de Matthiessen (electronique, chapitre 1, partie I, planche 28).
+    La premiere part ne depend pas de la temperature ; la seconde croit
+    avec elle.
+    """
+    if impuretes < 0 or phonons < 0:
+        msg = f"resistivite negative : {impuretes} ou {phonons} ohm.m"
+        raise ValueError(msg)
+    return impuretes + phonons
