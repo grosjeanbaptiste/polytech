@@ -40,6 +40,12 @@ class Clavier:
         self._tampon = restant[len(lu) :]
         return lu
 
+    def caractere(self) -> str:
+        """`cin.get()` : le prochain caractere, blanc ou retour a la ligne compris."""
+        self._exiger_une_suite(self._tampon)
+        lu, self._tampon = self._tampon[0], self._tampon[1:]
+        return lu
+
     def ligne(self, delimiteur: str = "\n") -> str:
         """`getline` : jusqu'au delimiteur, qui est consomme."""
         self._exiger_une_suite(self._tampon)

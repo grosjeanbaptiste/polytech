@@ -73,3 +73,35 @@ def stoi(texte: str) -> int:
 def stof(texte: str) -> float:
     """Le reel que porte le debut de la chaine."""
     return float(_prefixe(_REEL, texte))
+
+
+NPOS: Final = 2**64 - 1
+"""`string::npos` : ce que rend une recherche infructueuse, le plus grand `size_t`."""
+
+
+def find(texte: str, motif: str) -> int:
+    """`texte.find(motif)` : l'indice de la premiere occurrence, ou `NPOS`."""
+    indice = texte.find(motif)
+    return NPOS if indice < 0 else indice
+
+
+def insert(texte: str, position: int, ajout: str) -> str:
+    """`texte.insert(position, ajout)` : l'ajout se place devant ce rang."""
+    if not 0 <= position <= len(texte):
+        msg = f"position hors de la chaine : {position} pour {len(texte)} caracteres"
+        raise IndexError(msg)
+    return texte[:position] + ajout + texte[position:]
+
+
+def precede(avant: str, apres: str) -> bool:
+    """Vrai si `avant` precede `apres` dans l'ordre lexicographique des codes.
+
+    La definition recurrente du syllabus : la chaine vide precede toute
+    autre ; sinon on compare les premiers caracteres, et a egalite les
+    suites.
+    """
+    if not avant or not apres:
+        return bool(apres)
+    if avant[0] != apres[0]:
+        return ord(avant[0]) < ord(apres[0])
+    return precede(avant[1:], apres[1:])

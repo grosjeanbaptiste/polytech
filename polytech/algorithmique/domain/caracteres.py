@@ -17,6 +17,8 @@ from __future__ import annotations
 import string
 from typing import Final
 
+from polytech.algorithmique.domain.types_cpp import affecter
+
 _BLANCS: Final = " \t"
 _ESPACES: Final = " \t\n\v\f\r"
 
@@ -87,3 +89,24 @@ def _masque(caractere: str) -> str:
 def masquer(texte: str) -> str:
     """Les lettres en majuscules, les espaces en blancs, le reste en etoiles."""
     return "".join(_masque(caractere) for caractere in texte)
+
+
+def caractere_de_code(valeur: float) -> str:
+    """`(char) valeur` : le caractere dont le code est la valeur, tronquee."""
+    code = int(affecter(valeur, "char"))
+    if code < 0:
+        msg = f"code {code} hors de la table ASCII"
+        raise ValueError(msg)
+    return chr(code)
+
+
+def _decale(caractere: str, decalage: int) -> str:
+    for alphabet in (string.ascii_lowercase, string.ascii_uppercase):
+        if caractere in alphabet:
+            return alphabet[(alphabet.index(caractere) + decalage) % len(alphabet)]
+    return caractere
+
+
+def decaler_les_lettres(texte: str, decalage: int) -> str:
+    """Chaque lettre decalee dans son alphabet, en boucle ; le reste intact."""
+    return "".join(_decale(caractere, decalage) for caractere in texte)
