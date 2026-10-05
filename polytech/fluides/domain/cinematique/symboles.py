@@ -10,6 +10,8 @@ import sympy as sp
 
 X = sp.Symbol("x", real=True)
 Y = sp.Symbol("y", real=True)
+Z = sp.Symbol("z", real=True)
 T = sp.Symbol("t", real=True, nonnegative=True)
 
 COORDONNEES = (X, Y)
+ESPACE = (X, Y, Z)
