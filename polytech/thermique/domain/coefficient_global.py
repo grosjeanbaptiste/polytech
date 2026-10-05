@@ -35,8 +35,10 @@ from __future__ import annotations
 
 from typing import Final
 
-CONSTANTE_DE_STEFAN: Final = 5.670374419e-8
-"""`sigma`, en W/(m^2 K^4)."""
+from polytech.thermique.domain.rayonnement.corps_noir import STEFAN_BOLTZMANN
+
+CONSTANTE_DE_STEFAN: Final = STEFAN_BOLTZMANN
+"""`sigma`, en W/(m^2 K^4) : celle du corps noir, ecrite une seule fois."""
 
 FACTEUR_DE_LINEARISATION: Final = 4
 """Le `4` de `4 sigma T^3` : l'exposant de `T^4` passe en coefficient."""
