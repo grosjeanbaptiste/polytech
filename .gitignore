@@ -30,6 +30,19 @@ __pycache__/
 /ElectroniqueInstrumentation/
 # La moitie thermique de UI-B3-IRCIVI-003-C (AA I-TRMI-102) :
 /ThermiqueFondements/
+# Les UE amont du parcours de Charleroi, rapatriees le 2026-10-04, un
+# dossier par cours Moodle (`cursus/moodle-charleroi.toml`) :
+/IntroductionSciencesIngenieur/
+/AlgebreLineaire1/
+/CalculDifferentielIntegral1/
+/AlgebreLineaire2/
+/CalculDifferentielIntegral2/
+/MecaniqueRationnelle1/
+/NotionsFondamentalesOptique/
+/ElectriciteMagnetisme/
+/MathematiquesIngenieur3/
+/MecaniqueRationnelle2/
+/Thermodynamique/
 # L'alternative de Mons, si elle etait un jour suivie a la place :
 /Thermique/
 /ElectroniqueFonctionnelle/
