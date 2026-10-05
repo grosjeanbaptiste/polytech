@@ -296,3 +296,54 @@ def test_les_reponses_de_l_exercice_18() -> None:
     cubique = X**3 + 2 * (I - 1) * X**2 + (3 - 4 * I) * X - 6
     for racine in (2, I, -3 * I):
         assert sp.expand(cubique.subs(X, racine)) == 0
+
+
+def test_l_identite_de_l_exercice_7() -> None:
+    """`(1 + i racine 3)(1 + i) e^(i phi) = 2 racine(2) e^(i (7 pi/12 + phi))`."""
+    phi = sp.Symbol("phi", real=True)
+    gauche = (1 + I * sqrt(3)) * (1 + I) * (sp.cos(phi) + I * sp.sin(phi))
+    droite = 2 * sqrt(2) * exp(I * (7 * pi / 12 + phi))
+    assert sp.simplify(sp.expand_complex(gauche - droite)) == 0
+
+
+def test_les_reponses_de_l_exercice_9() -> None:
+    """a) `x >= 0`, `y = 0` ; b) `y = 0` ; c) `x = 0`, `y = -pi + 2k pi`."""
+    x = sp.Symbol("x", real=True)
+    assert sp.Abs(sp.Integer(3)) == 3
+    assert sp.Abs(sp.Integer(-3)) != -3
+    assert sp.im(x + I * Y - sp.Abs(x + I * Y)) == Y
+    assert sp.simplify((x + I * Y - x * exp(I * Y)).subs(Y, 0)) == 0
+    for k in (-1, 0, 2):
+        assert exp(0 + I * (-pi + 2 * k * pi)) == -1
+    module = sp.Abs(exp(x + I * Y))
+    assert sp.simplify(module - exp(x)) == 0
+
+
+def test_la_reponse_de_l_exercice_10() -> None:
+    """`z_barre = z^(n-1)` : pour `n > 2`, zero ou une racine `n`-ieme de l'unite."""
+    for n in (3, 4, 5):
+        for racine in (sp.Integer(0), *racines_de_l_unite(n)):
+            ecart = sp.conjugate(racine) - racine ** (n - 1)
+            assert sp.simplify(sp.expand_complex(ecart)) == 0
+    assert sp.conjugate(sp.Integer(1)) == 1
+    reel = sp.Symbol("r", real=True)
+    assert sp.conjugate(reel) == reel
+    assert sp.conjugate(2 * I) != (2 * I) ** 3
+
+
+def test_la_reponse_de_l_exercice_16() -> None:
+    """`z^7` et `1/z^2` conjugues : `z = e^(2 i k pi / 5)`, `k = 0, ..., 4`."""
+    for z in racines_de_l_unite(5):
+        ecart = sp.conjugate(z**7) - 1 / z**2
+        assert sp.simplify(sp.expand_complex(ecart)) == 0
+    hors = exp(I * pi / 3)
+    assert sp.simplify(sp.expand_complex(sp.conjugate(hors**7) - 1 / hors**2)) != 0
+
+
+def test_la_somme_ponderee_de_l_exercice_17_c() -> None:
+    """`1 + 2 eps + ... + n eps^(n-1) = -n/(1 - eps)` si `eps != 1`, sinon `n(n+1)/2`."""
+    n = 5
+    for eps in racines_de_l_unite(n)[1:]:
+        somme = sum((k + 1) * eps**k for k in range(n))
+        assert sp.simplify(sp.expand_complex(somme + n / (1 - eps))) == 0
+    assert sum(k + 1 for k in range(n)) == n * (n + 1) // 2
