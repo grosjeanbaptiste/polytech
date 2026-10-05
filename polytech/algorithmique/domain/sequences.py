@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any
 
 from polytech.algorithmique.domain.algorithmes_stl import remove, unique
 from polytech.algorithmique.domain.conteneurs import exiger
+from polytech.algorithmique.domain.recherche_triee import merge
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -127,6 +128,24 @@ class Sequence:
         """Range en ordre croissant, ou decroissant -- la liste seulement."""
         exiger(self.genre, "sort")
         self._e.sort(reverse=decroissant)
+
+    def reverse(self) -> None:
+        """Inverse l'ordre des elements -- la liste seulement."""
+        exiger(self.genre, "reverse")
+        self._e.reverse()
+
+    def merge(self, autre: Sequence) -> None:
+        """Fusionne une autre liste triee dans celle-ci, et la vide."""
+        exiger(self.genre, "merge")
+        self._e = merge(self._e, autre._e)
+        autre._e.clear()
+
+    def splice(self, position: int, autre: Sequence) -> None:
+        """Deplace tous les elements de l'autre liste devant la position."""
+        exiger(self.genre, "splice")
+        for rang, element in enumerate(autre.elements):
+            self.insert(position + rang, element)
+        autre._e.clear()
 
     def resize(self, taille: int, valeur: Any = 0) -> None:  # noqa: ANN401 -- tout type
         """Tronque, ou complete avec la valeur."""

@@ -69,3 +69,25 @@ class Associatif:
             msg = f"cle absente du map : {cle}"
             raise KeyError(msg)
         return self._valeurs[self.lower_bound(cle)]
+
+    def affecter(self, cle: Any, valeur: Any) -> None:  # noqa: ANN401 -- tout type
+        """`conteneur[cle] = valeur` : ajoute, ou ecrase -- du `map` seulement."""
+        exiger(self.genre, "operator[]")
+        if not self.insert(cle, valeur):
+            self._valeurs[self.lower_bound(cle)] = valeur
+
+    def valeurs_de(self, cle: Any) -> tuple[Any, ...]:  # noqa: ANN401 -- le type des cles
+        """Toutes les valeurs de cette cle, dans l'ordre de leur insertion."""
+        return tuple(self._valeurs[self.lower_bound(cle) : self.upper_bound(cle)])
+
+    def erase(self, cle: Any) -> int:  # noqa: ANN401 -- le type des cles
+        """Ote tous les elements de cette cle, et rend leur nombre."""
+        debut, fin = self.lower_bound(cle), self.upper_bound(cle)
+        del self._cles[debut:fin]
+        del self._valeurs[debut:fin]
+        return fin - debut
+
+    def clear(self) -> None:
+        """Ote tous les elements."""
+        self._cles.clear()
+        self._valeurs.clear()

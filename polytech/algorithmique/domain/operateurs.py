@@ -19,6 +19,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
+from polytech.algorithmique.domain.flux_de_sortie import ecrire_un_reel
+
 
 @dataclass(frozen=True, slots=True)
 class Point:
@@ -42,3 +44,25 @@ class Point:
     def distance(self, autre: Point) -> float:
         """La longueur du segment qui joint les deux points."""
         return math.hypot(self.x - autre.x, self.y - autre.y)
+
+
+@dataclass(frozen=True, slots=True)
+class Vecteur3d:
+    """Un vecteur a trois composantes, nulles par defaut."""
+
+    x: float = 0
+    y: float = 0
+    z: float = 0
+
+    def __add__(self, autre: Vecteur3d) -> Vecteur3d:
+        """`operator+` : la somme composante par composante."""
+        return Vecteur3d(self.x + autre.x, self.y + autre.y, self.z + autre.z)
+
+    def __sub__(self, autre: Vecteur3d) -> Vecteur3d:
+        """`operator-` : la difference composante par composante."""
+        return Vecteur3d(self.x - autre.x, self.y - autre.y, self.z - autre.z)
+
+    def __str__(self) -> str:
+        """`< composante1, composante2, composante3>`, comme `affiche`."""
+        composantes = (ecrire_un_reel(float(c)) for c in (self.x, self.y, self.z))
+        return f"< {', '.join(composantes)}>"

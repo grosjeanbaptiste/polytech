@@ -130,3 +130,8 @@ def min_element(elements: Sequence[Any]) -> int:
 def max_element(elements: Sequence[Any]) -> int:
     """La position du premier des plus grands elements."""
     return _extreme(elements, maximum=True)
+
+
+def reverse(elements: list[Any]) -> None:
+    """Inverse l'ordre des elements, sur place."""
+    elements.reverse()
