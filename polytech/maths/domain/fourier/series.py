@@ -52,7 +52,7 @@ class SerieDeFourier:
     def coefficient(self, rang: object) -> sp.Expr:
         """`c_n`."""
         noyau = sp.exp(-sp.I * sp.sympify(rang) * self.pulsation * VARIABLE)
-        return self._moyenne(self.motif * noyau)
+        return sp.simplify(sp.expand_complex(self._moyenne(self.motif * noyau)))
 
     def a(self, rang: object) -> sp.Expr:
         """`a_n = (2/T) int f cos(n w x)`."""
