@@ -22,6 +22,25 @@ type Grandeur = sp.Expr | float
 """Un reel ou un symbole."""
 
 
+def permeabilite_normale(induction: sp.Expr, champ: sp.Symbol) -> sp.Expr:
+    """`mu = B / H` : la pente de la droite menee de l'origine a la courbe."""
+    return sp.simplify(induction / champ)
+
+
+def champ_du_maximum_de_permeabilite(induction: sp.Expr, champ: sp.Symbol) -> sp.Expr:
+    """Le champ ou `B / H` culmine, sur une courbe de premiere aimantation."""
+    normale = permeabilite_normale(induction, champ)
+    sommets = [
+        racine
+        for racine in sp.solve(sp.diff(normale, champ), champ)
+        if sp.simplify(sp.diff(normale, champ, 2).subs(champ, racine)).is_negative
+    ]
+    if not sommets:
+        msg = "aucun maximum : la permeabilite de cette courbe est monotone"
+        raise ValueError(msg)
+    return sommets[0]
+
+
 def permeabilite_d_amplitude(
     crete_de_l_induction: float, crete_du_champ: float
 ) -> float:
