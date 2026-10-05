@@ -121,7 +121,7 @@ def test_la_capacite_parasite_croit_quand_les_pistes_se_rapprochent() -> None:
     """Et c'est pourquoi un circuit reel a des poles que son schema n'a pas."""
     eloignee = capacite_parasite(8.854e-12, 1e-4, 1e-3)
     proche = capacite_parasite(8.854e-12, 1e-4, 1e-4)
-    assert proche == pytest.approx(10 * eloignee)
+    assert proche == pytest.approx(10 * eloignee, rel=1e-9, abs=0)
 
 
 @pytest.mark.parametrize("frequence", [0.0, -1.0])

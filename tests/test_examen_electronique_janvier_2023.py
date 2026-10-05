@@ -162,9 +162,9 @@ def test_le_passe_haut_de_chebyshev_donne_7_7_pf_et_17_3_nh() -> None:
         impedance=50.0,
     )
     c1, l2, c3 = prototype.en_passe_haut(2 * math.pi * 400e6)
-    assert c1 == pytest.approx(7.72 * PICOFARAD, rel=1e-2)
+    assert c1 == pytest.approx(7.72 * PICOFARAD, rel=1e-2, abs=0)
     assert l2 == pytest.approx(17.34 * NANOHENRY, rel=1e-2)
-    assert c3 == pytest.approx(c1)
+    assert c3 == pytest.approx(c1, rel=1e-9, abs=0)
 
 
 def test_les_17_4_millihenrys_du_corrige_sont_des_nanohenrys() -> None:
@@ -243,8 +243,7 @@ def test_le_filtre_en_tete_en_deposerait_48() -> None:
 def test_le_pire_bruit_en_courant_vaut_9592_femtoamperes() -> None:
     """Question 10.6 : 200 fA par racine de hertz sur 2300 Hz."""
     assert 200 * FEMTOAMPERE * math.sqrt(2300) == pytest.approx(
-        9592 * FEMTOAMPERE,
-        rel=1e-3,
+        9592 * FEMTOAMPERE, rel=1e-3, abs=0
     )
 
 
@@ -255,8 +254,8 @@ def test_ce_bruit_en_courant_fait_1_92_nanovolt_et_non_millivolt() -> None:
     l'inegalite elle-meme contredit.
     """
     tension = 200.0 * (200 * FEMTOAMPERE * math.sqrt(2300))
-    assert tension**2 == pytest.approx(3.68e-18, rel=1e-2)
-    assert tension == pytest.approx(1.92 * NANOVOLT, rel=1e-2)
+    assert tension**2 == pytest.approx(3.68e-18, rel=1e-2, abs=0)
+    assert tension == pytest.approx(1.92 * NANOVOLT, rel=1e-2, abs=0)
     assert tension < 1 * MICROVOLT
 
 

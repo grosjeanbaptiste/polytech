@@ -43,8 +43,8 @@ def test_le_bruit_de_grenaille_est_proportionnel_au_courant() -> None:
     """`2 q I` : doubler le courant double la densite, et non son carre."""
     simple = densite_spectrale_de_grenaille(1e-3)
     double = densite_spectrale_de_grenaille(2e-3)
-    assert double == pytest.approx(2 * simple)
-    assert simple == pytest.approx(2 * CHARGE_ELEMENTAIRE * 1e-3)
+    assert double == pytest.approx(2 * simple, rel=1e-9, abs=0)
+    assert simple == pytest.approx(2 * CHARGE_ELEMENTAIRE * 1e-3, rel=1e-9, abs=0)
 
 
 def test_un_courant_nul_ne_produit_aucun_bruit_de_grenaille() -> None:
@@ -62,7 +62,7 @@ def test_le_bruit_en_un_sur_f_decroit_comme_la_frequence() -> None:
     """D'ou son autre nom : bruit rose, par opposition au blanc."""
     basse = densite_spectrale_en_un_sur_f(1e-12, 1.0)
     haute = densite_spectrale_en_un_sur_f(1e-12, 100.0)
-    assert basse == pytest.approx(100 * haute)
+    assert basse == pytest.approx(100 * haute, rel=1e-9, abs=0)
 
 
 def test_une_frequence_nulle_est_refusee_parce_que_la_densite_y_diverge() -> None:
@@ -79,11 +79,11 @@ def test_le_blanc_croit_comme_la_bande_et_le_rose_comme_son_logarithme() -> None
     """
     blanc_seul_etroit = puissance_integree_blanc_et_rose(1e-16, 0.0, 1.0, 101.0)
     blanc_seul_large = puissance_integree_blanc_et_rose(1e-16, 0.0, 1.0, 201.0)
-    assert blanc_seul_large == pytest.approx(2 * blanc_seul_etroit)
+    assert blanc_seul_large == pytest.approx(2 * blanc_seul_etroit, rel=1e-9, abs=0)
 
     rose_seul = puissance_integree_blanc_et_rose(0.0, 1e-14, 1.0, 100.0)
     rose_decade_de_plus = puissance_integree_blanc_et_rose(0.0, 1e-14, 1.0, 10_000.0)
-    assert rose_decade_de_plus == pytest.approx(2 * rose_seul)
+    assert rose_decade_de_plus == pytest.approx(2 * rose_seul, rel=1e-9, abs=0)
 
 
 def test_une_bande_inversee_est_refusee() -> None:
@@ -105,7 +105,7 @@ def test_les_deux_sources_de_bruit_s_ajoutent_en_puissance() -> None:
     tension, courant, resistance = 5e-9, 1e-12, 5e3
     attendu = math.hypot(tension, courant * resistance)
     obtenu = tension_efficace_ramenee_a_l_entree(tension, courant, resistance)
-    assert obtenu == pytest.approx(attendu)
+    assert obtenu == pytest.approx(attendu, rel=1e-9, abs=0)
     assert obtenu < tension + courant * resistance
 
 
@@ -117,7 +117,9 @@ def test_le_bruit_en_courant_pese_d_autant_plus_que_la_source_est_resistive() ->
 
 
 def test_une_source_sans_resistance_ne_laisse_que_le_bruit_en_tension() -> None:
-    assert tension_efficace_ramenee_a_l_entree(5e-9, 1e-12, 0.0) == pytest.approx(5e-9)
+    assert tension_efficace_ramenee_a_l_entree(5e-9, 1e-12, 0.0) == pytest.approx(
+        5e-9, rel=1e-9, abs=0
+    )
 
 
 def test_une_resistance_de_source_negative_est_refusee() -> None:

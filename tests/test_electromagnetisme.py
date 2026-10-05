@@ -122,7 +122,7 @@ def test_la_charge_image_annule_le_potentiel_sur_le_plan() -> None:
 def test_un_dielectrique_renforce_la_capacite() -> None:
     nue = avancee.capacite_plane(0.01, 1e-3)
     garnie = avancee.capacite_plane(0.01, 1e-3, relative=4.0)
-    assert garnie == pytest.approx(4 * nue)
+    assert garnie == pytest.approx(4 * nue, rel=1e-9, abs=0)
 
 
 def test_une_permittivite_relative_sous_l_unite_est_refusee() -> None:

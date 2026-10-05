@@ -159,7 +159,7 @@ def test_une_permittivite_nulle_est_refusee() -> None:
 def test_la_constante_de_hall_des_electrons_est_positive_ici() -> None:
     """(13.7.4) : `R_H = -1 / (n q)`, `q` etant negatif."""
     assert constante_de_hall(-CHARGE_LIBRE_DU_CUIVRE) == pytest.approx(
-        7.35e-11, rel=1e-3
+        7.35e-11, rel=1e-3, abs=0
     )
     # Page 13-9 : des « trous » positifs renversent le champ transversal.
     assert constante_de_hall(CHARGE_LIBRE_DU_CUIVRE) < 0

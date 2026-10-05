@@ -115,7 +115,7 @@ def test_le_courant_d_un_condensateur_se_prolonge_entre_ses_armatures() -> None:
 def test_le_cuivre_relaxe_en_un_dixieme_d_attoseconde() -> None:
     """(14.20.1) et page 14-19 : `tau = eps_0 rho = 0,15 . 10^-18 s`."""
     tau = temps_de_relaxation(PERMITTIVITE_DU_VIDE, CUIVRE)
-    assert tau == pytest.approx(0.15e-18, rel=5e-3)
+    assert tau == pytest.approx(0.15e-18, rel=5e-3, abs=0)
 
 
 def test_un_milieu_sans_resistivite_n_a_pas_de_temps_de_relaxation() -> None:
@@ -151,7 +151,7 @@ def test_dans_un_metal_le_courant_de_deplacement_est_negligeable() -> None:
     """Page 14-21 : le rapport des amplitudes vaut `2 pi f tau`."""
     tau = temps_de_relaxation(PERMITTIVITE_DU_VIDE, CUIVRE)
     rapport = float(rapport_du_deplacement_a_la_conduction(1e9, tau))
-    assert rapport == pytest.approx(2 * math.pi * 1e9 * tau)
+    assert rapport == pytest.approx(2 * math.pi * 1e9 * tau, rel=1e-9, abs=0)
     assert rapport < 1e-8
 
 

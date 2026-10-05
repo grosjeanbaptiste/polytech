@@ -82,16 +82,16 @@ def test_la_densite_unilaterale_vaut_le_double_de_la_bilaterale() -> None:
     que la confusion double ou divise par deux toute puissance de bruit.
     """
     bilaterale = densite_spectrale_bilaterale(unilaterale=4e-18)
-    assert bilaterale == pytest.approx(2e-18)
+    assert bilaterale == pytest.approx(2e-18, rel=1e-9, abs=0)
     retour = densite_spectrale_unilaterale_depuis_bilaterale(bilaterale)
-    assert retour == pytest.approx(4e-18)
+    assert retour == pytest.approx(4e-18, rel=1e-9, abs=0)
 
 
 def test_la_variance_d_un_bruit_borne_croit_avec_la_bande() -> None:
     """`sigma^2 = S B` : doubler la bande double la puissance de bruit."""
     etroite = variance_d_un_bruit_borne(densite=1e-16, bande=100.0)
     large = variance_d_un_bruit_borne(densite=1e-16, bande=200.0)
-    assert large == pytest.approx(2 * etroite)
+    assert large == pytest.approx(2 * etroite, rel=1e-9, abs=0)
 
 
 def test_une_bande_nulle_ne_porte_aucun_bruit() -> None:

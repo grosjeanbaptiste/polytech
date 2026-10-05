@@ -56,7 +56,7 @@ def test_les_valeurs_numeriques_du_reseau_resistif_sont_celles_de_l_enonce() -> 
     assert float(h[0, 0]) == pytest.approx(66.67 * MEGOHM, rel=1e-4)
     assert float(h[0, 1]) == pytest.approx(1 / 3)
     assert float(h[1, 0]) == pytest.approx(-1 / 3)
-    assert float(h[1, 1]) == pytest.approx(3.333e-9, rel=1e-3)
+    assert float(h[1, 1]) == pytest.approx(3.333e-9, rel=1e-3, abs=0)
 
 
 def test_la_matrice_globale_est_la_somme_des_deux() -> None:

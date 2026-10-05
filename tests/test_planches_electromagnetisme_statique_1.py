@@ -44,7 +44,7 @@ Q = sp.Symbol("q", positive=True)
 
 def test_la_permittivite_du_vide_de_la_planche_7() -> None:
     """« 8,85 10^-12 F/m »."""
-    assert pytest.approx(8.85e-12, rel=1e-3) == PERMITTIVITE_DU_VIDE
+    assert pytest.approx(8.85e-12, rel=1e-3, abs=0) == PERMITTIVITE_DU_VIDE
 
 
 def test_le_potentiel_et_le_champ_d_une_charge_ponctuelle() -> None:

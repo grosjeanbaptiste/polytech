@@ -207,11 +207,14 @@ def test_la_force_de_lorentz_change_de_signe_avec_la_charge() -> None:
     """Un electron et un proton tournent en sens inverses dans le meme champ."""
     positive = force_de_lorentz(1.6e-19, (1e6, 0.0, 0.0), (0.0, 0.0, 1.0))
     negative = force_de_lorentz(-1.6e-19, (1e6, 0.0, 0.0), (0.0, 0.0, 1.0))
-    assert all(p == pytest.approx(-n) for p, n in zip(positive, negative, strict=True))
+    assert all(
+        p == pytest.approx(-n, rel=1e-9, abs=0)
+        for p, n in zip(positive, negative, strict=True)
+    )
 
 
 def test_le_module_de_la_force_de_lorentz_vaut_q_v_b_sinus() -> None:
     """Recoupement par le module, independant du calcul composante par composante."""
     force = force_de_lorentz(1.6e-19, (1e6, 0.0, 0.0), (0.0, 1.0, 0.0))
     module = math.sqrt(sum(composante**2 for composante in force))
-    assert module == pytest.approx(1.6e-19 * 1e6 * 1.0)
+    assert module == pytest.approx(1.6e-19 * 1e6 * 1.0, rel=1e-9, abs=0)

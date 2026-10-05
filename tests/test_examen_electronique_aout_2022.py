@@ -134,9 +134,9 @@ def test_le_passe_haut_d_ordre_trois_donne_88_pf_et_358_nh() -> None:
     """Question 6.1 : prototype `(1, 2, 1)`, 90 ohms, 20 MHz."""
     prototype = PrototypeButterworth(elements=(1.0, 2.0, 1.0), impedance=90.0)
     c1, l2, c3 = prototype.en_passe_haut(2 * math.pi * 20e6)
-    assert c1 == pytest.approx(88.41 * PICOFARAD, rel=1e-3)
+    assert c1 == pytest.approx(88.41 * PICOFARAD, rel=1e-3, abs=0)
     assert l2 == pytest.approx(358.1 * NANOHENRY, rel=1e-3)
-    assert c3 == pytest.approx(c1)
+    assert c3 == pytest.approx(c1, rel=1e-9, abs=0)
 
 
 def test_les_358_millihenrys_du_corrige_sont_un_million_de_fois_trop() -> None:
@@ -155,7 +155,7 @@ def test_passer_a_quarante_cinq_ohms_divise_l_inductance_et_double_la_capacite()
         impedance=45.0,
     ).en_passe_haut(2 * math.pi * 20e6)
     assert a_quarante_cinq[1] == pytest.approx(179.0 * NANOHENRY, rel=1e-3)
-    assert a_quarante_cinq[0] == pytest.approx(176.8 * PICOFARAD, rel=1e-3)
+    assert a_quarante_cinq[0] == pytest.approx(176.8 * PICOFARAD, rel=1e-3, abs=0)
 
 
 # --- Question 7 : trois quadripoles bruites ------------------------------
@@ -215,7 +215,7 @@ def test_deux_adc2_ne_tiennent_pas_la_cadence_mais_un_adc3_oui() -> None:
 def test_le_pire_multiplexeur_reste_sous_le_budget_de_bruit() -> None:
     """Question 9.2 : M2 a 20 microvolts par racine de hertz, divise par 5000^2."""
     rapporte = (20 * MICROVOLT) ** 2 * 20e3 / 5000.0**2
-    assert rapporte == pytest.approx(0.32 * MICROVOLT**2, rel=1e-6)
+    assert rapporte == pytest.approx(0.32 * MICROVOLT**2, rel=1e-6, abs=0)
     assert rapporte < (2 * MICROVOLT) ** 2
 
 
@@ -229,15 +229,15 @@ def test_un_filtre_ou_un_multiplexeur_en_tete_ruinerait_le_budget() -> None:
 def test_le_bruit_en_courant_est_negligeable_pour_tous_les_amplis() -> None:
     """Question 9.4 : 100 fA par racine de hertz dans 32 ohms, sur 20 kHz."""
     puissance = puissance_de_bruit_en_courant(100e-15, 32.0, 20e3)
-    assert puissance == pytest.approx(2.048e-7 * MICROVOLT**2, rel=1e-3)
+    assert puissance == pytest.approx(2.048e-7 * MICROVOLT**2, rel=1e-3, abs=0)
     assert puissance < (2 * MICROVOLT) ** 2
 
 
 def test_seul_amp3_laisse_du_budget() -> None:
     """Question 9.5 : AMP1 et AMP2 consomment tout, AMP3 un seizieme."""
-    assert pytest.approx((2 * MICROVOLT) ** 2) == (2 * MICROVOLT) ** 2
+    assert pytest.approx((2 * MICROVOLT) ** 2, rel=1e-9, abs=0) == (2 * MICROVOLT) ** 2
     assert (5 * MICROVOLT) ** 2 > (2 * MICROVOLT) ** 2
-    assert pytest.approx(0.25 * MICROVOLT**2) == (500e-9) ** 2
+    assert pytest.approx(0.25 * MICROVOLT**2, rel=1e-9, abs=0) == (500e-9) ** 2
 
 
 def test_le_premier_etage_peut_monter_a_1250() -> None:
@@ -248,10 +248,10 @@ def test_le_premier_etage_peut_monter_a_1250() -> None:
 def test_le_second_etage_et_le_filtre_tiennent_dans_le_budget_restant() -> None:
     """Question 9.6 : ce que le gain de 1250 divise devient negligeable."""
     restant = (2 * MICROVOLT) ** 2 - (500e-9) ** 2
-    assert restant == pytest.approx(3.75 * MICROVOLT**2)
+    assert restant == pytest.approx(3.75 * MICROVOLT**2, rel=1e-9, abs=0)
     ampli = (5 * MICROVOLT) ** 2 / 1250.0**2
     filtre = (10 * MICROVOLT) ** 2 * 20e3 / 1250.0**2
-    assert ampli == pytest.approx(1.6e-5 * MICROVOLT**2, rel=1e-6)
-    assert filtre == pytest.approx(1.28 * MICROVOLT**2, rel=1e-6)
+    assert ampli == pytest.approx(1.6e-5 * MICROVOLT**2, rel=1e-6, abs=0)
+    assert filtre == pytest.approx(1.28 * MICROVOLT**2, rel=1e-6, abs=0)
     assert ampli < restant
     assert filtre < restant

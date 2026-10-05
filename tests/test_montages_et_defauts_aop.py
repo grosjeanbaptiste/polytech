@@ -186,12 +186,14 @@ def test_la_capacite_de_miller_multiplie_la_capacite_parasite() -> None:
 
     C'est ce qui limite la bande d'un montage bien avant l'AOP lui-meme.
     """
-    assert capacite_de_miller(5e-12, 100.0) == pytest.approx(5e-12 * 101)
+    assert capacite_de_miller(5e-12, 100.0) == pytest.approx(
+        5e-12 * 101, rel=1e-9, abs=0
+    )
 
 
 def test_un_gain_nul_laisse_la_capacite_inchangee() -> None:
     """Sans amplification il n'y a pas d'effet Miller."""
-    assert capacite_de_miller(5e-12, 0.0) == pytest.approx(5e-12)
+    assert capacite_de_miller(5e-12, 0.0) == pytest.approx(5e-12, rel=1e-9, abs=0)
 
 
 def test_un_gain_negatif_est_refuse_dans_miller() -> None:

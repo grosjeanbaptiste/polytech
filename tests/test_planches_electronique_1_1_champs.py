@@ -76,7 +76,7 @@ EPS, MU = sp.symbols("epsilon mu", positive=True)
 
 def test_les_constantes_du_vide() -> None:
     """Planche 5 : `eps_0 ~ 8,854e-12 F/m`, `mu_0 ~ 4 pi 1e-7 H/m`."""
-    assert pytest.approx(8.854e-12, rel=1e-4) == PERMITTIVITE_DU_VIDE
+    assert pytest.approx(8.854e-12, rel=1e-4, abs=0) == PERMITTIVITE_DU_VIDE
     assert pytest.approx(4 * math.pi * 1e-7, rel=1e-9) == PERMEABILITE_DU_VIDE
     celerite = 1 / math.sqrt(PERMITTIVITE_DU_VIDE * PERMEABILITE_DU_VIDE)
     assert celerite == pytest.approx(VITESSE_DE_LA_LUMIERE, rel=1e-9)
@@ -110,7 +110,9 @@ def test_la_force_de_lorentz() -> None:
     force = charge * (champ + vitesse.cross(induction))
     magnetique = charge * vitesse.cross(induction)
     assert magnetique.dot(vitesse) == 0
-    assert float(force[2]) == pytest.approx(charge * (100.0 + 1e5 * 0.2))
+    assert float(force[2]) == pytest.approx(
+        charge * (100.0 + 1e5 * 0.2), rel=1e-9, abs=0
+    )
 
 
 def test_le_champ_magnetisant_et_les_trois_magnetismes() -> None:
@@ -139,7 +141,7 @@ def test_la_regle_de_matthiessen() -> None:
     froid = resistivite_de_matthiessen(impuretes=2e-10, phonons=1.5e-8)
     chaud = resistivite_de_matthiessen(impuretes=2e-10, phonons=2.1e-8)
     assert froid == pytest.approx(1.52e-8)
-    assert chaud - froid == pytest.approx(2.1e-8 - 1.5e-8)
+    assert chaud - froid == pytest.approx(2.1e-8 - 1.5e-8, rel=1e-9, abs=0)
     assert resistivite_de_matthiessen(impuretes=2e-10, phonons=0.0) == 2e-10
     with pytest.raises(ValueError, match="resistivite negative"):
         resistivite_de_matthiessen(impuretes=-1e-10, phonons=1e-8)

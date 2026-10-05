@@ -72,7 +72,7 @@ def test_la_ligne_retarde_le_signal() -> None:
         sp.sin(OMEGA * TEMPS), LIGNE, VITESSE_TYPIQUE_DANS_UN_CIRCUIT
     )
     delai = 3 * LIGNE / VITESSE_DE_LA_LUMIERE
-    assert delai == pytest.approx(0.5e-9, rel=1e-3)
+    assert delai == pytest.approx(0.5e-9, rel=1e-3, abs=0)
     attendu = sp.sin(OMEGA * (TEMPS - delai))
     assert float((sortie - attendu).subs({OMEGA: 1e7, TEMPS: 3e-8})) == pytest.approx(
         0.0
@@ -124,9 +124,9 @@ def test_la_capacite_cachee_d_une_resistance_0603() -> None:
     aire = 0.85e-3 * 0.4e-3
     assert aire == pytest.approx(3.4e-7)
     permittivite = 5 * 8.85e-12
-    assert permittivite == pytest.approx(4.425e-11)
+    assert permittivite == pytest.approx(4.425e-11, rel=1e-9, abs=0)
     capacite = capacite_parasite(permittivite, aire, 1.6e-3)
-    assert capacite == pytest.approx(9.4e-15, rel=5e-3)
+    assert capacite == pytest.approx(9.4e-15, rel=5e-3, abs=0)
     assert 4 < 40e-15 / capacite < 5
 
 

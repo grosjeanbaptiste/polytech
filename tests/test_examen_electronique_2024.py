@@ -117,7 +117,7 @@ def test_le_passe_bas_de_butterworth_donne_41_nanohenrys_et_7_71_picofarads() ->
     )
     inductance, capacite = prototype.en_passe_bas(2 * math.pi * 400e6)
     assert inductance == pytest.approx(41.08 * NANOHENRY, rel=1e-3)
-    assert capacite == pytest.approx(7.71 * PICOFARAD, rel=1e-3)
+    assert capacite == pytest.approx(7.71 * PICOFARAD, rel=1e-3, abs=0)
 
 
 def test_les_41_08_millihenrys_du_corrige_sont_un_million_de_fois_trop() -> None:
@@ -259,16 +259,18 @@ def test_seul_amp1_passe_sous_la_densite_de_bruit_autorisee() -> None:
 def test_le_bruit_en_courant_d_amp1_est_negligeable() -> None:
     """Question 8.3 : 50 fA par racine Hz dans 40 ohms, sur 400 Hz."""
     puissance = puissance_de_bruit_en_courant(50e-15, 40.0, 400.0)
-    assert math.sqrt(puissance) == pytest.approx(40e3 * FEMTOVOLT, rel=1e-9)
-    assert math.sqrt(puissance) == pytest.approx(0.04 * NANOVOLT, rel=1e-9)
+    assert math.sqrt(puissance) == pytest.approx(40e3 * FEMTOVOLT, rel=1e-9, abs=0)
+    assert math.sqrt(puissance) == pytest.approx(0.04 * NANOVOLT, rel=1e-9, abs=0)
     assert math.sqrt(puissance) < 3 * MICROVOLT
 
 
 def test_le_premier_etage_consomme_un_quart_du_budget_de_bruit() -> None:
     """Question 8.4 : 2,25 microvolts carres sur les 9 disponibles."""
     consomme = (75e-9) ** 2 * 400.0
-    assert consomme == pytest.approx(2.25 * MICROVOLT**2, rel=1e-9)
-    assert (3 * MICROVOLT) ** 2 - consomme == pytest.approx(6.75 * MICROVOLT**2)
+    assert consomme == pytest.approx(2.25 * MICROVOLT**2, rel=1e-9, abs=0)
+    assert (3 * MICROVOLT) ** 2 - consomme == pytest.approx(
+        6.75 * MICROVOLT**2, rel=1e-9, abs=0
+    )
 
 
 def test_un_seul_etage_suffit_a_porter_le_gain_de_16500() -> None:

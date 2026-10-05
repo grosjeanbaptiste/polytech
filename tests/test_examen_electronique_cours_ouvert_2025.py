@@ -29,8 +29,8 @@ def test_le_filtre_passe_haut_a_50_mhz_donne_63_66_pf() -> None:
     """Question 2.2 : Butterworth ordre 3, 50 ohms, coupure 50 MHz."""
     proto = PrototypeButterworth(elements=(1.0, 2.0, 1.0), impedance=50.0)
     c1, _, c3 = proto.en_passe_haut(2 * math.pi * 50e6)
-    assert c1 == pytest.approx(63.66 * PICO, rel=1e-3)
-    assert c3 == pytest.approx(63.66 * PICO, rel=1e-3)
+    assert c1 == pytest.approx(63.66 * PICO, rel=1e-3, abs=0)
+    assert c3 == pytest.approx(63.66 * PICO, rel=1e-3, abs=0)
 
 
 def test_l_inductance_du_filtre_se_compte_en_nanohenrys() -> None:
@@ -99,7 +99,7 @@ def test_le_cahier_des_charges_est_effectivement_impossible() -> None:
 def test_le_bruit_en_courant_est_negligeable() -> None:
     """Question 7.4 : 20 fA/racine(Hz) dans 1 kilohm sur 200 Hz."""
     puissance = puissance_de_bruit_en_courant(20e-15, 1e3, 200.0)
-    assert puissance == pytest.approx(8e-20, rel=1e-2)
+    assert puissance == pytest.approx(8e-20, rel=1e-2, abs=0)
     assert puissance < (0.75 * MICRO) ** 2 / 1000
 
 

@@ -104,7 +104,7 @@ def test_le_bruit_quantique_est_proportionnel_a_la_frequence() -> None:
     """
     basse = bruit_de_grenaille_quantique(1e9)
     haute = bruit_de_grenaille_quantique(2e9)
-    assert haute == pytest.approx(2 * basse)
+    assert haute == pytest.approx(2 * basse, rel=1e-9, abs=0)
     assert basse < 1e-23
 
 

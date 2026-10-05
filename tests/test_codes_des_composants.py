@@ -107,7 +107,7 @@ def test_les_huit_marquages_de_la_planche(marquage: str, attendue: float) -> Non
     bien qu'il n'y a rien a supposer. Les quatre formes y sont -- trois
     chiffres, prefixe collant, virgule initiale, lettre de tolerance.
     """
-    assert capacite_du_marquage(marquage) == pytest.approx(attendue, rel=1e-9)
+    assert capacite_du_marquage(marquage) == pytest.approx(attendue, rel=1e-9, abs=0)
 
 
 def test_la_tolerance_litterale_se_lit_sur_le_marquage() -> None:
