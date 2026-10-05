@@ -62,7 +62,19 @@ class SourceDeTension:
     courant: sp.Symbol
 
 
-Element = Admittance | SourceDeCourant | SourceCommandee | SourceDeTension
+@dataclass(frozen=True)
+class SourceDeTensionCommandee:
+    """`V_plus - V_moins = gain (V_a - V_b)`, ou `commande = (a, b)`."""
+
+    plus: int
+    moins: int
+    gain: sp.Expr
+    commande: tuple[int, int]
+    courant: sp.Symbol
+
+
+SourcesDeTension = SourceDeTension | SourceDeTensionCommandee
+Element = Admittance | SourceDeCourant | SourceCommandee | SourcesDeTension
 
 
 def _noeuds(element: Element) -> tuple[int, ...]:
@@ -72,6 +84,8 @@ def _noeuds(element: Element) -> tuple[int, ...]:
         return element.depart, element.arrivee
     if isinstance(element, SourceCommandee):
         return element.depart, element.arrivee, element.plus, element.moins
+    if isinstance(element, SourceDeTensionCommandee):
+        return element.plus, element.moins, *element.commande
     return element.plus, element.moins
 
 
@@ -108,7 +122,7 @@ def systeme_nodal_modifie(
         if hors:
             msg = f"noeud {hors[0]} hors du circuit a {noeuds} noeuds : {element}"
             raise ValueError(msg)
-    sources = [e for e in elements if isinstance(e, SourceDeTension)]
+    sources = [e for e in elements if isinstance(e, SourcesDeTension)]
     taille = noeuds + len(sources)
     matrice, membre = sp.zeros(taille, taille), sp.zeros(taille, 1)
     for element in elements:
@@ -117,7 +131,11 @@ def systeme_nodal_modifie(
         for noeud, signe in ((source.plus, 1), (source.moins, -1)):
             _ajouter(matrice, noeud, rang, signe)
             _ajouter(matrice, rang, noeud, signe)
-        membre[rang - 1] = source.valeur
+        if isinstance(source, SourceDeTension):
+            membre[rang - 1] = source.valeur
+            continue
+        for noeud, signe in zip(source.commande, (-1, 1), strict=True):
+            _ajouter(matrice, rang, noeud, signe * source.gain)
     return matrice, membre
 
 

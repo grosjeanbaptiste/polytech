@@ -50,3 +50,14 @@ def cellule_en_t(entree: sp.Expr, sortie: sp.Expr, branche: sp.Expr) -> sp.Matri
 def gain_en_tension(matrice: sp.Matrix, charge: sp.Expr) -> sp.Expr:
     """`Z_L / (A Z_L + B)` : la sortie chargee par `Z_L`."""
     return sp.simplify(charge / (matrice[0, 0] * charge + matrice[0, 1]))
+
+
+def gain_en_courant(matrice: sp.Matrix, charge: sp.Expr) -> sp.Expr:
+    """`I_2 / I_1 = -1 / (C Z_L + D)` : `I_2` entre dans le quadripole."""
+    return sp.simplify(-1 / (matrice[1, 0] * charge + matrice[1, 1]))
+
+
+def impedance_d_entree(matrice: sp.Matrix, charge: sp.Expr) -> sp.Expr:
+    """`Z_in = (A Z_L + B) / (C Z_L + D)` : le quadripole charge, vu de l'entree."""
+    numerateur = matrice[0, 0] * charge + matrice[0, 1]
+    return sp.simplify(numerateur / (matrice[1, 0] * charge + matrice[1, 1]))
