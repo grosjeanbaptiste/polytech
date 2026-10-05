@@ -159,8 +159,8 @@ def test_la_turbulence_augmente_l_echange() -> None:
 
 
 def test_le_cylindre_horizontal_a_sa_propre_correlation() -> None:
-    """`Nu = 0,53 Ra^(1/4)` en laminaire : la geometrie compte."""
-    assert nusselt_du_cylindre_horizontal(1e6) == pytest.approx(0.53 * 1e6**0.25)
+    """`Nu = 0,47 Ra^(1/4)` en laminaire : la geometrie compte."""
+    assert nusselt_du_cylindre_horizontal(1e6) == pytest.approx(0.47 * 1e6**0.25)
 
 
 def test_un_rayleigh_nul_est_refuse_pour_le_cylindre() -> None:

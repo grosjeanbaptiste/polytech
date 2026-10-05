@@ -136,14 +136,14 @@ def coefficient_global_de_transmission(
     return 1.0 / (aire * sum(resistances))
 
 
-COEFFICIENT_DU_CYLINDRE: Final = 0.53
-"""`Nu = 0,53 Ra^(1/4)` : la correlation du cylindre horizontal, laminaire."""
+COEFFICIENT_DU_CYLINDRE: Final = 0.47
+"""`Nu = 0,47 Ra^(1/4)` : syllabus, tome 2, (4.4), et planches du jeu 10."""
 
 EXPOSANT_DU_CYLINDRE: Final = 0.25
 
 
 def nusselt_du_cylindre_horizontal(rayleigh: float) -> float:
-    """`0,53 Ra^(1/4)` : la geometrie a sa propre correlation.
+    """`0,47 Ra^(1/4)` : la geometrie a sa propre correlation.
 
     Le fascicule lui consacre une planche parce qu'un tube horizontal est
     la geometrie la plus courante en pratique -- une conduite de chauffage,
