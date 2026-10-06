@@ -29,6 +29,7 @@ REMPLACES: Final = {
     "»": r"\fg{}",
     "§": r"\S",
     "µ": r"\textmu{} ou \micro",
+    "°": r"\textdegree{}, ^\circ ou \degree",
 }
 """Le caractere que la police remplace, et la commande qui le compose."""
 
