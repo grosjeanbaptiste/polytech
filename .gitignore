@@ -53,3 +53,11 @@ __pycache__/
 # suivre ferait entrer dans l'historique un binaire regenerable a chaque
 # compilation, dont le diff n'apprend rien.
 *.pdf
+
+# Les donnees vivantes du corpus XML : `cursus/`, l'inventaire de
+# `polytech/` et les corriges de `travaux/` changent a chaque commit et se
+# refont en quelques secondes (`python -m outils.xml --donnees`). Seules les
+# transcriptions, sous leurs deux origines, et le catalogue sont suivis.
+/cours-xml/cursus/
+/cours-xml/travaux/
+/cours-xml/bibliotheque.xml
