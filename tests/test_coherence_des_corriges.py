@@ -505,6 +505,10 @@ SANS_ENONCE_AU_RECUEIL = {
         "le manuscrit s'intitule « Par Poisson, ext. » et ne renvoie a aucun "
         "exercice numerote du recueil ; son enonce n'existe que par lui"
     ),
+    "exs-cote-2015-2016": (
+        "un exercice cote, et non un exercice du recueil : son enonce est le "
+        "sujet lui-meme, que le corrige cite"
+    ),
     "lab-01-mesures-electriques": (
         "un protocole de laboratoire, et non un exercice : son enonce est le "
         "protocole lui-meme, que le corrige cite, et le recueil n'en porte rien"
