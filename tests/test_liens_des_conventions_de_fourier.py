@@ -10,9 +10,10 @@
 Ce ne sont pas les memes enonces : la convolution de la planche 9 porte un
 `racine(2 pi)` que la bibliotheque n'a pas, et l'egalite energetique de la
 planche 18 n'a pas le `1 / 2 pi` de `energie_frequentielle`. C'est pourquoi
-`cursus/notions/MathematiquesIngenieur3.toml` ne rattache aucun titre de ce
-jeu a `transformee_de_fourier`. Ces tests disent en quoi les trois
-s'accordent : `F_M3 = F_maths / racine(2 pi)` et `F_signaux(f) = F_maths(2 pi f)`.
+`cursus/notions/MathematiquesIngenieur3.toml` rattache les titres de ce jeu a
+`polytech.maths.domain.fourier.unitaire`, jamais a `transformee_de_fourier`.
+Ces tests disent en quoi les trois s'accordent :
+`F_M3 = F_maths / racine(2 pi)` et `F_signaux(f) = F_maths(2 pi f)`.
 """
 
 from __future__ import annotations

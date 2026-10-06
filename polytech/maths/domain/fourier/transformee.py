@@ -39,7 +39,10 @@ def integrale_sur_la_droite(fonction: sp.Expr, variable: sp.Symbol) -> sp.Expr:
     directe = sp.integrate(pliee, (variable, -sp.oo, sp.oo))
     if not directe.has(sp.Integral):
         return directe
-    morceaux = pliee.as_expr_set_pairs(sp.S.Reals)
+    morceaux = pliee.as_expr_set_pairs(sp.S.Reals) if pliee.is_Piecewise else ()
+    if not morceaux:
+        msg = f"integrale de {fonction} sur la droite non calculee : {directe}"
+        raise ValueError(msg)
     return sum(
         (
             sp.integrate(

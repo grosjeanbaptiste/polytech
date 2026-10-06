@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import sympy as sp
 
+from polytech.maths.domain.analyse_complexe.residus import limite_du_produit
+
 
 def _denominateur(transfert: sp.Expr, variable: sp.Expr) -> sp.Poly:
     """Le denominateur de la fonction de transfert, en polynome."""
@@ -151,7 +153,7 @@ def residu_en_un_pole(
     recette -- la derivee -- que `decomposition_en_fractions_simples`
     applique.
     """
-    return sp.simplify(sp.limit((variable - pole) * transfert, variable, pole))
+    return limite_du_produit(transfert, variable, pole)
 
 
 def reponse_impulsionnelle(

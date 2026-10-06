@@ -12,12 +12,16 @@ que l'on decompose en fractions simples.
   `q_0 + q_1 p + ...` donne `q_0 delta(t) + q_1 delta'(t) + ...` (2.41).
 
 Le cours s'arrete aux poles doubles, « peu utile a l'ingenieur » au-dela.
+
+Le residu lui-meme vient de l'analyse complexe, ou il est enseigne : c'est
+celui d'un quotient `N / D`, que `polytech.maths` calcule.
 """
 
 from __future__ import annotations
 
 import sympy as sp
 
+from polytech.maths.domain.analyse_complexe.quotient import residu_d_un_quotient
 from polytech.signaux.domain.symboles import IMAGE as P
 from polytech.signaux.domain.symboles import TEMPS as T
 
@@ -46,7 +50,7 @@ def residu(image: sp.Expr, pole: sp.Expr) -> sp.Expr:
         msg = f"{pole} n'est pas un pole simple de {image}"
         raise ValueError(msg)
     numerateur, denominateur = _fraction(image)
-    return sp.simplify(_en(numerateur, pole) / _en(denominateur, pole, 1))
+    return residu_d_un_quotient(numerateur, denominateur, P, pole)
 
 
 def residus_d_un_pole_double(image: sp.Expr, pole: sp.Expr) -> tuple[sp.Expr, sp.Expr]:
@@ -60,9 +64,9 @@ def residus_d_un_pole_double(image: sp.Expr, pole: sp.Expr) -> tuple[sp.Expr, sp
         msg = f"{pole} n'est pas un pole double de {image}"
         raise ValueError(msg)
     numerateur, denominateur = _fraction(image)
-    reste, pente = _en(denominateur, pole, 2) / 2, _en(denominateur, pole, 3) / 6
-    haut = _en(numerateur, pole, 1) * reste - _en(numerateur, pole) * pente
-    return (sp.simplify(haut / reste**2), sp.simplify(_en(numerateur, pole) / reste))
+    reste = _en(denominateur, pole, 2) / 2
+    premier = residu_d_un_quotient(numerateur, denominateur, P, pole)
+    return (premier, sp.simplify(_en(numerateur, pole) / reste))
 
 
 def division(image: sp.Expr) -> tuple[sp.Expr, sp.Expr]:
