@@ -28,6 +28,7 @@ REMPLACES: Final = {
     "«": r"\og",
     "»": r"\fg{}",
     "§": r"\S",
+    "µ": r"\textmu{} ou \micro",
 }
 """Le caractere que la police remplace, et la commande qui le compose."""
 
@@ -67,3 +68,37 @@ def test_aucune_source_ne_compose_un_caractere_remplace(caractere: str) -> None:
         if (rangs := _composees(source, caractere))
     }
     assert fautes == {}, f"ecrire {REMPLACES[caractere]} a la place de {caractere!r}"
+
+
+CHEMIN_A_BLANC: Final = re.compile(r"\\chemin\{[^}]*\s[^}]*\}")
+r"""Un `\chemin{...}` dont l'argument porte un blanc.
+
+`\chemin` repose sur `\nolinkurl`, qui avale les blancs : la commande
+`python -m polytech.electronique` sortait `python-mpolytech.electronique`
+dans vingt-trois corriges, sans aucun avertissement. Un chemin n'a pas de
+blanc ; une commande se compose en `\texttt`.
+"""
+
+
+def test_un_chemin_avec_blanc_est_reconnu() -> None:
+    """La garde voit la faute, et ne s'alarme pas d'un vrai chemin."""
+    assert CHEMIN_A_BLANC.search(r"\chemin{python -m polytech.signaux}")
+    assert not CHEMIN_A_BLANC.search(r"\chemin{polytech.signaux} et \chemin{a/b.py}")
+
+
+def test_aucune_commande_n_est_composee_comme_un_chemin() -> None:
+    """Sinon ses blancs disparaissent du PDF."""
+    fautes = {
+        str(source.relative_to(TRAVAUX)): rangs
+        for source in _sources()
+        if (
+            rangs := [
+                rang
+                for rang, ligne in enumerate(
+                    source.read_text(encoding="utf-8").splitlines(), 1
+                )
+                if CHEMIN_A_BLANC.search(COMMENTAIRE.sub("", ligne))
+            ]
+        )
+    }
+    assert fautes == {}, r"ecrire \texttt{...} pour une commande"
