@@ -34,8 +34,8 @@ def test_ex21_la_densite_d_un_kilohm() -> None:
     assert br.TEMPERATURE == 298.0
     densite = br.densite_efficace(1e3)
     assert densite * 1e9 == pytest.approx(4.06, abs=5e-3)
-    assert densite == pytest.approx(math.sqrt(4 * K * 1e3 * 298), rel=1e-3)
-    assert densite**2 == pytest.approx(1.645e-17, rel=1e-3)
+    assert densite == pytest.approx(math.sqrt(4 * K * 1e3 * 298), rel=1e-3, abs=0)
+    assert densite**2 == pytest.approx(1.645e-17, rel=1e-3, abs=0)
 
 
 def test_ex21_cent_fois_la_resistance_dix_fois_le_bruit() -> None:
@@ -66,9 +66,9 @@ def test_ex22_la_densite_en_sortie() -> None:
     """Page 2 : `4 k_B T (10^4 R_1 + R_2)`, la meme pour les deux montages."""
     sortie = br.densite_en_sortie()
     attendue = 4 * K * 298 * (1e4 * 1e3 + 100e3)
-    assert sortie == pytest.approx(attendue, rel=1e-3)
+    assert sortie == pytest.approx(attendue, rel=1e-3, abs=0)
     exacte = 4 * K_EXACTE * 298 * (1e4 * 1e3 + 100e3)
-    assert sortie == pytest.approx(exacte)
+    assert sortie == pytest.approx(exacte, rel=1e-9, abs=0)
     assert math.sqrt(exacte) * 1e9 == pytest.approx(407.7, abs=0.05)
 
 
@@ -94,7 +94,9 @@ def test_ex22_la_densite_rapportee_a_l_entree() -> None:
     gauche = br.rapportee_a_l_entree(br.Montage.NON_INVERSEUR)
     droite = br.rapportee_a_l_entree(br.Montage.INVERSEUR)
     sortie = math.sqrt(4 * K_EXACTE * 298 * (1e4 * 1e3 + 100e3))
-    assert (gauche, droite) == pytest.approx((sortie / 101, sortie / 100))
+    assert (gauche, droite) == pytest.approx(
+        (sortie / 101, sortie / 100), rel=1e-9, abs=0
+    )
     assert (gauche * 1e9, droite * 1e9) == pytest.approx((4.04, 4.08), abs=5e-3)
     arrondies = (
         br.rapportee_a_l_entree(br.Montage.NON_INVERSEUR, par_kilohm=4e-9),

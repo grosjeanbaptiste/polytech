@@ -109,7 +109,9 @@ def test_ex31_le_butterworth_d_ordre_deux() -> None:
     assert inductance.element()[0] == pytest.approx(1.12e-6, abs=6e-9)
     assert capacite.element()[1] == pytest.approx(450e-12, abs=0.5e-12)
     assert inductance.inductance == pytest.approx(50 * math.sqrt(2) / (10 * MEGA))
-    assert capacite.capacite == pytest.approx(math.sqrt(2) / 50 / (10 * MEGA))
+    assert capacite.capacite == pytest.approx(
+        math.sqrt(2) / 50 / (10 * MEGA), rel=1e-9, abs=0
+    )
 
 
 def test_ex31_le_circuit_coupe_a_dix_megahertz() -> None:
@@ -186,9 +188,11 @@ def test_ex33_le_passe_bande() -> None:
         parallele.inductance,
         parallele.capacite,
     )
-    assert obtenus == pytest.approx((40.94e-9, 765e-15, 1.72e-9, 18.21e-12), rel=5e-3)
+    assert obtenus == pytest.approx(
+        (40.94e-9, 765e-15, 1.72e-9, 18.21e-12), rel=5e-3, abs=0
+    )
     assert (derniere.inductance, derniere.capacite) == pytest.approx(
-        (serie.inductance, serie.capacite)
+        (serie.inductance, serie.capacite), rel=1e-9, abs=0
     )
 
 
@@ -198,9 +202,11 @@ def test_ex33_les_valeurs_sans_arrondi_intermediaire() -> None:
     g1, g2 = 1.0316, 1.1474
     w0, bande = 900 * MEGA, 200 * MEGA
     assert serie.inductance == pytest.approx(50 * g1 / bande, rel=1e-4)
-    assert serie.capacite == pytest.approx(bande / (w0**2 * 50 * g1), rel=1e-4)
-    assert parallele.inductance == pytest.approx(50 * bande / (w0**2 * g2), rel=1e-4)
-    assert parallele.capacite == pytest.approx(g2 / (50 * bande), rel=1e-4)
+    assert serie.capacite == pytest.approx(bande / (w0**2 * 50 * g1), rel=1e-4, abs=0)
+    assert parallele.inductance == pytest.approx(
+        50 * bande / (w0**2 * g2), rel=1e-4, abs=0
+    )
+    assert parallele.capacite == pytest.approx(g2 / (50 * bande), rel=1e-4, abs=0)
     assert serie.inductance is not None
     assert serie.inductance * 1e9 == pytest.approx(41.05, abs=5e-3)
     assert abs(serie.inductance * 1e9 - 40.94) > 0.1
@@ -303,7 +309,7 @@ def test_ex41_la_cellule() -> None:
     cellule = sk.cellule_du_4_1()
     assert (float(cellule.r1), float(cellule.r2)) == pytest.approx((100.0, 100.0))
     assert float(cellule.c1) == pytest.approx(15.87e-9, rel=5e-3)
-    assert float(cellule.c2) == pytest.approx(3.968e-9, rel=5e-3)
+    assert float(cellule.c2) == pytest.approx(3.968e-9, rel=5e-3, abs=0)
     assert float(cellule.c1) == pytest.approx(2 / (2 * math.pi * 200e3 * 100))
     assert float(cellule.c1) * 1e9 == pytest.approx(15.92, abs=5e-3)
     assert float(cellule.c1 / cellule.c2) == pytest.approx(4.0)
@@ -324,8 +330,8 @@ def test_ex41_la_cellule_a_dix_kilohms() -> None:
     """Page 11 : 158,7 pF et 39,68 pF, au meme arrondi."""
     cellule = sk.cellule_du_4_1(resistance=10e3)
     assert float(cellule.r1) == pytest.approx(1e4)
-    assert float(cellule.c1) == pytest.approx(158.7e-12, rel=5e-3)
-    assert float(cellule.c2) == pytest.approx(39.68e-12, rel=5e-3)
+    assert float(cellule.c1) == pytest.approx(158.7e-12, rel=5e-3, abs=0)
+    assert float(cellule.c2) == pytest.approx(39.68e-12, rel=5e-3, abs=0)
     origine = sk.cellule_du_4_1()
     for frequence in (50e3, 200e3, 700e3):
         point = 2j * math.pi * frequence
