@@ -43,6 +43,10 @@ __pycache__/
 /MathematiquesIngenieur3/
 /MecaniqueRationnelle2/
 /Thermodynamique/
+# Le socle elementaire, rapatrie le 2026-10-06 : deux cours d'autres
+# facultes, declares sous `[[socle]]` au programme.
+/MathematiquesAppliquees1/
+/MathematiquesElementaires/
 # L'alternative de Mons, si elle etait un jour suivie a la place :
 /Thermique/
 /ElectroniqueFonctionnelle/
