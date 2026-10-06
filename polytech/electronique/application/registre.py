@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Final
 from polytech.electronique.application import (
     macros_lab_01,
     macros_lab_03,
+    macros_lab_05,
     macros_tp_01,
     macros_tp_02,
     macros_tp_03,
@@ -28,6 +29,7 @@ if TYPE_CHECKING:
 JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "lab-01-filtrage": macros_lab_01.macros_du_labo_un,
     "lab-03-instrumentation": macros_lab_03.macros_du_labo_trois,
+    "lab-05-amplificateur-audio": macros_lab_05.macros_du_labo_cinq,
     "tp-01": macros_tp_01.macros_du_tp_un,
     "tp-02": macros_tp_02.macros_du_tp_deux,
     "tp-03": macros_tp_03.macros_du_tp_trois,
