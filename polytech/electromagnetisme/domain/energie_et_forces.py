@@ -122,3 +122,25 @@ def force_sur_une_armature(
         msg = "deplacement nul : la difference finie y divise par zero"
         raise ValueError(msg)
     return abs(tension**2 * variation_de_capacite / (2 * deplacement))
+
+
+def energie_a_charge_donnee(capacite: sp.Expr, charge: sp.Expr) -> sp.Expr:
+    """`Q^2 / (2C)` : la meme energie, ecrite pour un condensateur isole.
+
+    C'est la forme a employer a charges constantes : `Q` y est la donnee
+    qui ne bouge pas, quand `C u^2 / 2` porterait une tension qui varie.
+    """
+    if capacite == 0:
+        msg = "capacite nulle : aucune charge ne s'y loge a tension finie"
+        raise ValueError(msg)
+    return charge**2 / (2 * capacite)
+
+
+def travail_contre_le_champ(force: sp.Expr, depart: object, arrivee: object) -> sp.Expr:
+    """`T = -int F dx` : ce qu'un operateur fournit contre la force du champ.
+
+    Paragraphe 5.2 du syllabus : le travail des forces du champ sur le
+    deplacement est `int F dx` ; celui qu'il faut effectuer contre elles
+    est son oppose.
+    """
+    return sp.simplify(-sp.integrate(force, (DEPLACEMENT, depart, arrivee)))

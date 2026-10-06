@@ -44,6 +44,7 @@ from polytech.electromagnetisme.application import (
     macros_statique_07,
     macros_statique_08,
     macros_statique_11,
+    macros_statique_12,
     macros_thevenin,
     macros_transitoire_05,
 )
@@ -84,6 +85,7 @@ JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "exs-02-statique-07": macros_statique_07.macros_statique_sept,
     "exs-02-statique-08": macros_statique_08.macros_statique_huit,
     "exs-02-statique-1-1-poisson": macros_statique_11.macros_statique_un_un,
+    "exs-02-statique-12": macros_statique_12.macros_statique_douze,
     "exs-03-champ-magnetique-06": macros_champ_06.macros_champ_six,
     "exs-03-champ-magnetique-07": macros_champ_07.macros_champ_sept,
     "exs-03-champ-magnetique-08": macros_champ_08.macros_champ_huit,
