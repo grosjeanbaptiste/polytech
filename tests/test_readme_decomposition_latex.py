@@ -27,6 +27,7 @@ TRAVAUX = RACINE / "travaux" / "Electromagnetisme"
 TRAVAUX_SIGNAUX = RACINE / "travaux" / "SignauxSystemes"
 TRAVAUX_THERMIQUE = RACINE / "travaux" / "ThermiqueFondements"
 TRAVAUX_ELECTRONIQUE = RACINE / "travaux" / "ElectroniqueInstrumentation"
+TRAVAUX_MATHEMATIQUE = RACINE / "travaux" / "Mathematique"
 
 NUMERAUX: Final = {
     "un": 1,
@@ -62,6 +63,7 @@ DECOMPOSITION = re.compile(
     r"les quatre de l'activité\s+d'intégration de mécanique des fluides, "
     r"(?:celui du TP 1|[\w-]+ corrigés) de thermique,\s+"
     r"(?:une?|[\w-]+)\s+corrigés? d'électronique,\s+"
+    r"(?:une?|[\w-]+)\s+corrigés? de mathématique,\s+"
     r"(?:une?|[\w-]+)\s+corrigés? de signaux, "
     r"les\s+([\w-]+(?: et un)?) corrigés "
     r"d'électromagnétisme déjà écrits, et les (\d+) planches",
@@ -116,6 +118,17 @@ def test_le_nombre_de_corriges_d_electronique_annonce_en_lettres_est_exact() -> 
     assert annonce == _corriges_de(TRAVAUX_ELECTRONIQUE)
 
 
+MATHEMATIQUE = re.compile(r"(une?|[\w-]+)\s+corrigés? de mathématique")
+"""Le terme de la mathematique, ouvert par sa premiere feuille d'exercices."""
+
+
+def test_le_nombre_de_corriges_de_mathematique_annonce_en_lettres_est_exact() -> None:
+    trouve = MATHEMATIQUE.search(README.read_text(encoding="utf-8"))
+    assert trouve is not None
+    annonce = 1 if trouve.group(1) in {"un", "une"} else NUMERAUX[trouve.group(1)]
+    assert annonce == _corriges_de(TRAVAUX_MATHEMATIQUE)
+
+
 def test_la_decomposition_est_bien_presente_dans_le_readme() -> None:
     """Sans elle, les deux tests suivants passeraient a vide.
 
@@ -145,10 +158,12 @@ def test_la_decomposition_fait_bien_le_total_annonce() -> None:
     signaux = _corriges_de(TRAVAUX_SIGNAUX)
     thermique = _corriges_de(TRAVAUX_THERMIQUE)
     electronique = _corriges_de(TRAVAUX_ELECTRONIQUE)
+    mathematique = _corriges_de(TRAVAUX_MATHEMATIQUE)
     somme = (
         4
         + thermique
         + electronique
+        + mathematique
         + signaux
         + NUMERAUX[trouve.group(1)]
         + int(trouve.group(2))

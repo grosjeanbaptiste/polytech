@@ -37,6 +37,9 @@ from polytech.electromagnetisme.infrastructure import latex as latex_em
 from polytech.electronique.application import generation as generation_electronique
 from polytech.electronique.application import registre as registre_electronique
 from polytech.electronique.infrastructure import latex as latex_electronique
+from polytech.maths.application import generation as generation_maths
+from polytech.maths.application import registre as registre_maths
+from polytech.maths.infrastructure import latex as latex_maths
 from polytech.signaux.application import generation as generation_signaux
 from polytech.signaux.application import registre as registre_signaux
 from polytech.signaux.infrastructure import latex as latex_signaux
@@ -51,6 +54,7 @@ TRAVAUX = RACINE / "travaux" / "Electromagnetisme"
 TRAVAUX_SIGNAUX = RACINE / "travaux" / "SignauxSystemes"
 TRAVAUX_THERMIQUE = RACINE / "travaux" / "ThermiqueFondements"
 TRAVAUX_ELECTRONIQUE = RACINE / "travaux" / "ElectroniqueInstrumentation"
+TRAVAUX_MATHS = RACINE / "travaux" / "Mathematique"
 
 DOSSIERS = {
     **{slug: TRAVAUX / slug for slug in registre_em.JEUX_DE_MACROS},
@@ -60,6 +64,7 @@ DOSSIERS = {
         slug: TRAVAUX_ELECTRONIQUE / slug
         for slug in registre_electronique.JEUX_DE_MACROS
     },
+    **{slug: TRAVAUX_MATHS / slug for slug in registre_maths.JEUX_DE_MACROS},
 }
 """Chaque travail garde, et son dossier : les deux matieres a la fois.
 
@@ -75,6 +80,7 @@ BIBLIOTHEQUE = {
     **dict.fromkeys(registre_signaux.JEUX_DE_MACROS, "polytech.signaux"),
     **dict.fromkeys(registre_thermique.JEUX_DE_MACROS, "polytech.thermique"),
     **dict.fromkeys(registre_electronique.JEUX_DE_MACROS, "polytech.electronique"),
+    **dict.fromkeys(registre_maths.JEUX_DE_MACROS, "polytech.maths"),
 }
 """Le contexte qui calcule les valeurs de chaque travail."""
 
@@ -87,11 +93,19 @@ def macros_du_travail(travail: str) -> dict[str, str]:
         return registre_thermique.macros_du_travail(travail)
     if travail in registre_electronique.JEUX_DE_MACROS:
         return registre_electronique.macros_du_travail(travail)
+    if travail in registre_maths.JEUX_DE_MACROS:
+        return registre_maths.macros_du_travail(travail)
     return registre_em.macros_du_travail(travail)
 
 
 def _regenerer(travail: str, chemin: Path) -> None:
     """Regenere les macros du travail par la commande de sa matiere."""
+    if travail in registre_maths.JEUX_DE_MACROS:
+        generation_maths.GenererMacros(
+            publication=latex_maths.FichierDeMacros(chemin=chemin),
+            travail=travail,
+        ).executer()
+        return
     if travail in registre_electronique.JEUX_DE_MACROS:
         generation_electronique.GenererMacros(
             publication=latex_electronique.FichierDeMacros(chemin=chemin),
@@ -123,6 +137,7 @@ def test_aucun_dossier_n_appartient_aux_deux_matieres() -> None:
         *registre_signaux.JEUX_DE_MACROS,
         *registre_thermique.JEUX_DE_MACROS,
         *registre_electronique.JEUX_DE_MACROS,
+        *registre_maths.JEUX_DE_MACROS,
     ]
     assert len(tous) == len(set(tous))
 
