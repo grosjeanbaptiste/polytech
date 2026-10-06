@@ -41,7 +41,11 @@ def coordonnees(abscisses: np.ndarray, ordonnees: np.ndarray, decimales: int) ->
 
 def _latex(expression: sp.Basic) -> str:
     rendu: str = sp.latex(
-        expression, ln_notation=True, inv_trig_style="full", mat_delim="("
+        expression,
+        ln_notation=True,
+        inv_trig_style="full",
+        mat_delim="(",
+        imaginary_unit="j",
     )
     return rendu
 

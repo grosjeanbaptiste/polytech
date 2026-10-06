@@ -130,3 +130,7 @@ def test_une_courbe_devient_une_liste_de_coordonnees() -> None:
 def test_deux_suites_de_longueurs_differentes_sont_refusees() -> None:
     with pytest.raises(ValueError, match="longueurs"):
         coordonnees(np.array([0.0, 1.0]), np.array([1.0]), 3)
+
+
+def test_l_unite_imaginaire_s_ecrit_j_comme_dans_la_feuille() -> None:
+    assert formule(sp.Rational(1, 2) - 3 * sp.I / 2) == r"\frac{1}{2} - \frac{3 j}{2}"

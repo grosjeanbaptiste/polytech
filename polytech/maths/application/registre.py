@@ -9,13 +9,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-from polytech.maths.application import macros_exs_01
+from polytech.maths.application import macros_exs_01, macros_exs_02
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
 JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "exs-01-integration-matrices": macros_exs_01.macros_des_exercices_un,
+    "exs-02-equations-differentielles": macros_exs_02.macros_des_exercices_deux,
 }
 """Le nom du dossier de travail designe le jeu qui l'alimente."""
 
