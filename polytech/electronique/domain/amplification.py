@@ -65,17 +65,22 @@ def gain_non_inverseur(resistance_masse: float, contre_reaction: float) -> float
     """Gain d'un montage non-inverseur : `1 + R_f / R_g`.
 
     Son impedance d'entree est celle de l'amplificateur lui-meme, tres
-    elevee : c'est pourquoi le corrige le place en premier.
+    elevee : c'est pourquoi le corrige le place en premier. Une
+    contre-reaction nulle en fait un suiveur, de gain un.
     """
-    if resistance_masse <= 0 or contre_reaction <= 0:
+    if resistance_masse <= 0 or contre_reaction < 0:
         msg = f"resistances non positives : {resistance_masse}, {contre_reaction}"
         raise ValueError(msg)
     return 1 + contre_reaction / resistance_masse
 
 
 def gain_inverseur(resistance_entree: float, contre_reaction: float) -> float:
-    """Gain d'un montage inverseur : `-R_f / R_e`, donc negatif."""
-    if resistance_entree <= 0 or contre_reaction <= 0:
+    """Gain d'un montage inverseur : `-R_f / R_e`, negatif ou nul.
+
+    Une contre-reaction nulle -- un potentiometre en butee -- donne un gain
+    nul : c'est ainsi que le syllabus regle un gain « from 0 to 40 ».
+    """
+    if resistance_entree <= 0 or contre_reaction < 0:
         msg = f"resistances non positives : {resistance_entree}, {contre_reaction}"
         raise ValueError(msg)
     return -contre_reaction / resistance_entree

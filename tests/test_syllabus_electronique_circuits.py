@@ -30,7 +30,10 @@ from polytech.electromagnetisme.domain.conducteur_cylindrique import (
     rapport_conduction_deplacement,
 )
 from polytech.electromagnetisme.domain.constantes import PERMEABILITE_DU_VIDE
-from polytech.electromagnetisme.domain.effet_pelliculaire import epaisseur_de_peau
+from polytech.electromagnetisme.domain.effet_pelliculaire import (
+    CONDUCTIVITE_DU_CUIVRE,
+    epaisseur_de_peau,
+)
 from polytech.electronique.domain.delai_de_propagation import amplitude_de_l_ecart
 from polytech.electronique.domain.laplace import (
     decomposition_en_fractions_simples,
@@ -52,6 +55,7 @@ CUIVRE = 5e7
 
 def test_le_courant_de_deplacement_est_negligeable_dans_un_conducteur() -> None:
     """Page 21 : `sigma / (eps_0 w) > 5e18 / w` ; 0,1 % vers 5e15 rad/s, 800 THz."""
+    assert CONDUCTIVITE_DU_CUIVRE > CUIVRE
     rapport = rapport_conduction_deplacement(CUIVRE, 1.0, permittivite=8.8e-12)
     assert rapport > 5e18
     pulsation = 5e15

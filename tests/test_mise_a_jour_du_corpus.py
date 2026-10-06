@@ -21,6 +21,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Final
 
@@ -79,6 +80,7 @@ def test_un_drapeau_inconnu_est_refuse() -> None:
         text=True,
         cwd=RACINE,
         check=False,
+        env=dict(os.environ, PYTHON=sys.executable),
     )
     assert acheve.returncode != 0
     assert "drapeau inconnu" in acheve.stderr

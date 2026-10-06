@@ -37,7 +37,9 @@ import sympy as sp
 
 from polytech.electronique.domain.acquisition import gain_de_chaine
 from polytech.electronique.domain.amplification import (
+    gain_inverseur,
     gain_maximal_par_etage,
+    gain_non_inverseur,
     nombre_d_etages,
 )
 from polytech.electronique.domain.aop_interne import (
@@ -107,6 +109,19 @@ def test_l_exemple_3_1_se_tient_avec_un_partage_en_racine() -> None:
     bande = bande_de_la_cascade(2, PRODUIT / par_etage)
     assert bande == pytest.approx(72e3, rel=3e-3)
     assert bande > BANDE
+
+
+def test_l_exemple_3_1_le_potentiometre_regle_le_gain_depuis_zero() -> None:
+    """Page 142 : `R_2` de 0 a 80 kohm sur 2 kohm, « a DC gain from 0 to 40 »."""
+    assert gain_inverseur(2e3, 0.0) == 0.0
+    assert gain_inverseur(2e3, 80e3) == pytest.approx(-40.0)
+    assert gain_non_inverseur(1e3, 39e3) == pytest.approx(40.0)
+    assert gain_non_inverseur(1e3, 0.0) == 1.0
+    for montage in (gain_inverseur, gain_non_inverseur):
+        with pytest.raises(ValueError, match="resistances non positives"):
+            montage(1e3, -1.0)
+        with pytest.raises(ValueError, match="resistances non positives"):
+            montage(0.0, 1e3)
 
 
 def test_l_exemple_3_1_les_impedances() -> None:
