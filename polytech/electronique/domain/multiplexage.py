@@ -57,3 +57,21 @@ def residu_de_commutation(coupure: float, duree: float) -> float:
         msg = f"coupure {coupure} Hz ou duree {duree} s invalide"
         raise ValueError(msg)
     return math.exp(-2 * math.pi * coupure * duree)
+
+
+def demultiplexer(
+    echantillons: tuple[float, ...], voies: int
+) -> tuple[tuple[float, ...], ...]:
+    """Les echantillons de chaque voie : `v_i[k] = v_ADC[voies k + i]`."""
+    if voies < 1 or len(echantillons) % voies:
+        msg = f"nombre d'echantillons non multiple de {voies} : {len(echantillons)}"
+        raise ValueError(msg)
+    return tuple(echantillons[voie::voies] for voie in range(voies))
+
+
+def attenuation_de_la_resistance_passante(passante: float, charge: float) -> float:
+    """`R_L / (R_L + R_on)` : ce que l'interrupteur ferme laisse a la charge."""
+    if passante < 0 or charge <= 0:
+        msg = f"resistance negative ou charge nulle : {passante}, {charge} ohm"
+        raise ValueError(msg)
+    return charge / (charge + passante)

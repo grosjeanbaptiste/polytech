@@ -75,3 +75,20 @@ def facteur_d_une_cascade(etages: tuple[tuple[float, float], ...]) -> float:
         total += (facteur - FACTEUR_MINIMAL) / gain_cumule**2
         gain_cumule *= gain
     return FACTEUR_MINIMAL + total
+
+
+def bruit_ramene_a_l_entree(etages: tuple[tuple[float, float], ...]) -> float:
+    """`P_1 + P_2 / A_1^2 + P_3 / (A_1 A_2)^2 + ...`, hors bruit de la source.
+
+    `etages` donne, dans l'ordre, la puissance de bruit propre de chaque
+    etage, ramenee a sa propre entree, et son gain en tension.
+    """
+    if not etages:
+        msg = "cascade vide : aucun bruit a ramener a l'entree"
+        raise ValueError(msg)
+    total, gain_cumule = 0.0, 1.0
+    for puissance, gain in etages:
+        _valider(gain)
+        total += puissance / gain_cumule**2
+        gain_cumule *= gain
+    return total

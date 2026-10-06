@@ -63,6 +63,22 @@ def courant_de_la_paire_differentielle(
     return queue * math.tanh(differentielle / (2 * thermique))
 
 
+def courants_de_la_paire(
+    differentielle: float, queue: float, *, thermique: float = TENSION_THERMIQUE
+) -> tuple[float, float]:
+    """`(I_1 / (1 + e^-x), I_1 / (1 + e^x))`, `x = V_id / v_T` : les deux branches."""
+    reduit = differentielle / thermique
+    return queue / (1 + math.exp(-reduit)), queue / (1 + math.exp(reduit))
+
+
+def module_du_gain_ouvert(frequence: float, *, produit: float, continu: float) -> float:
+    """`|GBW / (j f + GBW / A_ol(0))|` : le gain a un pole, a cette frequence."""
+    if frequence < 0:
+        msg = f"frequence negative : {frequence} Hz"
+        raise ValueError(msg)
+    return produit / math.hypot(frequence, bande_en_boucle_ouverte(produit, continu))
+
+
 def vitesse_de_balayage(queue: float, compensation: float) -> float:
     """`SR = I_1 / C_f`, en V/s : la pente que la sortie ne depasse pas."""
     if compensation <= 0:
