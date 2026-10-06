@@ -220,7 +220,7 @@ def test_l_echantillonneur_bloqueur_de_la_figure_5_18() -> None:
     capacite = 1e-9
     charge = constante_de_temps(capacite, 1.0)
     maintien = constante_de_temps(capacite, 1e9)
-    assert charge == pytest.approx(1e-9)
+    assert charge == pytest.approx(1e-9, rel=1e-9, abs=0)
     assert maintien == pytest.approx(1.0)
     assert maintien / charge == pytest.approx(1e9)
     assert fraction_perdue(1e-3, capacite, 1e9) == pytest.approx(1e-3, rel=1e-3)
