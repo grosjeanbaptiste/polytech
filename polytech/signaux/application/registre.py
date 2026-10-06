@@ -10,6 +10,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final
 
 from polytech.signaux.application import (
+    macros_convolution_graphique,
+    macros_cuves_boucle,
+    macros_cuves_modele,
+    macros_exs_03,
+    macros_exs_06_black,
+    macros_exs_06_bode,
+    macros_exs_07,
+    macros_exs_08_black,
+    macros_exs_08_regimes,
+    macros_exs_45,
     macros_lab_01_circuit,
     macros_lab_01_poles,
     macros_lab_01_signaux,
@@ -28,8 +38,39 @@ def _jeu_du_tp_un() -> dict[str, str]:
     }
 
 
+def _jeu_de_l_analyse_harmonique() -> dict[str, str]:
+    """La feuille « Analyse harmonique » : Bode d'un cote, Black de l'autre."""
+    return {
+        **macros_exs_06_bode.macros_de_bode(),
+        **macros_exs_06_black.macros_de_black(),
+    }
+
+
+def _jeu_des_performances() -> dict[str, str]:
+    """La feuille « Performances » : les regimes et marges, puis les lectures de `M`."""
+    return {
+        **macros_exs_08_regimes.macros_des_regimes(),
+        **macros_exs_08_black.macros_de_black(),
+    }
+
+
+def _jeu_des_cuves() -> dict[str, str]:
+    """Le TP « Reservoir » : le modele, la boucle ouverte, les boucles fermees."""
+    return {
+        **macros_cuves_modele.macros_du_modele(),
+        **macros_cuves_boucle.macros_des_boucles(),
+    }
+
+
 JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "lab-01": _jeu_du_tp_un,
+    "exs-03-systemes": macros_exs_03.macros_des_systemes,
+    "exs-06-analyse-harmonique": _jeu_de_l_analyse_harmonique,
+    "exs-07-stabilite": macros_exs_07.macros_de_la_stabilite,
+    "exs-08-performances": _jeu_des_performances,
+    "exs-04-05-resolus": macros_exs_45.macros_de_la_seance,
+    "exs-convolution-graphique": macros_convolution_graphique.macros_de_la_convolution,
+    "tp-reservoir": _jeu_des_cuves,
 }
 """Le nom du dossier de travail designe le jeu qui l'alimente."""
 

@@ -15,6 +15,9 @@ from __future__ import annotations
 
 import sympy as sp
 
+from polytech.electromagnetisme.domain.magnetostatique.biot_et_savart import (
+    PERMEABILITE,
+)
 from polytech.electromagnetisme.domain.magnetostatique.lois import force_de_lorentz
 from polytech.electromagnetisme.domain.symboles import TEMPS
 
@@ -74,3 +77,22 @@ def fem_d_un_entrefer_mobile(
 def est_constante(expression: sp.Expr) -> bool:
     """Vrai si l'expression ne depend pas du temps."""
     return TEMPS not in expression.free_symbols
+
+
+def flux_a_entrefers_dominants(
+    spires: object, courant: object, section: object, air: object
+) -> sp.Expr:
+    """`Phi = mu_0 N I S / l` : le flux quand l'air consomme tous les amperes-tours.
+
+    `air` est la longueur **totale** d'air que le flux traverse -- deux
+    entrefers de `l_e` en font `2 l_e`. Le theoreme d'Ampere se reduit a
+    `N I = H_e l`, et `B = mu_0 H_e` donne le flux. Le fer n'intervient
+    plus : c'est l'hypothese, et elle cesse de valoir quand l'air devient
+    assez long pour que la dispersion compte.
+    """
+    longueur = sp.sympify(air)
+    if longueur == 0:
+        msg = "aucun entrefer : le fer consommerait tous les amperes-tours"
+        raise ValueError(msg)
+    numerateur = PERMEABILITE * sp.sympify(spires) * sp.sympify(courant)
+    return numerateur * sp.sympify(section) / longueur

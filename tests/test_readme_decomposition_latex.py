@@ -55,8 +55,16 @@ NUMERAUX: Final = {
     "vingt-trois": 23,
     "vingt-quatre": 24,
     "vingt-cinq": 25,
+    "vingt-six": 26,
+    "vingt-sept": 27,
+    "vingt-huit": 28,
+    "vingt-neuf": 29,
+    "trente": 30,
+    "trente et un": 31,
+    "trente-deux": 32,
+    "trente-trois": 33,
 }
-"""De un a vingt-cinq : les seances, puis les laboratoires, s'y ajoutent."""
+"""De un a trente-trois : seances, laboratoires, puis interrogations cotees."""
 
 ANNONCE = re.compile(r"\*\*(\d+) documents LaTeX\*\*")
 DECOMPOSITION = re.compile(
