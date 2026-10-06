@@ -16,6 +16,7 @@ from polytech.electronique.application import (
     macros_tp_04,
     macros_tp_05,
     macros_tp_06,
+    macros_tp_07,
 )
 
 if TYPE_CHECKING:
@@ -28,6 +29,7 @@ JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "tp-04": macros_tp_04.macros_du_tp_quatre,
     "tp-05": macros_tp_05.macros_du_tp_cinq,
     "tp-06": macros_tp_06.macros_du_tp_six,
+    "tp-07": macros_tp_07.macros_du_tp_sept,
 }
 """Le nom du dossier de travail designe le jeu qui l'alimente."""
 

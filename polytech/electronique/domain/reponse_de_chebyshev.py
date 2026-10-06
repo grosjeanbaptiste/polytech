@@ -63,3 +63,17 @@ def transfert_de_chebyshev(variable: complex, ordre: int, epsilon: float) -> com
     for pole in poles_de_chebyshev(ordre, epsilon):
         denominateur *= variable - pole
     return numerateur / denominateur
+
+
+def coupure_a_trois_decibels(ordre: int, epsilon: float) -> float:
+    """`cosh(acosh(1 / eps) / N)` : ou le module tombe a `1 / racine(2)`.
+
+    La pulsation unite du prototype borne l'*ondulation*, pas les 3 dB :
+    `eps T_N(w) = 1` se resout au-dela, tant que l'ondulation elle-meme
+    reste sous 3 dB (`eps <= 1`).
+    """
+    _eta(ordre, epsilon)
+    if epsilon > 1:
+        msg = f"ondulation superieure a 3 dB, coupure dans la bande : {epsilon}"
+        raise ValueError(msg)
+    return math.cosh(math.acosh(1 / epsilon) / ordre)
