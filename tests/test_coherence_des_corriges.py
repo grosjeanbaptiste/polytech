@@ -31,6 +31,9 @@ from pathlib import Path
 
 import pytest
 
+from polytech.algorithmique.application import generation as generation_algorithmique
+from polytech.algorithmique.application import registre as registre_algorithmique
+from polytech.algorithmique.infrastructure import latex as latex_algorithmique
 from polytech.electromagnetisme.application import generation as generation_em
 from polytech.electromagnetisme.application import registre as registre_em
 from polytech.electromagnetisme.infrastructure import latex as latex_em
@@ -59,6 +62,7 @@ TRAVAUX_THERMIQUE = RACINE / "travaux" / "ThermiqueFondements"
 TRAVAUX_ELECTRONIQUE = RACINE / "travaux" / "ElectroniqueInstrumentation"
 TRAVAUX_MATHS = RACINE / "travaux" / "Mathematique"
 TRAVAUX_OPTIMISATION = RACINE / "travaux" / "Optimisation"
+TRAVAUX_PROGRAMMATION = RACINE / "travaux" / "ProgrammationAlgorithmique"
 
 DOSSIERS = {
     **{slug: TRAVAUX / slug for slug in registre_em.JEUX_DE_MACROS},
@@ -72,6 +76,10 @@ DOSSIERS = {
     **{
         slug: TRAVAUX_OPTIMISATION / slug
         for slug in registre_optimisation.JEUX_DE_MACROS
+    },
+    **{
+        slug: TRAVAUX_PROGRAMMATION / slug
+        for slug in registre_algorithmique.JEUX_DE_MACROS
     },
 }
 """Chaque travail garde, et son dossier : les deux matieres a la fois.
@@ -90,27 +98,41 @@ BIBLIOTHEQUE = {
     **dict.fromkeys(registre_electronique.JEUX_DE_MACROS, "polytech.electronique"),
     **dict.fromkeys(registre_maths.JEUX_DE_MACROS, "polytech.maths"),
     **dict.fromkeys(registre_optimisation.JEUX_DE_MACROS, "polytech.optimisation"),
+    **dict.fromkeys(registre_algorithmique.JEUX_DE_MACROS, "polytech.algorithmique"),
 }
 """Le contexte qui calcule les valeurs de chaque travail."""
 
 
+REGISTRES = (
+    (registre_signaux.JEUX_DE_MACROS, registre_signaux.macros_du_travail),
+    (registre_thermique.JEUX_DE_MACROS, registre_thermique.macros_du_travail),
+    (registre_electronique.JEUX_DE_MACROS, registre_electronique.macros_du_travail),
+    (registre_maths.JEUX_DE_MACROS, registre_maths.macros_du_travail),
+    (registre_optimisation.JEUX_DE_MACROS, registre_optimisation.macros_du_travail),
+    (registre_algorithmique.JEUX_DE_MACROS, registre_algorithmique.macros_du_travail),
+)
+"""Les jeux de chaque matiere et la fonction qui les calcule.
+
+L'electromagnetisme, le premier ecrit, est le defaut.
+"""
+
+
 def macros_du_travail(travail: str) -> dict[str, str]:
     """Les macros du travail, prises au registre de sa matiere."""
-    if travail in registre_signaux.JEUX_DE_MACROS:
-        return registre_signaux.macros_du_travail(travail)
-    if travail in registre_thermique.JEUX_DE_MACROS:
-        return registre_thermique.macros_du_travail(travail)
-    if travail in registre_electronique.JEUX_DE_MACROS:
-        return registre_electronique.macros_du_travail(travail)
-    if travail in registre_maths.JEUX_DE_MACROS:
-        return registre_maths.macros_du_travail(travail)
-    if travail in registre_optimisation.JEUX_DE_MACROS:
-        return registre_optimisation.macros_du_travail(travail)
+    for jeux, calculer in REGISTRES:
+        if travail in jeux:
+            return calculer(travail)
     return registre_em.macros_du_travail(travail)
 
 
 def _regenerer(travail: str, chemin: Path) -> None:
     """Regenere les macros du travail par la commande de sa matiere."""
+    if travail in registre_algorithmique.JEUX_DE_MACROS:
+        generation_algorithmique.GenererMacros(
+            publication=latex_algorithmique.FichierDeMacros(chemin=chemin),
+            travail=travail,
+        ).executer()
+        return
     if travail in registre_optimisation.JEUX_DE_MACROS:
         generation_optimisation.GenererMacros(
             publication=latex_optimisation.FichierDeMacros(chemin=chemin),
@@ -156,6 +178,7 @@ def test_aucun_dossier_n_appartient_aux_deux_matieres() -> None:
         *registre_electronique.JEUX_DE_MACROS,
         *registre_maths.JEUX_DE_MACROS,
         *registre_optimisation.JEUX_DE_MACROS,
+        *registre_algorithmique.JEUX_DE_MACROS,
     ]
     assert len(tous) == len(set(tous))
 

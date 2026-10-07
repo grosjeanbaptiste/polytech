@@ -29,6 +29,7 @@ TRAVAUX_THERMIQUE = RACINE / "travaux" / "ThermiqueFondements"
 TRAVAUX_ELECTRONIQUE = RACINE / "travaux" / "ElectroniqueInstrumentation"
 TRAVAUX_MATHEMATIQUE = RACINE / "travaux" / "Mathematique"
 TRAVAUX_OPTIMISATION = RACINE / "travaux" / "Optimisation"
+TRAVAUX_PROGRAMMATION = RACINE / "travaux" / "ProgrammationAlgorithmique"
 
 NUMERAUX: Final = {
     "un": 1,
@@ -80,6 +81,7 @@ DECOMPOSITION = re.compile(
     r"(?:une?|[\w-]+)\s+corrigés? d'électronique,\s+"
     r"(?:une?|[\w-]+)\s+corrigés? de mathématique,\s+"
     r"(?:une?|[\w-]+)\s+corrigés? d'optimisation,\s+"
+    r"(?:une?|[\w-]+)\s+corrigés? de programmation,\s+"
     r"(?:une?|[\w-]+)\s+corrigés? de signaux, "
     r"les\s+([\w-]+(?: et un)?) corrigés "
     r"d'électromagnétisme déjà écrits, et les (\d+) planches",
@@ -156,6 +158,17 @@ def test_le_nombre_de_corriges_d_optimisation_annonce_en_lettres_est_exact() -> 
     assert annonce == _corriges_de(TRAVAUX_OPTIMISATION)
 
 
+PROGRAMMATION = re.compile(r"(une?|[\w-]+)\s+corrigés? de programmation")
+"""Le terme de la programmation, ouvert par ses deux feuilles de TP."""
+
+
+def test_le_nombre_de_corriges_de_programmation_annonce_en_lettres_est_exact() -> None:
+    trouve = PROGRAMMATION.search(README.read_text(encoding="utf-8"))
+    assert trouve is not None
+    annonce = 1 if trouve.group(1) in {"un", "une"} else NUMERAUX[trouve.group(1)]
+    assert annonce == _corriges_de(TRAVAUX_PROGRAMMATION)
+
+
 def test_la_decomposition_est_bien_presente_dans_le_readme() -> None:
     """Sans elle, les deux tests suivants passeraient a vide.
 
@@ -187,12 +200,14 @@ def test_la_decomposition_fait_bien_le_total_annonce() -> None:
     electronique = _corriges_de(TRAVAUX_ELECTRONIQUE)
     mathematique = _corriges_de(TRAVAUX_MATHEMATIQUE)
     optimisation = _corriges_de(TRAVAUX_OPTIMISATION)
+    programmation = _corriges_de(TRAVAUX_PROGRAMMATION)
     somme = (
         4
         + thermique
         + electronique
         + mathematique
         + optimisation
+        + programmation
         + signaux
         + NUMERAUX[trouve.group(1)]
         + int(trouve.group(2))
