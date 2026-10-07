@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final
 
 from polytech.electronique.application import (
+    macros_annexe_tp_07,
     macros_lab_01,
     macros_lab_03,
     macros_lab_05,
@@ -37,6 +38,7 @@ JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "tp-05": macros_tp_05.macros_du_tp_cinq,
     "tp-06": macros_tp_06.macros_du_tp_six,
     "tp-07": macros_tp_07.macros_du_tp_sept,
+    "tp-07-bis": macros_annexe_tp_07.macros_de_l_annexe,
     "tp-08": macros_tp_08.macros_du_tp_huit,
 }
 """Le nom du dossier de travail designe le jeu qui l'alimente."""
