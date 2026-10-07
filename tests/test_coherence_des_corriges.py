@@ -541,6 +541,30 @@ SANS_ENONCE_AU_RECUEIL = {
         "un exercice cote, et non un exercice du recueil : son enonce est le "
         "sujet lui-meme, que le corrige cite"
     ),
+    "exs-cote-2020-2021-mons": (
+        "un exercice cote, et non un exercice du recueil : son enonce est le "
+        "sujet lui-meme, que le corrige cite"
+    ),
+    "exs-cote-2021-2022-mons": (
+        "un exercice cote, et non un exercice du recueil : son enonce est le "
+        "sujet lui-meme, que le corrige cite"
+    ),
+    "exs-cote-2022-2023-mons": (
+        "un exercice cote, et non un exercice du recueil : son enonce est le "
+        "sujet lui-meme, que le corrige cite"
+    ),
+    "exs-cote-2023-2024-mons": (
+        "un exercice cote, et non un exercice du recueil : son enonce est le "
+        "sujet lui-meme, que le corrige cite"
+    ),
+    "exs-cote-2024-2025-mons": (
+        "un exercice cote, et non un exercice du recueil : son enonce est le "
+        "sujet lui-meme, que le corrige cite"
+    ),
+    "exs-cote-2025-2026-mons": (
+        "un exercice cote, et non un exercice du recueil : son enonce est le "
+        "sujet lui-meme, que le corrige cite"
+    ),
     "lab-01-mesures-electriques": (
         "un protocole de laboratoire, et non un exercice : son enonce est le "
         "protocole lui-meme, que le corrige cite, et le recueil n'en porte rien"

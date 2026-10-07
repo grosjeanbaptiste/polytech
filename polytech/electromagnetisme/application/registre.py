@@ -27,16 +27,6 @@ from polytech.electromagnetisme.application import (
     macros_champ_07,
     macros_champ_08,
     macros_champ_12,
-    macros_cote_2016_a,
-    macros_cote_2016_b,
-    macros_cote_2017,
-    macros_cote_2018,
-    macros_cote_2019,
-    macros_cote_2022_charleroi,
-    macros_cote_2023_charleroi,
-    macros_cote_2024_charleroi,
-    macros_cote_2025_charleroi,
-    macros_cote_2026_charleroi,
     macros_exercice_06,
     macros_exercice_08,
     macros_forces_06,
@@ -57,6 +47,9 @@ from polytech.electromagnetisme.application import (
     macros_statique_12,
     macros_thevenin,
     macros_transitoire_05,
+)
+from polytech.electromagnetisme.application.registre_des_interrogations import (
+    JEUX_DES_INTERROGATIONS,
 )
 
 
@@ -81,20 +74,13 @@ def _jeu_exercice_six() -> dict[str, str]:
     }
 
 
-def _jeu_cote_seize() -> dict[str, str]:
-    """Les six questions de l'exercice cote de 2016, en deux modules."""
-    return {
-        **macros_cote_2016_a.macros_cote_seize_debut(),
-        **macros_cote_2016_b.macros_cote_seize_fin(),
-    }
-
-
 def _jeu_forces_six() -> dict[str, str]:
     """L'exercice 6 du chapitre IV : force sur une armature de condensateur."""
     return macros_forces_06.macros_forces_six()
 
 
 JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
+    **JEUX_DES_INTERROGATIONS,
     "exs-04-forces-06": _jeu_forces_six,
     "exs-04-forces-11": macros_forces_11.macros_forces_onze,
     "exs-04-forces-15": macros_forces_15.macros_forces_quinze,
@@ -104,15 +90,6 @@ JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "exs-02-statique-08": macros_statique_08.macros_statique_huit,
     "exs-02-statique-1-1-poisson": macros_statique_11.macros_statique_un_un,
     "exs-02-statique-12": macros_statique_12.macros_statique_douze,
-    "exs-cote-2015-2016": _jeu_cote_seize,
-    "exs-cote-2016-2017": macros_cote_2017.macros_cote_dix_sept,
-    "exs-cote-2017-2018": macros_cote_2018.macros_cote_dix_huit,
-    "exs-cote-2018-2019": macros_cote_2019.macros_cote_dix_neuf,
-    "exs-cote-2021-2022-charleroi": macros_cote_2022_charleroi.macros_cote_vingt_deux,
-    "exs-cote-2022-2023-charleroi": macros_cote_2023_charleroi.macros_cote_vingt_trois,
-    "exs-cote-2023-2024-charleroi": macros_cote_2024_charleroi.macros_cote_vingt_quatre,
-    "exs-cote-2024-2025-charleroi": macros_cote_2025_charleroi.macros_cote_vingt_cinq,
-    "exs-cote-2025-2026-charleroi": macros_cote_2026_charleroi.macros_cote_vingt_six,
     "exs-03-champ-magnetique-06": macros_champ_06.macros_champ_six,
     "exs-03-champ-magnetique-07": macros_champ_07.macros_champ_sept,
     "exs-03-champ-magnetique-08": macros_champ_08.macros_champ_huit,

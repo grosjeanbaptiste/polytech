@@ -63,8 +63,14 @@ NUMERAUX: Final = {
     "trente et un": 31,
     "trente-deux": 32,
     "trente-trois": 33,
+    "trente-quatre": 34,
+    "trente-cinq": 35,
+    "trente-six": 36,
+    "trente-sept": 37,
+    "trente-huit": 38,
+    "trente-neuf": 39,
 }
-"""De un a trente-trois : seances, laboratoires, puis interrogations cotees."""
+"""De un a trente-neuf : seances, laboratoires, puis interrogations cotees."""
 
 ANNONCE = re.compile(r"\*\*(\d+) documents LaTeX\*\*")
 DECOMPOSITION = re.compile(
