@@ -1,6 +1,6 @@
 """Electronique : l'annexe du TP 7, verifiee table par table.
 
-Source : `ElectroniqueInstrumentation/TP/TP_7bis.pdf`, neuf pages. C'est
+Source : `ElectroniqueInstrumentation/TP/TP_7_Annexe.pdf`, neuf pages. C'est
 un formulaire, sans exercice : mise a l'echelle d'impedance, trois
 transformations en frequence, deux tables de filtres en echelle, le
 filtre de Sallen-Key et ses quatre methodes. Chaque table et chaque

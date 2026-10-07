@@ -153,7 +153,7 @@ def test_le_tp_3_ne_trie_qu_un_tableau_deja_saisi() -> None:
         if choix == PERMUTER:
             tableau = permuter_deux_a_deux(tableau)
     assert saisi
-    assert [a.nom for a in tableau] == ["clou", "vis", "ecrou"]
+    assert [a.nom for a in tableau] == ["ecrou", "clou", "vis"]
 
 
 def test_une_structure_passee_par_valeur_n_est_pas_modifiee() -> None:
@@ -176,15 +176,20 @@ def test_l_affectation_copie_toute_la_structure() -> None:
 
 
 def test_permuter_deux_a_deux_au_tp_3() -> None:
-    """Les rangs 0 et 1 s'echangent, puis 2 et 3 ; un dernier isole reste."""
+    """Feuille de TP de 2019, page 7 : le premier avec le dernier, et ainsi de suite.
+
+    Les transparents ne precisent pas « deux a deux » ; la feuille le
+    fait. Avec un nombre impair d'elements, celui du milieu reste en place.
+    """
     quatre = (*ARTICLES, Article("rivet", "D"))
     assert [a.nom for a in permuter_deux_a_deux(quatre)] == [
-        "clou",
-        "vis",
         "rivet",
         "ecrou",
+        "clou",
+        "vis",
     ]
-    assert [a.nom for a in permuter_deux_a_deux(ARTICLES)] == ["clou", "vis", "ecrou"]
+    assert [a.nom for a in permuter_deux_a_deux(ARTICLES)] == ["ecrou", "clou", "vis"]
+    assert permuter_deux_a_deux(permuter_deux_a_deux(quatre)) == quatre
     assert permuter_deux_a_deux(()) == ()
 
 

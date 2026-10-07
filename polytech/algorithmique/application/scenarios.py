@@ -34,8 +34,8 @@ class Scenario:
     modele: Callable[[str], tuple[str, ...]]
 
 
-DE_2019: Final = "tp-01-a-06-2019"
-DE_2017: Final = "tp-04-a-06-2017"
+DE_2019: Final = "tp-01-a-06-2019-2020"
+DE_2017: Final = "tp-04-a-06-2016-2017"
 """Les deux dossiers de travail, un par feuille de TP."""
 SCENARIOS: Final = {
     "tp1_tp2": Scenario(

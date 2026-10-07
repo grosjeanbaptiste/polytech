@@ -52,28 +52,6 @@ def champ_induit_dynamique(
     return force_de_lorentz(1.0, vitesse, induction)
 
 
-def fem_d_un_entrefer_mobile(
-    induction: float,
-    section: float,
-    vitesse: float,
-    spires: int,
-) -> float:
-    """La force electromotrice d'un enroulement dont la section varie.
-
-    C'est la situation de l'interrogation cotee 2022-2023 : deux
-    demi-tores separes par des entrefers, dont l'un se deplace a vitesse
-    constante. Le flux decroit lineairement, donc la force electromotrice
-    est **constante** -- ce qui surprend, et c'est le point de l'exercice.
-    """
-    if spires <= 0:
-        msg = f"nombre de spires nul ou negatif : {spires}"
-        raise ValueError(msg)
-    if section <= 0:
-        msg = f"section nulle ou negative : {section} m^2"
-        raise ValueError(msg)
-    return spires * induction * section * vitesse
-
-
 def est_constante(expression: sp.Expr) -> bool:
     """Vrai si l'expression ne depend pas du temps."""
     return TEMPS not in expression.free_symbols
@@ -96,3 +74,33 @@ def flux_a_entrefers_dominants(
         raise ValueError(msg)
     numerateur = PERMEABILITE * sp.sympify(spires) * sp.sympify(courant)
     return numerateur * sp.sympify(section) / longueur
+
+
+def fem_d_un_entrefer_mobile(
+    spires: object, courant: object, section: object, entrefer: object, vitesse: object
+) -> sp.Expr:
+    """`e(t) = mu_0 v N^2 I S / (2 (l_e + v t)^2)` : un demi-tore qui s'eloigne.
+
+    Interrogation cotee 2022-2023 (Charleroi), question 2 : deux
+    demi-tores de `N` spires chacun, separes par deux entrefers de `l_e`
+    a `t = 0` ; celui de droite s'ecarte a la vitesse `v`. Le flux est
+    celui des entrefers dominants, sur `2 (l_e + v t)` d'air, et
+    l'enroulement de droite voit `e = -N dPhi/dt`.
+
+    Le mouvement est uniforme, mais le flux varie comme l'**inverse** de
+    l'entrefer : la force electromotrice n'est pas constante, elle
+    decroit comme `1 / (l_e + v t)^2`.
+    """
+    tours, aire, depart = sp.sympify(spires), sp.sympify(section), sp.sympify(entrefer)
+    if tours.is_positive is False:
+        msg = f"nombre de spires nul ou negatif : {spires}"
+        raise ValueError(msg)
+    if aire.is_positive is False:
+        msg = f"section nulle ou negative : {section} m^2"
+        raise ValueError(msg)
+    if depart.is_positive is False:
+        msg = f"entrefer initial nul ou negatif : {entrefer} m"
+        raise ValueError(msg)
+    air = 2 * (depart + sp.sympify(vitesse) * TEMPS)
+    flux = flux_a_entrefers_dominants(tours, courant, aire, air)
+    return force_electromotrice(tours * flux)

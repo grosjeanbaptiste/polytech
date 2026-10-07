@@ -1,6 +1,6 @@
 """Programmation et algorithmique : les « s'il vous reste du temps » des TP 4 et 6.
 
-Source : `ProgrammationAlgorithmique/TP/TP_01_a_06_2019.pdf`, pages 10 et
+Source : `ProgrammationAlgorithmique/TP/TP_01_a_06_2019_2020.pdf`, pages 10 et
 12. Deux questions ouvertes y recoivent un programme : le tableau de
 profs defini dynamiquement (`test_tp_programmation_modeles.py`), et les
 matieres au choix, traitees ici.

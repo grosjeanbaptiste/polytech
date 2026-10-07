@@ -1,7 +1,7 @@
 """Programmation : les enonces des travaux pratiques 1, 2 et 4.
 
-Sources : `ProgrammationAlgorithmique/TP/TP_01_a_06_2019.pdf` (douze
-pages, TP 1 a 6) et `TP_04_a_06_2017.pdf` (quatre pages, TP 4 a 6, mot
+Sources : `ProgrammationAlgorithmique/TP/TP_01_a_06_2019_2020.pdf` (douze
+pages, TP 1 a 6) et `TP_04_a_06_2016_2017.pdf` (quatre pages, TP 4 a 6, mot
 pour mot ceux de 2019). Le TP 3 est porte par
 `test_cpp_fichiers_et_structures`, les TP 5 et 6 par les tests de la STL
 et de l'heritage.

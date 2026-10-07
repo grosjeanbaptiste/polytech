@@ -33,10 +33,16 @@ class Article:
 
 
 def permuter_deux_a_deux(elements: Sequence[Any]) -> tuple[Any, ...]:
-    """Echange les rangs 0 et 1, puis 2 et 3, ... ; un dernier isole reste en place."""
+    """Le premier avec le dernier, le deuxieme avec l'avant-dernier, et ainsi de suite.
+
+    Les transparents ne disent pas ce que « deux a deux » veut dire ; la
+    feuille de TP de 2019 le dit, page 7. On s'arrete a la moitie : aller
+    plus loin referait chaque echange et remettrait tout en place.
+    """
     resultat = list(elements)
-    for rang in range(0, len(resultat) - 1, 2):
-        resultat[rang], resultat[rang + 1] = resultat[rang + 1], resultat[rang]
+    for rang in range(len(resultat) // 2):
+        oppose = len(resultat) - 1 - rang
+        resultat[rang], resultat[oppose] = resultat[oppose], resultat[rang]
     return tuple(resultat)
 
 

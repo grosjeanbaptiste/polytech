@@ -45,6 +45,9 @@ from polytech.electromagnetisme.domain.magnetostatique import (
     induction,
 )
 from polytech.electromagnetisme.domain.magnetostatique import lois as magnetiques
+from polytech.electromagnetisme.domain.magnetostatique.biot_et_savart import (
+    PERMEABILITE,
+)
 from polytech.electromagnetisme.domain.symboles import (
     ABSCISSE,
     COTE,
@@ -189,26 +192,43 @@ def test_un_flux_constant_n_induit_rien() -> None:
     assert induction.force_electromotrice(sp.Integer(5)) == 0
 
 
-def test_la_fem_d_un_entrefer_mobile_est_constante() -> None:
-    """Le flux decroit lineairement, donc la fem ne depend pas du temps.
+def test_la_fem_d_un_entrefer_mobile_decroit_avec_le_temps() -> None:
+    """Interrogation cotee 2022-2023 (Charleroi), question 2, derniere ligne.
 
-    C'est le point de l'interrogation cotee 2022-2023, et il surprend :
-    un mouvement uniforme donne une tension continue, pas une rampe.
+    `E(t) = mu_0 v N^2 I S / (2 (l_e + v t)^2)` : l'entrefer s'ouvre a
+    vitesse constante, mais le flux varie comme l'inverse de l'entrefer.
+    La force electromotrice n'est donc **pas** constante.
     """
-    valeur = induction.fem_d_un_entrefer_mobile(1.0, 8e-4, 0.5, 1000)
-    assert valeur == pytest.approx(0.4)
-    assert induction.est_constante(sp.sympify(valeur))
+    n, i, s, le, v = sp.symbols("N I S l_e v", positive=True)
+    fem = induction.fem_d_un_entrefer_mobile(n, i, s, le, v)
+    attendue = PERMEABILITE * v * n**2 * i * s / (2 * (le + v * TEMPS) ** 2)
+    assert sp.simplify(fem - attendue) == 0
+    assert not induction.est_constante(fem)
+    pente = sp.diff(fem, TEMPS).subs(TEMPS, sp.Symbol("tau", positive=True))
+    assert sp.simplify(pente).is_negative
+    assert fem.subs(TEMPS, 0) == PERMEABILITE * v * n**2 * i * s / (2 * le**2)
+
+
+def test_la_fem_d_un_entrefer_mobile_vient_du_flux() -> None:
+    """Second chemin : `-N dPhi/dt`, avec deux entrefers de `l_e + v t`."""
+    n, i, s, le, v = sp.symbols("N I S l_e v", positive=True)
+    flux = induction.flux_a_entrefers_dominants(n, i, s, 2 * (le + v * TEMPS))
+    par_faraday = induction.force_electromotrice(n * flux)
+    fem = induction.fem_d_un_entrefer_mobile(n, i, s, le, v)
+    assert sp.simplify(fem - par_faraday) == 0
+    assert sp.simplify(fem.subs(v, 0)) == 0
 
 
 @pytest.mark.parametrize(
     ("arguments", "message"),
     [
-        ((1.0, 8e-4, 0.5, 0), "nombre de spires"),
-        ((1.0, 0.0, 0.5, 10), "section nulle"),
+        ((0, 1.0, 8e-4, 1e-3, 0.5), "nombre de spires"),
+        ((10, 1.0, 0.0, 1e-3, 0.5), "section nulle"),
+        ((10, 1.0, 8e-4, 0.0, 0.5), "entrefer initial nul"),
     ],
 )
 def test_une_geometrie_d_entrefer_invalide_est_refusee(
-    arguments: tuple[float, float, float, int],
+    arguments: tuple[float, float, float, float, float],
     message: str,
 ) -> None:
     with pytest.raises(ValueError, match=message):

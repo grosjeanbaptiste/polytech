@@ -11,9 +11,9 @@ from __future__ import annotations
 from typing import Final
 
 from polytech.algorithmique.application.releve import ligne
-from polytech.algorithmique.domain import algorithmes_stl
 from polytech.algorithmique.domain.enregistrements import (
     Article,
+    permuter_deux_a_deux,
     position_de,
     sans_doublons,
     trier_selon,
@@ -73,7 +73,7 @@ def derouler(saisie: str) -> tuple[str, ...]:
         if choix == SAISIR:
             tableau.elements = _saisir(clavier)
         elif choix == PERMUTER:
-            algorithmes_stl.reverse(tableau.elements)
+            tableau.elements = list(permuter_deux_a_deux(tableau.elements))
         elif choix in {PAR_CODE, PAR_NOM}:
             cle = (lambda a: a.code) if choix == PAR_CODE else (lambda a: a.nom)
             tableau.elements = list(trier_selon(tableau.elements, cle))

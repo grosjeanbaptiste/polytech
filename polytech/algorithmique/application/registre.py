@@ -15,8 +15,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
-    "tp-01-a-06-2019": macros_tp_2019.macros_des_tp_de_2019,
-    "tp-04-a-06-2017": macros_tp_2017.macros_des_tp_de_2017,
+    "tp-01-a-06-2019-2020": macros_tp_2019.macros_des_tp_de_2019,
+    "tp-04-a-06-2016-2017": macros_tp_2017.macros_des_tp_de_2017,
 }
 """Le nom du dossier de travail designe le jeu qui l'alimente."""
 

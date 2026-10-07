@@ -1,6 +1,6 @@
 """Programmation et algorithmique : les TP 1 a 6, ce que chaque programme doit afficher.
 
-Source : `ProgrammationAlgorithmique/TP/TP_01_a_06_2019.pdf`. Chaque TP
+Source : `ProgrammationAlgorithmique/TP/TP_01_a_06_2019_2020.pdf`. Chaque TP
 demande un programme a menu. Un modele Python, bati sur le domaine, lit
 la meme saisie et dit ce qui doit s'afficher : c'est l'oracle auquel le
 programme C++ du corrige est compare (`test_tp_programmation_cpp.py`).
@@ -86,10 +86,10 @@ def test_tp3_le_scenario_complet() -> None:
 
 
 def test_tp3_permuter_c_est_le_premier_avec_le_dernier() -> None:
-    """La feuille le dit en toutes lettres ; la bibliotheque portait l'autre lecture."""
+    """La feuille le dit en toutes lettres, et le domaine la suit."""
     lignes = tp3.derouler("1\n3\na x\nb y\nc z\n2\n9\n")
     assert lignes[1] == "TAB : c/z b/y a/x"
-    assert permuter_deux_a_deux(("a", "b", "c")) == ("b", "a", "c")
+    assert permuter_deux_a_deux(("a", "b", "c")) == ("c", "b", "a")
 
 
 def test_tp3_une_position_hors_du_tableau_est_refusee() -> None:
