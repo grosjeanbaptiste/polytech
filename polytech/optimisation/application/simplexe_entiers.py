@@ -61,13 +61,18 @@ def _borne(probleme: ProgrammeGeneral, borne: Borne) -> Contrainte:
 
 
 def noeud(probleme: ProgrammeGeneral, bornes: tuple[Borne, ...] = ()) -> Noeud:
-    """La relaxation lineaire du probleme, ces contraintes de separation ajoutees."""
+    """La relaxation lineaire du probleme, ces contraintes de separation ajoutees.
+
+    L'evaluation est toujours a minimiser : c'est l'oppose de l'optimum
+    quand le probleme maximise.
+    """
     ajoutees = tuple(_borne(probleme, b) for b in bornes)
     restreint = replace(probleme, contraintes=(*probleme.contraintes, *ajoutees))
     solution = resoudre(restreint)
     if solution.valeur is None or solution.point is None:
         return Noeud(solution.issue, None, None)
-    return Noeud(solution.issue, solution.point, -solution.valeur)
+    signe = 1 if probleme.optimisation is Optimisation.MIN else -1
+    return Noeud(solution.issue, solution.point, signe * solution.valeur)
 
 
 def penalites_a_la_racine(
@@ -81,15 +86,22 @@ def penalites_a_la_racine(
     return {j: penalites(tableau, j) for j in base if not point[j - 1].is_integer}
 
 
-def plus_petite_penalite(probleme: ProgrammeGeneral) -> tuple[int, str, sp.Expr]:
-    """La variable, la branche (`a` : vers le bas) et la valeur de la plus petite."""
+def penalite_extreme(
+    probleme: ProgrammeGeneral, *, grande: bool
+) -> tuple[int, str, sp.Expr]:
+    """La variable, la branche (`a` : vers le bas) et la penalite la plus extreme."""
     candidates = [
         (valeur, variable, branche)
         for variable, couple in penalites_a_la_racine(probleme).items()
         for branche, valeur in zip("ab", couple, strict=True)
     ]
-    valeur, variable, branche = min(candidates)
+    valeur, variable, branche = max(candidates) if grande else min(candidates)
     return variable, branche, valeur
+
+
+def plus_petite_penalite(probleme: ProgrammeGeneral) -> tuple[int, str, sp.Expr]:
+    """La plus petite penalite du sommet initial."""
+    return penalite_extreme(probleme, grande=False)
 
 
 def borne_par_la_penalite(evaluation: sp.Expr, penalite: sp.Expr) -> sp.Expr:

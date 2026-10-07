@@ -9,13 +9,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-from polytech.optimisation.application import macros_simplexe
+from polytech.optimisation.application import macros_exemples, macros_simplexe
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
 JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "exs-algorithme-simplexe": macros_simplexe.macros_du_simplexe,
+    "exs-exemples-resolus": macros_exemples.macros_des_exemples,
 }
 """Le nom du dossier de travail designe le jeu qui l'alimente."""
 

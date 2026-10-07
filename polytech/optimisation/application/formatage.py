@@ -26,6 +26,14 @@ def exact(valeur: object) -> str:
     return rendu
 
 
+def arrondi(valeur: object, decimales: int) -> str:
+    r"""Une valeur approchee, en chiffres : a composer dans `\num`."""
+    if decimales < 0:
+        msg = f"nombre de decimales negatif : {decimales}"
+        raise ValueError(msg)
+    return f"{float(sp.sympify(valeur)):.{decimales}f}"
+
+
 def point(coordonnees: Sequence[object]) -> str:
     r"""`(a,\ b,\ c)` : un point, coordonnees exactes."""
     if not coordonnees:

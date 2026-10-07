@@ -15,7 +15,12 @@ from typing import TYPE_CHECKING
 import pytest
 import sympy as sp
 
-from polytech.optimisation.application.formatage import exact, intervalle, point
+from polytech.optimisation.application.formatage import (
+    arrondi,
+    exact,
+    intervalle,
+    point,
+)
 from polytech.optimisation.application.generation import GenererMacros
 from polytech.optimisation.application.registre import (
     JEUX_DE_MACROS,
@@ -98,6 +103,15 @@ def test_un_intervalle_omet_sa_borne_infinie() -> None:
     assert intervalle(-sp.oo, 0) == r"\le 0"
     with pytest.raises(ValueError, match="intervalle sans borne"):
         intervalle(-sp.oo, sp.oo)
+
+
+def test_un_arrondi_garde_ses_decimales() -> None:
+    """Une valeur approchee se publie en chiffres decimaux, jamais en fraction."""
+    assert arrondi(sp.Rational(8367, 50), 2) == "167.34"
+    assert arrondi(sp.Rational(3163, 17), 2) == "186.06"
+    assert arrondi(188, 2) == "188.00"
+    with pytest.raises(ValueError, match="nombre de decimales negatif : -1"):
+        arrondi(1, -1)
 
 
 def test_un_travail_inconnu_est_refuse() -> None:
