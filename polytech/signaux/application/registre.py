@@ -23,6 +23,7 @@ from polytech.signaux.application import (
     macros_lab_01_circuit,
     macros_lab_01_poles,
     macros_lab_01_signaux,
+    macros_recueil,
 )
 
 if TYPE_CHECKING:
@@ -71,6 +72,7 @@ JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "exs-04-05-resolus": macros_exs_45.macros_de_la_seance,
     "exs-convolution-graphique": macros_convolution_graphique.macros_de_la_convolution,
     "tp-reservoir": _jeu_des_cuves,
+    "exs-recueil": macros_recueil.macros_du_recueil,
 }
 """Le nom du dossier de travail designe le jeu qui l'alimente."""
 
