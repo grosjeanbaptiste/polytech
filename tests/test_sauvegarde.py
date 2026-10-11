@@ -565,3 +565,62 @@ def test_un_cache_perime_est_ote_de_la_copie(tmp_path: Path) -> None:
     assert not (volume / "Polytech" / ".mypy_cache").exists()
     assert not profond.exists()
     assert "dossiers jetables otes" in fait.stdout
+
+
+def _faux_rsync(dossier: Path, code: int, compteur: Path) -> Path:
+    """Un `rsync` qui copie vraiment, mais rend `code` a son premier appel."""
+    dossier.mkdir()
+    vrai = shutil.which("rsync") or "/usr/bin/rsync"
+    (dossier / "rsync").write_text(
+        "#!/bin/sh\n"
+        f'{shlex.quote(vrai)} "$@" || exit $?\n'
+        f"if [ ! -e {shlex.quote(str(compteur))} ]; then\n"
+        f"  : > {shlex.quote(str(compteur))}\n"
+        f"  exit {code}\n"
+        "fi\n",
+        encoding="utf-8",
+    )
+    (dossier / "rsync").chmod(0o755)
+    return dossier
+
+
+def _sauvegarder_avec(
+    faux: Path, depot: Path, volume: Path
+) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(  # noqa: S603 -- chemin du script construit ici
+        [BASH, str(SCRIPT), "--sans-pdf", str(volume)],
+        cwd=depot,
+        capture_output=True,
+        text=True,
+        env=dict(os.environ, PATH=f"{faux}:{os.environ['PATH']}", LC_ALL="fr_BE.UTF-8"),
+        check=False,
+    )
+
+
+def test_un_fichier_disparu_pendant_la_copie_fait_recommencer(tmp_path: Path) -> None:
+    """Regression du 2026-10-07 : une autre session renommait des examens.
+
+    `rsync` rend alors 24, « des fichiers ont disparu avant d'etre
+    transferes ». Ce n'est pas une panne : le depot a bouge, et le script
+    sait deja recommencer dans ce cas. Il mourait a la place, deux fois de
+    suite, sans que la cle soit verifiee.
+    """
+    depot = _depot(tmp_path / "Polytech", ("a.md",))
+    volume = tmp_path / "volume"
+    volume.mkdir()
+    faux = _faux_rsync(tmp_path / "bin-rsync", 24, tmp_path / "compteur-rsync")
+    fait = _sauvegarder_avec(faux, depot, volume)
+    assert fait.returncode == 0, fait.stderr
+    assert "ont disparu pendant la passe 1, on recommence" in fait.stderr
+    assert "copie verifiee" in fait.stdout
+
+
+def test_une_vraie_panne_de_rsync_arrete_toujours_la_sauvegarde(tmp_path: Path) -> None:
+    """Seul le code 24 se rattrape : une erreur de transfert reste fatale."""
+    depot = _depot(tmp_path / "Polytech", ("a.md",))
+    volume = tmp_path / "volume"
+    volume.mkdir()
+    faux = _faux_rsync(tmp_path / "bin-rsync", 23, tmp_path / "compteur-rsync")
+    fait = _sauvegarder_avec(faux, depot, volume)
+    assert fait.returncode == 1
+    assert "rsync a echoue" in fait.stderr
