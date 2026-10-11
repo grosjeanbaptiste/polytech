@@ -107,10 +107,9 @@ def test_la_forme_de_jordan_de_la_matrice_de_la_page_101() -> None:
 def test_la_troisieme_illustration_du_syllabus_se_diagonalise_dans_c() -> None:
     """Syllabus d'algebre, pages 71 et 72 : `P^-1 A P = diag(2, 1 + i, 1 - i)`.
 
-    Par `semblable_par`, qui simplifie le produit. `diagonalisee_par` refuse
-    cette matrice de passage complexe, faute de simplifier avant de juger le
-    produit diagonal : defaut de la bibliotheque, nomme et non corrige ici.
+    Regression : `diagonalisee_par` refusait cette matrice de passage
+    complexe, faute de simplifier le produit avant de le juger diagonal.
     """
     assert set(Spectre(TROIS).valeurs_propres()) == {2, 1 + sp.I, 1 - sp.I}
     passage = sp.Matrix([[1, sp.I, -sp.I], [1, -1, -1], [1, 1, 1]])
-    assert semblable_par(TROIS, passage) == sp.diag(2, 1 + sp.I, 1 - sp.I)
+    assert diagonalisee_par(TROIS, passage) == sp.diag(2, 1 + sp.I, 1 - sp.I)

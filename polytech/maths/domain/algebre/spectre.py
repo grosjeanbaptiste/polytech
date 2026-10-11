@@ -69,7 +69,7 @@ def diagonalisee_par(matrice: sp.Matrix, passage: sp.Matrix) -> sp.Matrix:
     if passage.det() == 0:
         msg = "les colonnes de P ne forment pas une base : determinant nul"
         raise ValueError(msg)
-    produit = passage.inv() * matrice * passage
+    produit = sp.simplify(passage.inv() * matrice * passage)
     if not produit.is_diagonal():
         msg = "les colonnes de P ne sont pas des vecteurs propres : P^-1 A P plein"
         raise ValueError(msg)
