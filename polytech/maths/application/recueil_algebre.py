@@ -37,7 +37,8 @@ def liste(expressions: Iterable[sp.Basic]) -> str:
     return r",\; ".join(ecriture(e) for e in expressions)
 
 
-def _en_lettres(numero: int) -> str:
+def en_lettres(numero: int) -> str:
+    """`DixHuit` pour 18 : un nom de macro n'a pas de chiffre."""
     if numero <= len(NOMBRES):
         return NOMBRES[numero - 1]
     dizaine, unite = divmod(numero, 10)
@@ -49,7 +50,7 @@ def nom(prefixe: str, numero: int, suffixe: str = "") -> str:
     if not 1 <= numero <= MAXIMUM:
         msg = f"numero d'exercice hors de la table : {numero}"
         raise ValueError(msg)
-    return f"{prefixe}{_en_lettres(numero)}{suffixe[:1].upper()}{suffixe[1:]}"
+    return f"{prefixe}{en_lettres(numero)}{suffixe[:1].upper()}{suffixe[1:]}"
 
 
 def points(complexes: Iterable[sp.Expr]) -> str:

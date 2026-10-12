@@ -30,14 +30,14 @@ CHAPITRES: dict[str, str | None] = {
     "IV. Les polynomes": "algebre-04-polynomes",
     "V. Les determinants": "algebre-05-determinants",
     "VI. Le rang d'une matrice": "algebre-06-rang",
-    "VII. Les espaces vectoriels": None,
+    "VII. Les espaces vectoriels": "algebre-07-espaces-vectoriels",
     "VIII. Les applications lineaires": None,
     "IX. Les espaces metriques": None,
     "X. Les valeurs propres et les vecteurs propres": None,
 }
 """Titre du chapitre, tel que le syllabus l'ecrit : son dossier de travail."""
 
-CHAPITRES_SANS_CORRIGE = 4
+CHAPITRES_SANS_CORRIGE = 3
 """Le cliquet. Dix au depart, le 2026-10-12."""
 
 CORRIGES = sorted(slug for slug in CHAPITRES.values() if slug is not None)
