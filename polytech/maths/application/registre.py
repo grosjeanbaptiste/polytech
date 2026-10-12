@@ -26,6 +26,7 @@ from polytech.maths.application import (
     macros_recueil_algebre_ch08b,
     macros_recueil_algebre_ch08c,
     macros_recueil_algebre_ch09,
+    macros_recueil_algebre_ch10_reflexions,
 )
 
 if TYPE_CHECKING:
@@ -39,6 +40,9 @@ JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "algebre-06-rang": macros_recueil_algebre_ch06.macros_du_chapitre_six,
     "algebre-09-espaces-metriques": (
         macros_recueil_algebre_ch09.macros_du_chapitre_neuf
+    ),
+    "algebre-10-valeurs-propres": (
+        macros_recueil_algebre_ch10_reflexions.macros_du_chapitre_dix
     ),
     "algebre-08c-examens": macros_recueil_algebre_ch08c.macros_de_la_partie_c,
     "algebre-08b-matrices-associees": (

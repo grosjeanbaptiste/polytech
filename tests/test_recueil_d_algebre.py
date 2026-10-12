@@ -38,7 +38,7 @@ CHAPITRES: dict[str, Parties] = {
         "algebre-08c-examens",
     ),
     "IX. Les espaces metriques": ("algebre-09-espaces-metriques",),
-    "X. Les valeurs propres et les vecteurs propres": (None,),
+    "X. Les valeurs propres et les vecteurs propres": ("algebre-10-valeurs-propres",),
 }
 """Titre du chapitre, tel que le syllabus l'ecrit : ses dossiers de travail.
 
@@ -47,11 +47,11 @@ est traite en trois dossiers, un par section d'exercices du syllabus --
 VIII.4 (1 a 13), VIII.7 (14 a 32), VIII.8 (33 a 45).
 """
 
-CHAPITRES_SANS_CORRIGE = 1
+CHAPITRES_SANS_CORRIGE = 0
 """Le cliquet. Dix au depart, le 2026-10-12. Un chapitre le quitte quand
 toutes ses parties ont leur dossier."""
 
-PARTIES_SANS_CORRIGE = 1
+PARTIES_SANS_CORRIGE = 0
 """Le cliquet des parties : celles du chapitre VIII se comptent une a une."""
 
 CORRIGES = sorted(slug for parties in CHAPITRES.values() for slug in parties if slug)
