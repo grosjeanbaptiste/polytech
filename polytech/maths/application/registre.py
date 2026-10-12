@@ -15,12 +15,14 @@ from polytech.maths.application import (
     macros_examen_2025,
     macros_exs_01,
     macros_exs_02,
+    macros_recueil_algebre_ch01,
 )
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
 JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
+    "algebre-01-nombres-complexes": macros_recueil_algebre_ch01.macros_du_chapitre_un,
     "examen-2021-janvier": macros_examen_2021.macros_de_l_examen_2021,
     "examen-2022-janvier": macros_examen_2022.macros_de_l_examen_2022,
     "examen-2025-janvier": macros_examen_2025.macros_de_l_examen_2025,
