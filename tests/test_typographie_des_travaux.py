@@ -30,8 +30,14 @@ REMPLACES: Final = {
     "§": r"\S",
     "µ": r"\textmu{} ou \micro",
     "°": r"\textdegree{}, ^\circ ou \degree",
+    "œ": r"\oe{}",
 }
-"""Le caractere que la police remplace, et la commande qui le compose."""
+"""Le caractere que la police remplace, et la commande qui le compose.
+
+« œ », lui, n'est pas remplace mais perdu : la page compose « nud », et
+seul le journal le note. Il est entre ici le 2026-10-12, apres une fiche
+de revision sortie avec vingt et une lettres en moins.
+"""
 
 COMMENTAIRE: Final = re.compile(r"(?<!\\)%.*$")
 
