@@ -397,3 +397,28 @@ def test_une_matrice_immuable_s_echelonne_comme_une_autre() -> None:
     assert resultat.matrice == M([[3, 4, 5], [0, 1, 2]])
     assert echelonner_simplement(immuable) == M([[1, 0, -1], [0, 1, 2]])
     assert immuable == sp.ImmutableMatrix([[0, 1, 2], [3, 4, 5]])
+
+
+def test_l_echelonnement_ne_pivote_pas_sur_le_second_membre() -> None:
+    """Deux conditions de compatibilite restent deux lignes distinctes.
+
+    Recueil d'algebre, exercice III.14 : apres elimination, deux lignes se
+    reduisent a `0 = mu - 4` et `0 = lambda + 10`. Pivoter sur la derniere
+    colonne diviserait par `mu - 4` et effacerait la seconde condition.
+    """
+    mu, lam = sp.symbols("mu lambda")
+    augmentee = sp.Matrix(
+        [[2, -1, 3, 1], [-4, 2, 1, 3], [-2, 1, 4, mu], [10, -5, -6, lam]]
+    )
+    forme = echelonner(augmentee, colonnes=3).matrice
+    conditions = [forme[i, 3] for i in (2, 3)]
+    assert forme[2:, :3] == sp.zeros(2, 3)
+    assert sp.solve(conditions, [mu, lam]) == {mu: 4, lam: -10}
+    assert echelonner(augmentee).matrice[3, 3] == 0
+
+
+def test_un_nombre_de_colonnes_hors_de_la_matrice_est_refuse() -> None:
+    with pytest.raises(ValueError, match=" colonnes a echelonner sur "):
+        echelonner(sp.eye(3), colonnes=4)
+    with pytest.raises(ValueError, match=" colonnes a echelonner sur "):
+        echelonner(sp.eye(3), colonnes=-1)

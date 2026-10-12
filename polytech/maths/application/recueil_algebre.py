@@ -19,6 +19,9 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
 DECIMALES = 3
+DIZAINES = ("Vingt", "Trente", "Quarante", "Cinquante")
+MAXIMUM = 59
+"""Le plus grand numero d'exercice nommable ; le recueil s'arrete a 45."""
 
 
 def ecriture(expression: sp.Basic) -> str:
@@ -34,12 +37,19 @@ def liste(expressions: Iterable[sp.Basic]) -> str:
     return r",\; ".join(ecriture(e) for e in expressions)
 
 
+def _en_lettres(numero: int) -> str:
+    if numero <= len(NOMBRES):
+        return NOMBRES[numero - 1]
+    dizaine, unite = divmod(numero, 10)
+    return DIZAINES[dizaine - 2] + (NOMBRES[unite - 1] if unite else "")
+
+
 def nom(prefixe: str, numero: int, suffixe: str = "") -> str:
     """`AlgUnDixHuitC` pour l'exercice 18 c) : un nom de macro n'a pas de chiffre."""
-    if not 1 <= numero <= len(NOMBRES):
+    if not 1 <= numero <= MAXIMUM:
         msg = f"numero d'exercice hors de la table : {numero}"
         raise ValueError(msg)
-    return f"{prefixe}{NOMBRES[numero - 1]}{suffixe[:1].upper()}{suffixe[1:]}"
+    return f"{prefixe}{_en_lettres(numero)}{suffixe[:1].upper()}{suffixe[1:]}"
 
 
 def points(complexes: Iterable[sp.Expr]) -> str:

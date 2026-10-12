@@ -67,10 +67,20 @@ def _combinaison(cible: int, coefficient: sp.Expr, source: int) -> str:
     return f"l{cible + 1} -> l{cible + 1} {signe} {facteur}l{source + 1}"
 
 
-def echelonner(matrice: sp.Matrix) -> MatriceEchelonnee:
-    """La demarche II.7.2, operation par operation."""
+def echelonner(matrice: sp.Matrix, colonnes: int | None = None) -> MatriceEchelonnee:
+    """La demarche II.7.2, operation par operation.
+
+    `colonnes` borne les colonnes ou l'on cherche un pivot : pour une matrice
+    augmentee, celles des inconnues. Le second membre suit les operations
+    sans jamais servir de pivot, et chaque condition de compatibilite garde
+    sa ligne.
+    """
     travail, operations, ligne = sp.Matrix(matrice), [], 0
-    for colonne in range(travail.cols):
+    limite = travail.cols if colonnes is None else colonnes
+    if not 0 <= limite <= travail.cols:
+        msg = f"{limite} colonnes a echelonner sur {travail.cols}"
+        raise ValueError(msg)
+    for colonne in range(limite):
         candidates = [i for i in range(ligne, travail.rows) if travail[i, colonne] != 0]
         if not candidates:
             continue

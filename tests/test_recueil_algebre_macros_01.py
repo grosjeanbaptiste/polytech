@@ -41,11 +41,19 @@ def test_un_nom_de_macro_n_a_pas_de_chiffre() -> None:
     assert recueil.nom("AlgUn", 4) == "AlgUnQuatre"
 
 
+def test_les_numeros_vont_au_dela_de_dix_neuf() -> None:
+    """Le chapitre VIII a quarante-cinq exercices."""
+    assert recueil.nom("AlgTrois", 20) == "AlgTroisVingt"
+    assert recueil.nom("AlgTrois", 24, "Det") == "AlgTroisVingtQuatreDet"
+    assert recueil.nom("AlgHuit", 45) == "AlgHuitQuaranteCinq"
+    assert recueil.nom("AlgHuit", 30) == "AlgHuitTrente"
+
+
 def test_un_numero_hors_de_la_table_est_refuse() -> None:
     with pytest.raises(ValueError, match="numero d'exercice hors de la table : 0"):
         recueil.nom("AlgUn", 0)
-    with pytest.raises(ValueError, match="numero d'exercice hors de la table : 20"):
-        recueil.nom("AlgUn", 20)
+    with pytest.raises(ValueError, match="numero d'exercice hors de la table : 60"):
+        recueil.nom("AlgUn", 60)
 
 
 def test_l_exercice_2_publie_ses_deux_parties() -> None:
