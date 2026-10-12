@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Final
 
-PESANTEUR: Final = 9.81
-"""Acceleration de la pesanteur retenue par le cours, en m/s^2."""
+from polytech.mecanique.domain.pesanteur import (
+    PESANTEUR as PESANTEUR,  # noqa: PLC0414 -- reexport : la pesanteur vient de la mecanique, ce contexte la publie sous le meme nom
+)
 
 
 def _exiger_fini(valeur: float, grandeur: str) -> None:

@@ -24,6 +24,7 @@ from polytech.electronique.application import enonce_tp_01
 from polytech.electronique.domain import bruit, des_champs_aux_circuits
 from polytech.fluides.application import macros_hypotheses
 from polytech.fluides.domain import grandeurs as grandeurs_des_fluides
+from polytech.mecanique.domain import pesanteur
 from polytech.thermique.application import enonce_tp_02, enonce_tp_03
 from polytech.thermique.domain import grandeurs as grandeurs_thermiques
 from polytech.thermique.domain.rayonnement import corps_noir
@@ -39,7 +40,7 @@ DEMEURES: Final = {
     "6.62607015e-34": "thermique/domain/rayonnement/corps_noir.py",
     "1.380649e-23": "thermique/domain/rayonnement/corps_noir.py",
     "5.670374419e-8": "thermique/domain/rayonnement/corps_noir.py",
-    "9.81": "fluides/domain/grandeurs.py",
+    "9.81": "mecanique/domain/pesanteur.py",
     "273.15": "thermique/domain/grandeurs.py",
     "6.02214076e23": "chemistry/domain/matiere.py",
     "8.31446261815324": "chemistry/domain/gaz.py",
@@ -72,6 +73,7 @@ def test_le_zero_celsius_est_celui_de_la_thermique() -> None:
 def test_la_pesanteur_n_a_qu_une_valeur() -> None:
     """Les modules qui l'emploient l'importent : seul le litteral est garde."""
     assert pytest.approx(9.81) == grandeurs_des_fluides.PESANTEUR
+    assert grandeurs_des_fluides.PESANTEUR is pesanteur.PESANTEUR
 
 
 AFFECTATION: Final = re.compile(

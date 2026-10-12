@@ -19,6 +19,7 @@ import sympy as sp
 
 from polytech.fluides.domain.grandeurs import PESANTEUR, Hauteur, MasseVolumique
 from polytech.fluides.domain.statique.symboles import COTE, PROFONDEUR, RHO, G, H
+from polytech.mecanique.domain.statique.charges import ChargeRepartie
 
 
 def _exiger_fraction(fraction: sp.Expr | float) -> None:
@@ -51,19 +52,23 @@ class Parement(ABC):
     def _valeurs(self) -> dict[sp.Symbol, float]:
         """Substitutions numeriques propres a la geometrie."""
 
+    def _charge_de_pression(self) -> ChargeRepartie:
+        """La pression relative `rho g z`, repartie sur la largeur mouillee.
+
+        C'est une charge repartie au sens de la statique : sa charge totale
+        est la poussee, son moment a l'origine celui des pressions autour
+        de la surface libre.
+        """
+        densite = RHO * G * PROFONDEUR * self.largeur_mouillee()
+        return ChargeRepartie(densite, PROFONDEUR, sp.Integer(0), H)
+
     def expression_poussee(self) -> sp.Expr:
         """Resultante litterale, integree sur la surface mouillee."""
-        return sp.simplify(
-            sp.integrate(
-                RHO * G * PROFONDEUR * self.largeur_mouillee(), (PROFONDEUR, 0, H)
-            )
-        )
+        return self._charge_de_pression().charge_totale()
 
     def moment_des_pressions(self) -> sp.Expr:
         """Moment des forces de pression autour de la surface libre."""
-        return sp.integrate(
-            RHO * G * PROFONDEUR**2 * self.largeur_mouillee(), (PROFONDEUR, 0, H)
-        )
+        return self._charge_de_pression().moment_a_l_origine()
 
     def equation_ligne_action(self) -> sp.Eq:
         """Definition de la ligne d'action : ``h_a F = int h dF``.
