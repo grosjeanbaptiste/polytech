@@ -4,7 +4,8 @@ Les trois examens de mathematique posent la question « resoudre et
 discuter en fonction des valeurs du parametre ». `discuter` examine les
 valeurs qui annulent le determinant ; or le systeme de janvier 2025 a
 deux colonnes egales, et son determinant est nul pour **tout** `a` :
-`discuter` n'y trouve aucune valeur a examiner. C'est la condition de
+`discuter` n'y trouve aucune valeur a examiner, et le dit en levant.
+C'est la condition de
 compatibilite -- `rang(A) = rang(A | b)`, planche 19 de
 `Mathematique/SLIDES/Slides_01_Algebre_lineaire_et_integrales.pdf` -- qui
 tranche alors.
@@ -17,6 +18,7 @@ de solution si `a` n'est ni 0 ni 1/2 ; `{(1, y, -y)}` si `a = 0` ;
 
 from __future__ import annotations
 
+import pytest
 import sympy as sp
 
 from polytech.maths.domain.algebre.determinants import Determinant
@@ -65,7 +67,23 @@ EXERCICE_20 = _systeme(
 def test_le_determinant_de_janvier_2025_est_nul_pour_tout_a() -> None:
     """Deux colonnes egales : la regle de Cramer n'a rien a dire, jamais."""
     assert sp.expand(Determinant(JANVIER_2025.matrice).par_cofacteurs(0)) == 0
-    assert discuter(JANVIER_2025, A) == {}
+
+
+def test_discuter_refuse_un_determinant_nul_pour_tout_parametre() -> None:
+    """Il rendait un dictionnaire vide : « aucun cas particulier », a tort.
+
+    Le systeme de janvier 2025 n'a de solution qu'en deux valeurs de `a` ;
+    un dictionnaire vide le donnait pour partout resoluble par Cramer.
+    """
+    attendu = "determinant nul pour toute valeur de a : discuter_par_le_rang"
+    with pytest.raises(ValueError, match=attendu):
+        discuter(JANVIER_2025, A)
+
+
+def test_discuter_refuse_aussi_celui_de_janvier_2022() -> None:
+    attendu = "determinant nul pour toute valeur de m : discuter_par_le_rang"
+    with pytest.raises(ValueError, match=attendu):
+        discuter(JANVIER_2022, M)
 
 
 def test_janvier_2025_n_est_compatible_qu_en_zero_et_un_demi() -> None:

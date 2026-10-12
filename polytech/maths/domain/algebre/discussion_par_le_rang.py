@@ -1,8 +1,8 @@
 """Discuter un systeme a parametre par la condition de compatibilite.
 
-`discuter` examine les valeurs qui annulent le determinant. Il ne dit
-rien d'un systeme dont le determinant est nul pour **toute** valeur du
-parametre, ni d'un systeme qui n'est pas carre. La condition de
+`discuter` examine les valeurs qui annulent le determinant. Il refuse
+un systeme dont le determinant est nul pour **toute** valeur du
+parametre, et ne dit rien d'un systeme qui n'est pas carre. La condition de
 compatibilite (planche 19) vaut dans tous les cas :
 
 * `rang(A) != rang(A | b)` : le systeme est impossible ;
