@@ -39,6 +39,10 @@ def test_chaque_jeu_du_registre_a_son_dossier_de_travail() -> None:
     assert sans_dossier == []
 
 
+FICHE = "fiche-de-revision"
+"""La fiche de revision : generee par `outils.fiches`, sans jeu de macros."""
+
+
 def test_chaque_dossier_de_travail_a_son_jeu_au_registre() -> None:
     """Un dossier sans jeu ne pourrait pas regenerer ses valeurs.
 
@@ -48,7 +52,7 @@ def test_chaque_dossier_de_travail_a_son_jeu_au_registre() -> None:
     dossiers = sorted(
         p.name
         for p in TRAVAUX.iterdir()
-        if p.is_dir() and (p / "activite.toml").is_file()
+        if p.is_dir() and (p / "activite.toml").is_file() and p.name != FICHE
     )
     assert sorted(set(dossiers) - set(JEUX_DE_MACROS)) == []
 

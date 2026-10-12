@@ -76,26 +76,69 @@ NUMERAUX: Final = {
 
 ANNONCE = re.compile(r"\*\*(\d+) documents LaTeX\*\*")
 DECOMPOSITION = re.compile(
-    r"les quatre de l'activité\s+d'intégration de mécanique des fluides, "
+    r"les [\w-]+ des deux activités\s+d'intégration de mécanique des fluides, "
     r"(?:celui du TP 1|[\w-]+ corrigés) de thermique,\s+"
     r"(?:une?|[\w-]+)\s+corrigés? d'électronique,\s+"
     r"(?:une?|[\w-]+)\s+corrigés? de mathématique,\s+"
     r"(?:une?|[\w-]+)\s+corrigés? d'optimisation,\s+"
     r"(?:une?|[\w-]+)\s+corrigés? de programmation,\s+"
     r"(?:une?|[\w-]+)\s+corrigés? de signaux, "
+    r"(?:une?|[\w-]+)\s+fiches? de révision, "
     r"les\s+([\w-]+(?: et un)?) corrigés "
     r"d'électromagnétisme déjà écrits, et les (\d+) planches",
 )
 
 
+FICHE = "fiche-de-revision"
+"""Le dossier d'une fiche de revision : un document compose, pas un corrige."""
+
+
 def _corriges_de(matiere: Path) -> int:
-    """Les dossiers de travail qui portent un document compose."""
+    """Les dossiers de travail qui portent un document compose, fiche exceptee."""
     return sum(
         1
         for dossier in matiere.iterdir()
         if dossier.is_dir()
+        and dossier.name != FICHE
         and any(f.name != "resultats.tex" for f in dossier.glob("*.tex"))
     )
+
+
+def _fiches_de_revision() -> int:
+    """Les fiches de revision, une par matiere qui en a une."""
+    return len(list((RACINE / "travaux").glob(f"*/{FICHE}/*.tex")))
+
+
+ACTIVITES = re.compile(r"les ([\w-]+) des deux activités\s+d'intégration")
+"""Le terme des fluides : il a cesse d'etre « les quatre » avec l'activite 2."""
+
+
+def _documents_des_activites() -> int:
+    """Les documents des activites d'integration : corriges et mises en page."""
+    fluides = RACINE / "travaux" / "MecaniqueFluides"
+    return sum(
+        1
+        for source in fluides.glob("activite-integration-*/*.tex")
+        if r"\begin{document}" in source.read_text(encoding="utf-8")
+    )
+
+
+def test_le_nombre_de_documents_des_activites_annonce_en_lettres_est_exact() -> None:
+    """Quatre pour la premiere, trois pour la seconde -- qui n'a pas d'apercu."""
+    trouve = ACTIVITES.search(README.read_text(encoding="utf-8"))
+    assert trouve is not None
+    assert NUMERAUX[trouve.group(1)] == _documents_des_activites()
+
+
+FICHES = re.compile(r"(une?|[\w-]+)\s+fiches? de révision, ")
+"""Le terme des fiches, ouvert par celle de mathematique."""
+
+
+def test_le_nombre_de_fiches_de_revision_annonce_en_lettres_est_exact() -> None:
+    trouve = FICHES.search(README.read_text(encoding="utf-8"))
+    assert trouve is not None
+    annonce = 1 if trouve.group(1) in {"un", "une"} else NUMERAUX[trouve.group(1)]
+    assert annonce == _fiches_de_revision()
 
 
 def _corriges_d_electromagnetisme() -> int:
@@ -202,13 +245,14 @@ def test_la_decomposition_fait_bien_le_total_annonce() -> None:
     optimisation = _corriges_de(TRAVAUX_OPTIMISATION)
     programmation = _corriges_de(TRAVAUX_PROGRAMMATION)
     somme = (
-        4
+        _documents_des_activites()
         + thermique
         + electronique
         + mathematique
         + optimisation
         + programmation
         + signaux
+        + _fiches_de_revision()
         + NUMERAUX[trouve.group(1)]
         + int(trouve.group(2))
     )

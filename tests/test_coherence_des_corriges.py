@@ -28,6 +28,7 @@ import shutil
 import subprocess
 import tomllib
 from pathlib import Path
+from typing import Final
 
 import pytest
 
@@ -40,6 +41,11 @@ from polytech.electromagnetisme.infrastructure import latex as latex_em
 from polytech.electronique.application import generation as generation_electronique
 from polytech.electronique.application import registre as registre_electronique
 from polytech.electronique.infrastructure import latex as latex_electronique
+from polytech.fluides.application import registre as registre_fluides
+from polytech.fluides.application.generation_du_travail import (
+    GenererMacrosDuTravail as GenererFluides,
+)
+from polytech.fluides.infrastructure import latex as latex_fluides
 from polytech.maths.application import generation as generation_maths
 from polytech.maths.application import registre as registre_maths
 from polytech.maths.infrastructure import latex as latex_maths
@@ -63,6 +69,7 @@ TRAVAUX_ELECTRONIQUE = RACINE / "travaux" / "ElectroniqueInstrumentation"
 TRAVAUX_MATHS = RACINE / "travaux" / "Mathematique"
 TRAVAUX_OPTIMISATION = RACINE / "travaux" / "Optimisation"
 TRAVAUX_PROGRAMMATION = RACINE / "travaux" / "ProgrammationAlgorithmique"
+TRAVAUX_FLUIDES = RACINE / "travaux" / "MecaniqueFluides"
 
 DOSSIERS = {
     **{slug: TRAVAUX / slug for slug in registre_em.JEUX_DE_MACROS},
@@ -81,6 +88,7 @@ DOSSIERS = {
         slug: TRAVAUX_PROGRAMMATION / slug
         for slug in registre_algorithmique.JEUX_DE_MACROS
     },
+    **{slug: TRAVAUX_FLUIDES / slug for slug in registre_fluides.JEUX_DE_MACROS},
 }
 """Chaque travail garde, et son dossier : les deux matieres a la fois.
 
@@ -99,6 +107,7 @@ BIBLIOTHEQUE = {
     **dict.fromkeys(registre_maths.JEUX_DE_MACROS, "polytech.maths"),
     **dict.fromkeys(registre_optimisation.JEUX_DE_MACROS, "polytech.optimisation"),
     **dict.fromkeys(registre_algorithmique.JEUX_DE_MACROS, "polytech.algorithmique"),
+    **dict.fromkeys(registre_fluides.JEUX_DE_MACROS, "polytech.fluides"),
 }
 """Le contexte qui calcule les valeurs de chaque travail."""
 
@@ -110,6 +119,7 @@ REGISTRES = (
     (registre_maths.JEUX_DE_MACROS, registre_maths.macros_du_travail),
     (registre_optimisation.JEUX_DE_MACROS, registre_optimisation.macros_du_travail),
     (registre_algorithmique.JEUX_DE_MACROS, registre_algorithmique.macros_du_travail),
+    (registre_fluides.JEUX_DE_MACROS, registre_fluides.macros_du_travail),
 )
 """Les jeux de chaque matiere et la fonction qui les calcule.
 
@@ -125,44 +135,40 @@ def macros_du_travail(travail: str) -> dict[str, str]:
     return registre_em.macros_du_travail(travail)
 
 
+COMMANDES: Final = (
+    (registre_fluides.JEUX_DE_MACROS, GenererFluides, latex_fluides),
+    (
+        registre_algorithmique.JEUX_DE_MACROS,
+        generation_algorithmique.GenererMacros,
+        latex_algorithmique,
+    ),
+    (
+        registre_optimisation.JEUX_DE_MACROS,
+        generation_optimisation.GenererMacros,
+        latex_optimisation,
+    ),
+    (registre_maths.JEUX_DE_MACROS, generation_maths.GenererMacros, latex_maths),
+    (
+        registre_electronique.JEUX_DE_MACROS,
+        generation_electronique.GenererMacros,
+        latex_electronique,
+    ),
+    (registre_thermique.JEUX_DE_MACROS, GenererThermique, latex_thermique),
+    (registre_signaux.JEUX_DE_MACROS, generation_signaux.GenererMacros, latex_signaux),
+)
+"""Pour chaque matiere : ses jeux, sa commande, et ou elle publie.
+
+L'electromagnetisme, le premier ecrit, est le defaut.
+"""
+
+
 def _regenerer(travail: str, chemin: Path) -> None:
     """Regenere les macros du travail par la commande de sa matiere."""
-    if travail in registre_algorithmique.JEUX_DE_MACROS:
-        generation_algorithmique.GenererMacros(
-            publication=latex_algorithmique.FichierDeMacros(chemin=chemin),
-            travail=travail,
-        ).executer()
-        return
-    if travail in registre_optimisation.JEUX_DE_MACROS:
-        generation_optimisation.GenererMacros(
-            publication=latex_optimisation.FichierDeMacros(chemin=chemin),
-            travail=travail,
-        ).executer()
-        return
-    if travail in registre_maths.JEUX_DE_MACROS:
-        generation_maths.GenererMacros(
-            publication=latex_maths.FichierDeMacros(chemin=chemin),
-            travail=travail,
-        ).executer()
-        return
-    if travail in registre_electronique.JEUX_DE_MACROS:
-        generation_electronique.GenererMacros(
-            publication=latex_electronique.FichierDeMacros(chemin=chemin),
-            travail=travail,
-        ).executer()
-        return
-    if travail in registre_thermique.JEUX_DE_MACROS:
-        GenererThermique(
-            publication=latex_thermique.FichierDeMacros(chemin=chemin),
-            travail=travail,
-        ).executer()
-        return
-    if travail in registre_signaux.JEUX_DE_MACROS:
-        generation_signaux.GenererMacros(
-            publication=latex_signaux.FichierDeMacros(chemin=chemin),
-            travail=travail,
-        ).executer()
-        return
+    for jeux, commande, latex in COMMANDES:
+        if travail in jeux:
+            publication = latex.FichierDeMacros(chemin=chemin)
+            commande(publication=publication, travail=travail).executer()
+            return
     generation_em.GenererMacros(
         publication=latex_em.FichierDeMacros(chemin=chemin),
         travail=travail,
@@ -179,6 +185,7 @@ def test_aucun_dossier_n_appartient_aux_deux_matieres() -> None:
         *registre_maths.JEUX_DE_MACROS,
         *registre_optimisation.JEUX_DE_MACROS,
         *registre_algorithmique.JEUX_DE_MACROS,
+        *registre_fluides.JEUX_DE_MACROS,
     ]
     assert len(tous) == len(set(tous))
 
@@ -213,10 +220,17 @@ dit lesquels comptent.
 """
 
 
+MISES_EN_PAGE = frozenset({"devoir.tex", "devoir_1pager.tex"})
+"""Ce qui accompagne un corrige sans en etre un : l'imposition a imprimer,
+qui ne fait qu'inclure son PDF, et la feuille de reponses d'une page."""
+
+
 def _document_du_travail(travail: str) -> Path:
-    """Le seul `.tex` du dossier qui ne soit pas un fragment genere."""
+    """Le seul `.tex` du dossier qui ne soit ni un fragment ni une mise en page."""
     candidats = [
-        f for f in sorted(DOSSIERS[travail].glob("*.tex")) if f.name != "resultats.tex"
+        f
+        for f in sorted(DOSSIERS[travail].glob("*.tex"))
+        if f.name != "resultats.tex" and f.name not in MISES_EN_PAGE
     ]
     if len(candidats) != 1:
         msg = f"{travail} : un seul document attendu, trouve {candidats}"
