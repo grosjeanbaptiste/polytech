@@ -34,7 +34,7 @@ CHAPITRES: dict[str, Parties] = {
     "VII. Les espaces vectoriels": ("algebre-07-espaces-vectoriels",),
     "VIII. Les applications lineaires": (
         "algebre-08a-applications-lineaires",
-        None,
+        "algebre-08b-matrices-associees",
         None,
     ),
     "IX. Les espaces metriques": (None,),
@@ -51,7 +51,7 @@ CHAPITRES_SANS_CORRIGE = 3
 """Le cliquet. Dix au depart, le 2026-10-12. Un chapitre le quitte quand
 toutes ses parties ont leur dossier."""
 
-PARTIES_SANS_CORRIGE = 4
+PARTIES_SANS_CORRIGE = 3
 """Le cliquet des parties : celles du chapitre VIII se comptent une a une."""
 
 CORRIGES = sorted(slug for parties in CHAPITRES.values() for slug in parties if slug)

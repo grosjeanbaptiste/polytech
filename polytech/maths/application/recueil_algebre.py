@@ -8,6 +8,7 @@ passent donc par `ecriture`, qui suit le syllabus.
 from __future__ import annotations
 
 import re
+from itertools import takewhile
 from typing import TYPE_CHECKING
 
 import sympy as sp
@@ -51,6 +52,16 @@ def nom(prefixe: str, numero: int, suffixe: str = "") -> str:
         msg = f"numero d'exercice hors de la table : {numero}"
         raise ValueError(msg)
     return f"{prefixe}{en_lettres(numero)}{suffixe[:1].upper()}{suffixe[1:]}"
+
+
+def nom_de_la_cle(prefixe: str, cle: str, suffixe: str = "") -> str:
+    """`36W1` devient `...TrenteSixWUn` : le numero, puis le reste sans chiffre."""
+    chiffres = "".join(takewhile(str.isdigit, cle))
+    if not chiffres:
+        msg = f"cle sans numero d'exercice : {cle!r}"
+        raise ValueError(msg)
+    reste = re.sub(r"\d+", lambda m: en_lettres(int(m.group())), cle[len(chiffres) :])
+    return nom(prefixe, int(chiffres), reste + suffixe)
 
 
 def points(complexes: Iterable[sp.Expr]) -> str:
