@@ -23,29 +23,48 @@ RACINE = Path(__file__).resolve().parent.parent
 TRAVAUX = RACINE / "travaux" / "Mathematique"
 RECUEIL = "Mathematique/SYLLABUS/Syllabus_Algebre.pdf"
 
-CHAPITRES: dict[str, str | None] = {
-    "I. Les nombres complexes": "algebre-01-nombres-complexes",
-    "II. Les matrices": "algebre-02-matrices",
-    "III. Les systemes lineaires": "algebre-03-systemes-lineaires",
-    "IV. Les polynomes": "algebre-04-polynomes",
-    "V. Les determinants": "algebre-05-determinants",
-    "VI. Le rang d'une matrice": "algebre-06-rang",
-    "VII. Les espaces vectoriels": "algebre-07-espaces-vectoriels",
-    "VIII. Les applications lineaires": None,
-    "IX. Les espaces metriques": None,
-    "X. Les valeurs propres et les vecteurs propres": None,
+Parties = tuple[str | None, ...]
+CHAPITRES: dict[str, Parties] = {
+    "I. Les nombres complexes": ("algebre-01-nombres-complexes",),
+    "II. Les matrices": ("algebre-02-matrices",),
+    "III. Les systemes lineaires": ("algebre-03-systemes-lineaires",),
+    "IV. Les polynomes": ("algebre-04-polynomes",),
+    "V. Les determinants": ("algebre-05-determinants",),
+    "VI. Le rang d'une matrice": ("algebre-06-rang",),
+    "VII. Les espaces vectoriels": ("algebre-07-espaces-vectoriels",),
+    "VIII. Les applications lineaires": (
+        "algebre-08a-applications-lineaires",
+        None,
+        None,
+    ),
+    "IX. Les espaces metriques": (None,),
+    "X. Les valeurs propres et les vecteurs propres": (None,),
 }
-"""Titre du chapitre, tel que le syllabus l'ecrit : son dossier de travail."""
+"""Titre du chapitre, tel que le syllabus l'ecrit : ses dossiers de travail.
+
+Le chapitre VIII a quarante-cinq problemes, dont treize sujets d'examen : il
+est traite en trois dossiers, un par section d'exercices du syllabus --
+VIII.4 (1 a 13), VIII.7 (14 a 32), VIII.8 (33 a 45).
+"""
 
 CHAPITRES_SANS_CORRIGE = 3
-"""Le cliquet. Dix au depart, le 2026-10-12."""
+"""Le cliquet. Dix au depart, le 2026-10-12. Un chapitre le quitte quand
+toutes ses parties ont leur dossier."""
 
-CORRIGES = sorted(slug for slug in CHAPITRES.values() if slug is not None)
+PARTIES_SANS_CORRIGE = 4
+"""Le cliquet des parties : celles du chapitre VIII se comptent une a une."""
+
+CORRIGES = sorted(slug for parties in CHAPITRES.values() for slug in parties if slug)
 
 
 def test_le_cliquet_des_chapitres_restants() -> None:
-    restants = [titre for titre, slug in CHAPITRES.items() if slug is None]
+    restants = [titre for titre, parties in CHAPITRES.items() if None in parties]
     assert len(restants) == CHAPITRES_SANS_CORRIGE, restants
+
+
+def test_le_cliquet_des_parties_restantes() -> None:
+    manquantes = sum(parties.count(None) for parties in CHAPITRES.values())
+    assert manquantes == PARTIES_SANS_CORRIGE
 
 
 @pytest.mark.parametrize("slug", CORRIGES)
