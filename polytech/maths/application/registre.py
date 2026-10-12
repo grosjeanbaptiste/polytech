@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final
 
 from polytech.maths.application import (
+    exercices_des_fascicules,
     macros_examen_2021,
     macros_examen_2022,
     macros_examen_2025,
@@ -40,6 +41,9 @@ JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "algebre-06-rang": macros_recueil_algebre_ch06.macros_du_chapitre_six,
     "algebre-09-espaces-metriques": (
         macros_recueil_algebre_ch09.macros_du_chapitre_neuf
+    ),
+    "exercices-des-fascicules": (
+        exercices_des_fascicules.macros_des_exercices_des_fascicules
     ),
     "algebre-10-valeurs-propres": (
         macros_recueil_algebre_ch10_reflexions.macros_du_chapitre_dix
