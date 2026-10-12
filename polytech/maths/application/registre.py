@@ -24,6 +24,7 @@ from polytech.maths.application import (
     macros_recueil_algebre_ch07,
     macros_recueil_algebre_ch08a,
     macros_recueil_algebre_ch08b,
+    macros_recueil_algebre_ch08c,
     macros_recueil_algebre_ch09,
 )
 
@@ -39,6 +40,7 @@ JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "algebre-09-espaces-metriques": (
         macros_recueil_algebre_ch09.macros_du_chapitre_neuf
     ),
+    "algebre-08c-examens": macros_recueil_algebre_ch08c.macros_de_la_partie_c,
     "algebre-08b-matrices-associees": (
         macros_recueil_algebre_ch08b.macros_de_la_partie_b
     ),
