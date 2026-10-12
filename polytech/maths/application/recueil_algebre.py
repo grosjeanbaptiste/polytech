@@ -7,6 +7,7 @@ passent donc par `ecriture`, qui suit le syllabus.
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 import sympy as sp
@@ -47,3 +48,13 @@ def points(complexes: Iterable[sp.Expr]) -> str:
     return " ".join(
         f"({nombre(v.real, DECIMALES)},{nombre(v.imag, DECIMALES)})" for v in valeurs
     )
+
+
+def operations(journal: Iterable[str]) -> str:
+    r"""Le journal d'un echelonnement, `l2 -> l2 - 2 l1`, en LaTeX."""
+    rendues = []
+    for ligne in journal:
+        rendu = ligne.replace("<->", r"\leftrightarrow").replace("->", r"\to")
+        rendu = re.sub(r"(\d+)/(\d+) ", r"\\tfrac{\1}{\2}\\, ", rendu)
+        rendues.append(re.sub(r"l(\d+)", r"l_{\1}", rendu))
+    return r";\quad ".join(rendues)

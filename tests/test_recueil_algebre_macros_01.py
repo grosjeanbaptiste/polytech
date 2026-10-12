@@ -27,6 +27,15 @@ def test_une_liste_separe_ses_elements() -> None:
     assert recueil.liste((sp.Integer(1), sp.I)) == r"1,\; i"
 
 
+def test_les_operations_sur_les_lignes_se_composent() -> None:
+    journal = ("l3 -> l3 + 11/3 l2", "l1 <-> l2", "l2 -> l2 - l1")
+    attendu = (
+        r"l_{3} \to l_{3} + \tfrac{11}{3}\, l_{2};\quad "
+        r"l_{1} \leftrightarrow l_{2};\quad l_{2} \to l_{2} - l_{1}"
+    )
+    assert recueil.operations(journal) == attendu
+
+
 def test_un_nom_de_macro_n_a_pas_de_chiffre() -> None:
     assert recueil.nom("AlgUn", 18, "c") == "AlgUnDixHuitC"
     assert recueil.nom("AlgUn", 4) == "AlgUnQuatre"

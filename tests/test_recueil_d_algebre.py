@@ -25,7 +25,7 @@ RECUEIL = "Mathematique/SYLLABUS/Syllabus_Algebre.pdf"
 
 CHAPITRES: dict[str, str | None] = {
     "I. Les nombres complexes": "algebre-01-nombres-complexes",
-    "II. Les matrices": None,
+    "II. Les matrices": "algebre-02-matrices",
     "III. Les systemes lineaires": None,
     "IV. Les polynomes": None,
     "V. Les determinants": None,
@@ -37,7 +37,7 @@ CHAPITRES: dict[str, str | None] = {
 }
 """Titre du chapitre, tel que le syllabus l'ecrit : son dossier de travail."""
 
-CHAPITRES_SANS_CORRIGE = 9
+CHAPITRES_SANS_CORRIGE = 8
 """Le cliquet. Dix au depart, le 2026-10-12."""
 
 CORRIGES = sorted(slug for slug in CHAPITRES.values() if slug is not None)
