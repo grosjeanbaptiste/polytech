@@ -9,12 +9,21 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-from polytech.maths.application import macros_exs_01, macros_exs_02
+from polytech.maths.application import (
+    macros_examen_2021,
+    macros_examen_2022,
+    macros_examen_2025,
+    macros_exs_01,
+    macros_exs_02,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
 JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
+    "examen-2021-janvier": macros_examen_2021.macros_de_l_examen_2021,
+    "examen-2022-janvier": macros_examen_2022.macros_de_l_examen_2022,
+    "examen-2025-janvier": macros_examen_2025.macros_de_l_examen_2025,
     "exs-01-integration-matrices": macros_exs_01.macros_des_exercices_un,
     "exs-02-equations-differentielles": macros_exs_02.macros_des_exercices_deux,
 }
