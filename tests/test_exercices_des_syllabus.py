@@ -16,6 +16,7 @@ from __future__ import annotations
 import pytest
 import sympy as sp
 
+from polytech.maths.application import calculs_des_notes_manuscrites as manuscrites
 from polytech.maths.application import exercices_des_syllabus as syllabus
 from polytech.maths.application import primitives_des_documents_de_travail as travail
 from polytech.maths.application import recueil_primitives_gestes as gestes
@@ -168,3 +169,61 @@ def test_les_macros_des_deux_primitives() -> None:
     macros = JEUX_DE_MACROS["exercices-des-syllabus"]()
     assert {"SylJuinEtape", "SylJuinPrimitive", "SylTrinomeEtape"} <= set(macros)
     assert r"\operatorname{arsinh}" in macros["SylTrinomePrimitive"]
+
+
+def test_page_14_le_determinant_qui_prouve_l_incompatibilite() -> None:
+    """`b` mis a la place de la troisieme colonne : le determinant n'est pas nul."""
+    des_coefficients, borde = manuscrites.determinants_de_la_page_14()
+    assert des_coefficients == 0
+    assert borde == 88
+    rang, rang_augmente = manuscrites.rangs_de_la_page_14()
+    assert (rang, rang_augmente) == (2, 3)
+
+
+def test_page_44_les_parties_repetees() -> None:
+    x = syllabus.X
+    resolution = manuscrites.parties_de_la_page_44()
+    assert resolution.integrande == (x**2 + 3 * x + 2) * sp.exp(x)
+    assert len(resolution.etapes) == 2
+    assert sp.simplify(resolution.primitive - (x**2 + x + 1) * sp.exp(x)) == 0
+
+
+def test_page_47_la_fraction_que_les_notes_laissent_en_suspens() -> None:
+    x = syllabus.X
+    integrande = (3 * x**2 + 1) / (x**3 + 1)
+    arc, entiere = manuscrites.fraction_de_la_page_47()
+    assert sp.simplify(sp.diff(arc.primitive, x) - 1 / (x**2 - x + 1)) == 0
+    assert gestes.ecart(sp.diff(entiere, x), integrande) < 1e-12
+    corrigee = (
+        R(4, 3) * sp.log(sp.Abs(x + 1))
+        + R(5, 6) * sp.log(x**2 - x + 1)
+        + R(1, 2) * arc.primitive
+    )
+    assert gestes.ecart(sp.diff(corrigee, x), integrande) < 1e-12
+
+
+def test_ecart_aux_notes_manuscrites_le_numerateur_de_la_page_47() -> None:
+    """Page 46 : `C = -1/3`. Page 47 : `5/3 x + 4/3` au numerateur, puis `13/2`.
+
+    Le `4/3` est la valeur de `A`, recopiee a la place de `C`. Avec lui, la
+    primitive que les notes annoncent ne derive pas en l'integrande.
+    """
+    x = syllabus.X
+    integrande = (3 * x**2 + 1) / (x**3 + 1)
+    a, b, c = manuscrites.coefficients_de_la_page_46()
+    assert (a, b, c) == (R(4, 3), R(5, 3), -R(1, 3))
+    arc, _ = manuscrites.fraction_de_la_page_47()
+    des_notes = R(4, 3) * sp.log(sp.Abs(x + 1)) + R(1, 3) * (
+        R(5, 2) * sp.log(x**2 - x + 1) + R(13, 2) * arc.primitive
+    )
+    assert gestes.ecart(sp.diff(des_notes, x), integrande) > 0.1
+    assert manuscrites.reste_du_numerateur() == R(3, 2)
+
+
+def test_les_macros_des_notes_manuscrites() -> None:
+    macros = JEUX_DE_MACROS["exercices-des-syllabus"]()
+    assert macros["SylBorde"] == "88"
+    assert {"SylPartiesA", "SylPartiesB", "SylPartiesPrimitive"} <= set(macros)
+    assert {"SylArc", "SylFractionDecomposee", "SylFraction"} <= set(macros)
+    assert macros["SylReste"] == r"\frac{3}{2}"
+    assert macros["SylCoefficients"] == r"\frac{4}{3},\; \frac{5}{3},\; - \frac{1}{3}"

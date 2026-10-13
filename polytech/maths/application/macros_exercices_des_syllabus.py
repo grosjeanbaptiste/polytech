@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sympy as sp
 
+from polytech.maths.application import calculs_des_notes_manuscrites as manuscrites
 from polytech.maths.application import exercices_des_syllabus as syllabus
 from polytech.maths.application import primitives_des_documents_de_travail as travail
 from polytech.maths.application.formatage import formule
@@ -86,6 +87,24 @@ def _primitives() -> dict[str, str]:
     }
 
 
+def _manuscrites() -> dict[str, str]:
+    _, borde = manuscrites.determinants_de_la_page_14()
+    parties = manuscrites.parties_de_la_page_44()
+    arc, fraction = manuscrites.fraction_de_la_page_47()
+    return {
+        "SylBorde": formule(borde),
+        "SylPartiesA": formule(parties.etapes[0]),
+        "SylPartiesB": formule(parties.etapes[1]),
+        "SylPartiesPrimitive": formule(sp.factor(parties.primitive)),
+        "SylArc": formule(arc.primitive),
+        "SylFractionDecomposee": formule(sp.apart(manuscrites.FRACTION_47)),
+        "SylFraction": formule(fraction),
+        "SylReste": formule(manuscrites.reste_du_numerateur()),
+        "SylCoefficients": liste(manuscrites.coefficients_de_la_page_46()),
+    }
+
+
 def macros_des_exercices_des_syllabus() -> dict[str, str]:
     """Toutes les formules que le corrige compose."""
-    return _systeme() | _laplace() | _series() | _equations() | _primitives()
+    calculs = _systeme() | _laplace() | _series() | _equations()
+    return calculs | _primitives() | _manuscrites()
