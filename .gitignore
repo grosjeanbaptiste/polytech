@@ -21,6 +21,11 @@ __pycache__/
 # plus de raison d'etre, puisque la copie du depot porte deja tout ce qu'il
 # portait, et davantage. Ne rien y deposer de nouveau -- un fichier ajoute
 # la ne serait ni suivi par git, ni repris par la sauvegarde.
+# Depuis le 2026-10-12 les sources se rangent par programme sous `sources/`
+# (`outils/conversion/domain/rangement.py`). Les lignes qui suivent nomment
+# les anciens emplacements, a la racine : elles restent tant qu'un poste ou
+# une copie peut encore les porter.
+/sources/
 /Mathematique/
 /Electromagnetisme/
 /SignauxSystemes/
