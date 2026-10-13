@@ -14,6 +14,7 @@ from polytech.maths.application import (
     macros_examen_2021,
     macros_examen_2022,
     macros_examen_2025,
+    macros_exercices_des_syllabus,
     macros_exs_01,
     macros_exs_02,
     macros_recueil_algebre_ch01,
@@ -43,6 +44,9 @@ JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "algebre-06-rang": macros_recueil_algebre_ch06.macros_du_chapitre_six,
     "algebre-09-espaces-metriques": (
         macros_recueil_algebre_ch09.macros_du_chapitre_neuf
+    ),
+    "exercices-des-syllabus": (
+        macros_exercices_des_syllabus.macros_des_exercices_des_syllabus
     ),
     "recueil-primitives-2": macros_recueil_primitives.macros_des_exercices_2_a_4,
     "recueil-primitives-3": macros_recueil_primitives.macros_des_exercices_5_a_7,
