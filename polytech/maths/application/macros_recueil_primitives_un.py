@@ -31,12 +31,21 @@ IMMEDIATE = "primitive immediate"
 ORDRES = {1: "Un", 2: "Deux", 3: "Trois"}
 
 
+def differentielle(variable: sp.Expr, depuis: sp.Symbol) -> str:
+    r"""`g'(x)`, entre parentheses si c'est une somme : elle multiplie `dx`."""
+    derivee = sp.diff(variable, depuis)
+    if derivee.is_rational_function(depuis):
+        derivee = sp.factor(sp.cancel(derivee))
+    rendu = formule(derivee)
+    return rf"\left({rendu}\right)" if derivee.is_Add else rendu
+
+
 def _changement(numero: int, resolution: Resolution) -> dict[str, str]:
     variable, transformee, en_variable = resolution.etapes
     depuis = T if variable.has(T) else X
     return {
         nom(PREFIXE, numero, "Variable"): formule(variable),
-        nom(PREFIXE, numero, "Differentielle"): formule(sp.diff(variable, depuis)),
+        nom(PREFIXE, numero, "Differentielle"): differentielle(variable, depuis),
         nom(PREFIXE, numero, "Transformee"): formule(transformee),
         nom(PREFIXE, numero, "EnVariable"): formule(en_variable),
     }

@@ -17,10 +17,12 @@ from polytech.maths.application.recueil_primitives_enonces import N, X
 from polytech.maths.application.recueil_primitives_gestes import (
     U,
     changement,
-    en_cascade,
     immediate,
-    par_parties,
     terme_a_terme,
+)
+from polytech.maths.application.recueil_primitives_parties import (
+    en_cascade,
+    par_parties,
 )
 from polytech.maths.application.resolution_exs_01 import Resolution, par_equation
 

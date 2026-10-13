@@ -15,13 +15,13 @@ from typing import Final
 import sympy as sp
 
 from polytech.maths.application import recueil_primitives_enonces as enonces
+from polytech.maths.application.recueil_primitives_logarithmes import valeur_absolue
 from polytech.maths.application.resolution_exs_01 import Resolution
-from polytech.maths.domain.integration.parties import IntegrationParParties
 from polytech.maths.domain.integration.substitution import NOUVELLE as U
 from polytech.maths.domain.symboles import VARIABLE as X
 
 __all__ = ["U", "changement", "changement_inverse", "ecart", "immediate"]
-__all__ += ["T", "en_cascade", "par_parties", "terme_a_terme", "valeur_absolue"]
+__all__ += ["POINTS", "SEUIL", "T", "terme_a_terme", "valeur_absolue"]
 
 T: Final = sp.Symbol("t", positive=True)
 """La variable des changements `x = phi(t)`, qui font disparaitre un radical."""
@@ -30,28 +30,29 @@ POINTS: Final = (sp.Rational(1, 5), sp.Rational(7, 20), sp.Rational(1, 2))
 VALEURS: Final = {
     enonces.A: sp.Rational(13, 10),
     enonces.B: sp.Rational(7, 10),
-    enonces.P: sp.Rational(17, 10),
+    enonces.P: sp.Rational(1, 10),
+    enonces.Q: sp.Rational(9, 10),
+    enonces.W: sp.Rational(17, 10),
+    enonces.H: sp.Rational(2, 5),
     enonces.N: 3,
+    enonces.K: 4 * sp.log(100),
 }
-PAR_PARTIES: Final = "integration par parties"
+"""Des valeurs quelconques, sauf `p < x < q` que l'exercice 10 e) demande."""
+Points = tuple[sp.Expr, ...]
+CHANGEMENT: Final = "changement de variable"
 SEUIL: Final = 1e-12
 CHIFFRES: Final = 30
 
 
-def ecart(gauche: sp.Expr, droite: sp.Expr) -> float:
+def ecart(gauche: sp.Expr, droite: sp.Expr, points: Points = POINTS) -> float:
     """Le plus grand ecart relatif entre deux expressions aux points de controle."""
     difference, echelle = (gauche - droite).subs(VALEURS), droite.subs(VALEURS)
     ecarts = [
         abs(sp.N(difference.subs(X, point), CHIFFRES))
         / (1 + abs(sp.N(echelle.subs(X, point), CHIFFRES)))
-        for point in POINTS
+        for point in points
     ]
     return float(max(ecarts))
-
-
-def valeur_absolue(expression: sp.Expr) -> sp.Expr:
-    """`ln u` devient `ln |u|` : la primitive de `1/u` vaut des deux cotes de zero."""
-    return expression.replace(sp.log, lambda argument: sp.log(sp.Abs(argument)))
 
 
 def terme_a_terme(integrande: sp.Expr, reecrit: sp.Expr, methode: str) -> Resolution:
@@ -65,34 +66,36 @@ def terme_a_terme(integrande: sp.Expr, reecrit: sp.Expr, methode: str) -> Resolu
         raise ValueError(msg)
     termes = sp.Add.make_args(reecrit)
     primitive = sp.Add(*[sp.integrate(terme, X) for terme in termes])
-    return Resolution(integrande, methode, (reecrit,), primitive)
+    return Resolution(integrande, methode, (reecrit,), valeur_absolue(primitive))
 
 
-def changement(integrande: sp.Expr, en_u: sp.Expr, u: sp.Expr) -> Resolution:
+def changement(
+    integrande: sp.Expr, en_u: sp.Expr, u: sp.Expr, points: Points = POINTS
+) -> Resolution:
     """`u = g(x)` : l'integrande en `u` est donne ecrit, et verifie."""
-    if ecart(en_u.subs(U, u) * sp.diff(u, X), integrande) > SEUIL:
+    if ecart(en_u.subs(U, u) * sp.diff(u, X), integrande, points) > SEUIL:
         msg = f"le changement u = {u} ne redonne pas l'integrande {integrande}"
         raise ValueError(msg)
     primitive_en_u = valeur_absolue(sp.integrate(en_u, U))
     etapes = (u, en_u, primitive_en_u)
-    return Resolution(
-        integrande, "changement de variable", etapes, primitive_en_u.subs(U, u)
-    )
+    return Resolution(integrande, CHANGEMENT, etapes, primitive_en_u.subs(U, u))
 
 
 def changement_inverse(
-    integrande: sp.Expr, x_de_t: sp.Expr, t_de_x: sp.Expr, en_t: sp.Expr
+    integrande: sp.Expr,
+    x_de_t: sp.Expr,
+    t_de_x: sp.Expr,
+    en_t: sp.Expr,
+    points: Points = POINTS,
 ) -> Resolution:
     """`x = phi(t)` : l'integrande en `t` est donne ecrit, et verifie."""
     transporte = (en_t / sp.diff(x_de_t, T)).subs(T, t_de_x)
-    if ecart(transporte, integrande) > SEUIL:
+    if ecart(transporte, integrande, points) > SEUIL:
         msg = f"le changement x = {x_de_t} ne redonne pas l'integrande {integrande}"
         raise ValueError(msg)
     primitive_en_t = valeur_absolue(sp.integrate(en_t, T))
     etapes = (x_de_t, en_t, primitive_en_t)
-    return Resolution(
-        integrande, "changement de variable", etapes, primitive_en_t.subs(T, t_de_x)
-    )
+    return Resolution(integrande, CHANGEMENT, etapes, primitive_en_t.subs(T, t_de_x))
 
 
 def immediate(integrande: sp.Expr, primitive: sp.Expr) -> Resolution:
@@ -101,23 +104,3 @@ def immediate(integrande: sp.Expr, primitive: sp.Expr) -> Resolution:
         msg = f"{primitive} n'est pas une primitive de {integrande}"
         raise ValueError(msg)
     return Resolution(integrande, "primitive immediate", (primitive,), primitive)
-
-
-def _etape(u: sp.Expr, dv: sp.Expr) -> sp.Expr:
-    """`u v - integrale de v du`, l'integrale qui reste etant simplifiee."""
-    geste = IntegrationParParties(u, dv)
-    restante = sp.simplify(geste.v() * geste.derivee_de_u())
-    return geste.u * geste.v() - sp.Integral(restante, X)
-
-
-def par_parties(u: sp.Expr, dv: sp.Expr) -> Resolution:
-    """Une integration par parties, l'integrale restante se calculant directement."""
-    etape = _etape(u, dv)
-    return Resolution(u * dv, PAR_PARTIES, (etape,), etape.doit())
-
-
-def en_cascade(us: tuple[sp.Expr, ...], dv: sp.Expr) -> Resolution:
-    """Des parties en chaine : chaque `u` est celui de l'integrale qui restait."""
-    etapes = tuple(_etape(u, dv) for u in us)
-    primitive = sp.expand(sp.integrate(us[0] * dv, X))
-    return Resolution(us[0] * dv, PAR_PARTIES, etapes, primitive)

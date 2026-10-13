@@ -19,22 +19,22 @@ TRAVAUX = RACINE / "travaux" / "Mathematique"
 
 EXERCICES: dict[str, tuple[int, str | None]] = {
     "1. Methodes classiques": (56, "recueil-primitives-1"),
-    "2. Fractions rationnelles": (8, None),
-    "3. Recurrence sur 1 / (x^2 + 1)^n": (3, None),
-    "4. Exponentielles": (4, None),
-    "5. Fonctions diverses": (5, None),
-    "6. Fonctions diverses, suite": (8, None),
-    "7. Fonctions diverses, fin": (5, None),
-    "8. Rationnelles en sin x et cos x": (16, None),
-    "9. Irrationnelles simples": (4, None),
-    "10. Racine d'un trinome du second degre": (6, None),
-    "11. Revision": (9, None),
+    "2. Fractions rationnelles": (8, "recueil-primitives-2"),
+    "3. Recurrence sur 1 / (x^2 + 1)^n": (3, "recueil-primitives-2"),
+    "4. Exponentielles": (4, "recueil-primitives-2"),
+    "5. Fonctions diverses": (5, "recueil-primitives-3"),
+    "6. Fonctions diverses, suite": (8, "recueil-primitives-3"),
+    "7. Fonctions diverses, fin": (5, "recueil-primitives-3"),
+    "8. Rationnelles en sin x et cos x": (16, "recueil-primitives-4"),
+    "9. Irrationnelles simples": (4, "recueil-primitives-5"),
+    "10. Racine d'un trinome du second degre": (6, "recueil-primitives-5"),
+    "11. Revision": (9, "recueil-primitives-5"),
 }
 """Exercice, dans l'ordre des pages : le nombre de primitives, et le dossier."""
 
 PRIMITIVES_DU_RECUEIL = 124
-EXERCICES_SANS_CORRIGE = 10
-PRIMITIVES_SANS_CORRIGE = 68
+EXERCICES_SANS_CORRIGE = 0
+PRIMITIVES_SANS_CORRIGE = 0
 
 
 def test_le_recueil_compte_cent_vingt_quatre_primitives() -> None:

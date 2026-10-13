@@ -23,9 +23,9 @@ from polytech.maths.application.recueil_primitives_gestes import (
     changement,
     changement_inverse,
     immediate,
-    par_parties,
     terme_a_terme,
 )
+from polytech.maths.application.recueil_primitives_parties import par_parties
 from polytech.maths.application.resolution_exs_01 import Resolution, par_equation
 
 sin, cos, exp, sqrt, ln = sp.sin, sp.cos, sp.exp, sp.sqrt, sp.log

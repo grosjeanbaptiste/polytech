@@ -2,12 +2,8 @@
 
 Source : `Mathematique/SYLLABUS/Syllabus_Notes_de_cours_2011.pdf`, chapitre
 « Primitives », pages 60 a 63 du PDF. Le document est un scan : chaque
-integrande a ete lu sur la page. Ce fichier ne porte que des donnees, une
-entree par primitive demandee.
-
-Les parametres `a`, `b`, `p` sont pris strictement positifs et `n` entier
-positif : c'est le cas general de chaque enonce, et les cas particuliers
-que le syllabus signale (`b = 0`, `p = -1`) sont dits dans le corrige.
+integrande a ete lu sur la page. Ce fichier porte l'exercice 1 et reunit
+les suivants, que deux fichiers voisins declarent.
 """
 
 from __future__ import annotations
@@ -16,14 +12,27 @@ from typing import Final
 
 import sympy as sp
 
-from polytech.maths.application.resolution_exs_01 import A, B
-from polytech.maths.domain.symboles import ENTIER as N
-from polytech.maths.domain.symboles import VARIABLE as X
+from polytech.maths.application.recueil_primitives_enonces_b import EXERCICES_2_A_7
+from polytech.maths.application.recueil_primitives_enonces_c import (
+    EXERCICES_8_A_11,
+    POINTS_PARTICULIERS,
+)
+from polytech.maths.application.recueil_primitives_symboles import (
+    A,
+    B,
+    H,
+    K,
+    N,
+    P,
+    Q,
+    R,
+    W,
+    X,
+)
 
-__all__ = ["EXERCICE_UN", "A", "B", "N", "P", "R", "X"]
+__all__ = ["EXERCICES_SUIVANTS", "EXERCICE_UN", "A", "B", "H", "K", "N", "P", "Q", "R"]
+__all__ += ["POINTS_PARTICULIERS", "W", "X"]
 
-P: Final = sp.Symbol("p", positive=True)
-R = sp.Rational
 ln, sin, cos, tan, exp, sqrt = sp.log, sp.sin, sp.cos, sp.tan, sp.exp, sp.sqrt
 atan, asin, sinh, cosh = sp.atan, sp.asin, sp.sinh, sp.cosh
 
@@ -86,3 +95,6 @@ EXERCICE_UN: Final[dict[int, sp.Expr]] = {
     56: ln(X) ** 2,
 }
 """Exercice 1 : « determiner les primitives par les methodes classiques »."""
+
+EXERCICES_SUIVANTS: Final[dict[str, sp.Expr]] = EXERCICES_2_A_7 | EXERCICES_8_A_11
+"""Exercices 2 a 11, par numero et lettre : `2a`, `10aPlus`."""
