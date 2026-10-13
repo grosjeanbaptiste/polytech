@@ -17,6 +17,8 @@ import pytest
 import sympy as sp
 
 from polytech.maths.application import exercices_des_syllabus as syllabus
+from polytech.maths.application import primitives_des_documents_de_travail as travail
+from polytech.maths.application import recueil_primitives_gestes as gestes
 from polytech.maths.application.macros_exercices_des_syllabus import intervalle
 from polytech.maths.application.registre import JEUX_DE_MACROS
 from polytech.maths.domain.algebre.solutions import Nature
@@ -147,3 +149,22 @@ def test_les_macros_parlent_la_langue_des_notes() -> None:
 def test_un_bord_exclu_a_droite_tourne_aussi_son_crochet() -> None:
     """La serie de l'exemple 2 du syllabus converge sur `[-1, 1[`."""
     assert intervalle(sp.Interval.Ropen(-1, 1)) == r"\left[-1,\, 1\right["
+
+
+def test_pages_54_et_59_les_deux_primitives_des_documents_de_travail() -> None:
+    """Page 59, imprime : `1/2 racine(Q) + 3/4 argsh(4/racine(3) (x - 1/4))`."""
+    x = syllabus.X
+    juin, trinome = travail.primitives()
+    assert gestes.ecart(juin.integrande, sp.cos(x) ** 2 / (1 - sp.tan(x) ** 2)) < 1e-12
+    assert gestes.ecart(sp.diff(juin.primitive, x), juin.integrande) < 1e-12
+    q = 4 * x**2 - 2 * x + 1
+    assert gestes.ecart(trinome.integrande, (2 * x + 1) / sp.sqrt(q)) < 1e-12
+    imprimee = sp.sqrt(q) / 2 + R(3, 4) * sp.asinh(4 / sp.sqrt(3) * (x - R(1, 4)))
+    assert gestes.ecart(sp.diff(imprimee, x), trinome.integrande) < 1e-12
+    assert sp.simplify(trinome.primitive - imprimee) == 0
+
+
+def test_les_macros_des_deux_primitives() -> None:
+    macros = JEUX_DE_MACROS["exercices-des-syllabus"]()
+    assert {"SylJuinEtape", "SylJuinPrimitive", "SylTrinomeEtape"} <= set(macros)
+    assert r"\operatorname{arsinh}" in macros["SylTrinomePrimitive"]

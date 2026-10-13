@@ -5,6 +5,7 @@ from __future__ import annotations
 import sympy as sp
 
 from polytech.maths.application import exercices_des_syllabus as syllabus
+from polytech.maths.application import primitives_des_documents_de_travail as travail
 from polytech.maths.application.formatage import formule
 from polytech.maths.application.recueil_algebre import liste, operations
 from polytech.maths.domain.algebre.echelonnement import echelonner
@@ -75,6 +76,16 @@ def _equations() -> dict[str, str]:
     }
 
 
+def _primitives() -> dict[str, str]:
+    juin, trinome = travail.primitives()
+    return {
+        "SylJuinEtape": formule(juin.etapes[0]),
+        "SylJuinPrimitive": formule(juin.primitive),
+        "SylTrinomeEtape": formule(trinome.etapes[0]),
+        "SylTrinomePrimitive": formule(trinome.primitive),
+    }
+
+
 def macros_des_exercices_des_syllabus() -> dict[str, str]:
     """Toutes les formules que le corrige compose."""
-    return _systeme() | _laplace() | _series() | _equations()
+    return _systeme() | _laplace() | _series() | _equations() | _primitives()
