@@ -22,22 +22,38 @@ INCONNUES: Final = sp.symbols("a0 a1")
 """Les constantes libres `a_0` et `a_1` (seule `a_0` au premier ordre)."""
 
 
-def solution_en_serie(coefficients: tuple[object, ...], ordre: int) -> sp.Expr:
-    """La solution de `somme p_k(x) y^(k) = 0`, tronquee a `x^ordre`.
+def solution_en_serie(
+    coefficients: tuple[object, ...],
+    ordre: int,
+    *,
+    autour_de: object = 0,
+    second_membre: object = 0,
+) -> sp.Expr:
+    """La solution de `somme p_k(x) y^(k) = f(x)`, tronquee a `(x - x_0)^ordre`.
 
     `coefficients` donne `p_0, p_1, ..., p_m`, du coefficient de `y` a celui
-    de la derivee la plus haute.
+    de la derivee la plus haute ; les constantes libres sont `a0`, ...,
+    `a(m-1)`. Le second membre est developpe en serie au point `x_0`.
     """
     polynomes = [sp.sympify(p) for p in coefficients]
-    degre = len(polynomes) - 1
-    if polynomes[-1].subs(VARIABLE, 0) == 0:
-        msg = "point singulier en 0 : le coefficient de la plus haute derivee s'annule"
+    degre, centre = len(polynomes) - 1, sp.sympify(autour_de)
+    if polynomes[-1].subs(VARIABLE, centre) == 0:
+        msg = (
+            f"point singulier en {centre} : le coefficient de la plus haute "
+            "derivee s'annule"
+        )
         raise ValueError(msg)
-    a = [*INCONNUES[:degre], *sp.symbols(f"c{degre}:{ordre + 1}")]
-    serie = sum((a[n] * VARIABLE**n for n in range(ordre + 1)), sp.Integer(0))
+    ecart = sp.Symbol("h")
+    a = [*sp.symbols(f"a0:{degre}"), *sp.symbols(f"c{degre}:{ordre + 1}")]
+    serie = sum((a[n] * ecart**n for n in range(ordre + 1)), sp.Integer(0))
+    membre = sp.sympify(second_membre).subs(VARIABLE, centre + ecart)
     residu = sp.expand(
-        sum(p * sp.diff(serie, VARIABLE, k) for k, p in enumerate(polynomes))
+        sum(
+            p.subs(VARIABLE, centre + ecart) * sp.diff(serie, ecart, k)
+            for k, p in enumerate(polynomes)
+        )
+        - sp.series(membre, ecart, 0, ordre + 1).removeO()
     )
-    conditions = [residu.coeff(VARIABLE, j) for j in range(ordre - degre + 1)]
+    conditions = [residu.coeff(ecart, j) for j in range(ordre - degre + 1)]
     (valeurs,) = sp.solve(conditions, a[degre:], dict=True)
-    return sp.expand(serie.subs(valeurs))
+    return sp.expand(serie.subs(valeurs).subs(ecart, VARIABLE - centre))

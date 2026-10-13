@@ -8,6 +8,11 @@ peut rien conclure : chaque bord se regarde a part.
 
 A l'interieur de `]-R, R[` la serie s'integre et se derive terme a terme,
 sans que le rayon change.
+
+Ces deux limites n'existent pas toujours : une serie dont des coefficients
+sont nuls de loin en loin (`cos x`) n'a ni l'une ni l'autre. Les deux
+methodes levent alors, et renvoient a la limite superieure de
+`lacunaires.py`.
 """
 
 from __future__ import annotations
@@ -19,6 +24,10 @@ import sympy as sp
 
 INDICE: Final = sp.Symbol("n", integer=True, nonnegative=True)
 """L'indice `n` du terme general."""
+
+
+RANGS_SONDES: Final = 12
+"""Les premiers rangs ou l'on cherche des coefficients nuls."""
 
 
 def _rayon(limite: sp.Expr) -> sp.Expr:
@@ -48,12 +57,25 @@ class SerieEntiere:
             sp.Integer(0),
         )
 
+    def _exiger_une_limite(self) -> None:
+        """Leve si plusieurs des premiers coefficients sont nuls."""
+        rangs = range(self.depuis, self.depuis + RANGS_SONDES)
+        nuls = [n for n in rangs if self.coefficient(n) == 0]
+        if len(nuls) > 1:
+            msg = (
+                f"coefficients nuls aux rangs {nuls} : la limite n'existe pas, "
+                "le rayon se calcule par la limite superieure"
+            )
+            raise ValueError(msg)
+
     def rayon_par_la_racine(self) -> sp.Expr:
-        """`R = 1 / lim |a_n|^(1/n)`."""
+        """`R = 1 / lim |a_n|^(1/n)` ; leve si cette limite n'existe pas."""
+        self._exiger_une_limite()
         return _rayon(sp.limit(sp.Abs(self.terme) ** (1 / INDICE), INDICE, sp.oo))
 
     def rayon_par_le_quotient(self) -> sp.Expr:
-        """`R = 1 / lim |a_(n+1) / a_n|`."""
+        """`R = 1 / lim |a_(n+1) / a_n|` ; leve si cette limite n'existe pas."""
+        self._exiger_une_limite()
         suivant = sp.sympify(self.terme).subs(INDICE, INDICE + 1)
         return _rayon(sp.limit(sp.Abs(suivant / self.terme), INDICE, sp.oo))
 

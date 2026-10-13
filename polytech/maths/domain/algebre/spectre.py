@@ -74,3 +74,24 @@ def diagonalisee_par(matrice: sp.Matrix, passage: sp.Matrix) -> sp.Matrix:
         msg = "les colonnes de P ne sont pas des vecteurs propres : P^-1 A P plein"
         raise ValueError(msg)
     return sp.Matrix(produit)
+
+
+def valeur_propre_associee(matrice: sp.Matrix, vecteur: sp.Matrix) -> sp.Expr:
+    """Le `lambda` tel que `A X = lambda X` ; leve si `X` n'est pas propre.
+
+    Syllabus d'algebre, X.1.1 : `lambda` est valeur propre s'il existe un
+    vecteur `X` non nul tel que `A X = lambda X`.
+    """
+    if vecteur.rows != matrice.rows:
+        msg = f"{vecteur.rows} composantes pour une matrice d'ordre {matrice.rows}"
+        raise ValueError(msg)
+    if vecteur.is_zero_matrix:
+        msg = "le vecteur nul n'est jamais propre : la definition l'exclut"
+        raise ValueError(msg)
+    image = matrice * vecteur
+    indice = next(i for i in range(vecteur.rows) if vecteur[i] != 0)
+    valeur = sp.simplify(image[indice] / vecteur[indice])
+    if not sp.simplify(image - valeur * vecteur).is_zero_matrix:
+        msg = "ce n'est pas un vecteur propre : A X n'est pas un multiple de X"
+        raise ValueError(msg)
+    return valeur

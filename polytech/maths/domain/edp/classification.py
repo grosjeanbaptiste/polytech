@@ -54,10 +54,14 @@ def type_a_deux_variables(a: object, h: object, b: object) -> Type:
 
 
 def type_par_la_forme_quadratique(matrice: sp.Matrix) -> Type:
-    """Le type selon les signes des valeurs propres de la forme quadratique."""
+    """Le type selon les signes des valeurs propres ; leve si l'un est inconnu."""
     valeurs = list(matrice.eigenvals())
     if any(valeur == 0 for valeur in valeurs):
         return Type.PARABOLIQUE
+    for valeur in valeurs:
+        if valeur.is_positive is None and valeur.is_negative is None:
+            msg = f"signe de la valeur propre {valeur} indetermine : le type en depend"
+            raise ValueError(msg)
     positives = [bool(valeur.is_positive) for valeur in valeurs]
     return Type.ELLIPTIQUE if len(set(positives)) == 1 else Type.HYPERBOLIQUE
 

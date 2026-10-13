@@ -28,8 +28,8 @@ def semblable_par(matrice: sp.Matrix, passage: sp.Matrix) -> sp.Matrix:
 
 
 def est_triangulaire_superieure(matrice: sp.Matrix) -> bool:
-    """Vrai si tout ce qui est sous la diagonale est nul."""
-    return bool(matrice.is_upper)
+    """Vrai si la matrice est carree et nulle sous sa diagonale (II.6)."""
+    return bool(matrice.is_square and matrice.is_upper)
 
 
 def est_triangularisable(matrice: sp.Matrix) -> bool:
