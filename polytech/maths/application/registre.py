@@ -28,6 +28,7 @@ from polytech.maths.application import (
     macros_recueil_algebre_ch08c,
     macros_recueil_algebre_ch09,
     macros_recueil_algebre_ch10_reflexions,
+    macros_recueil_primitives_un,
 )
 
 if TYPE_CHECKING:
@@ -42,6 +43,7 @@ JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "algebre-09-espaces-metriques": (
         macros_recueil_algebre_ch09.macros_du_chapitre_neuf
     ),
+    "recueil-primitives-1": macros_recueil_primitives_un.macros_de_l_exercice_un,
     "exercices-des-fascicules": (
         exercices_des_fascicules.macros_des_exercices_des_fascicules
     ),
