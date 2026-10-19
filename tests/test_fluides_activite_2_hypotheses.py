@@ -51,18 +51,6 @@ def test_une_epaisseur_nulle_leve() -> None:
         hyp.reynolds_du_film(0.0)
 
 
-def test_la_vitesse_de_la_surface_du_reservoir_retire_r_puissance_4() -> None:
-    """Bernoulli complet : `V_o^2 (1 - r^4) = 2 g z`, donc `z_max (1 - r^4)`."""
-    assert hyp.facteur_de_vitesse_de_surface(0.1) == pytest.approx(1 - 1e-4)
-    assert hyp.facteur_de_vitesse_de_surface(0.5) == pytest.approx(15 / 16)
-
-
-@pytest.mark.parametrize("rapport", [0.0, 1.0, -0.2, 1.5])
-def test_un_orifice_hors_du_reservoir_leve(rapport: float) -> None:
-    with pytest.raises(ValueError, match="rapport des diametres hors de"):
-        hyp.facteur_de_vitesse_de_surface(rapport)
-
-
 def test_une_perte_singuliere_eleve_la_hauteur_d_autant() -> None:
     """`g z = (1 + K) V_o^2 / 2` : la hauteur est multipliee par `1 + K`."""
     assert hyp.facteur_de_perte(0.05) == pytest.approx(1.05)

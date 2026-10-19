@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from polytech.fluides.application import activite_2_hypotheses as hyp
 from polytech.fluides.application import activite_2_recoupements as rec
+from polytech.fluides.application import activite_2_surface as surface
 from polytech.fluides.application.formatage import nombre
 
 _POURCENT = 100.0
@@ -40,7 +41,7 @@ def _film() -> dict[str, str]:
 
 def _reservoir() -> dict[str, str]:
     def erreur(rapport: float) -> float:
-        return _POURCENT * (1 - hyp.facteur_de_vitesse_de_surface(rapport))
+        return _POURCENT * surface.borne_de_la_vitesse_de_surface(rapport)
 
     return {
         "ReservoirErreurDixiemePourcent": nombre(erreur(0.1), 2),

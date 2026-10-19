@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final
 
 from polytech.fluides.application import (
+    activite_2_bateau,
     macros_activite_2,
     macros_activite_2_complements,
 )
@@ -24,6 +25,7 @@ def _activite_2() -> dict[str, str]:
     return {
         **macros_activite_2.macros(),
         **macros_activite_2_complements.macros_complements(),
+        **activite_2_bateau.macros_bateau(),
     }
 
 

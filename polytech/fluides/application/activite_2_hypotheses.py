@@ -60,14 +60,6 @@ def epaisseur_a_reynolds_unite() -> float:
     return float(math.cbrt(3 * mu**2 / (rho**2 * PESANTEUR)))
 
 
-def facteur_de_vitesse_de_surface(rapport: float) -> float:
-    """`1 - (D_o / D_T)^4` : Bernoulli sans negliger la vitesse de la surface."""
-    if not 0 < rapport < 1:
-        msg = f"rapport des diametres hors de ]0, 1[ : {rapport}"
-        raise ValueError(msg)
-    return 1 - rapport**4
-
-
 def facteur_de_perte(coefficient: float) -> float:
     """`1 + K` : une perte `K V^2 / (2 g)` a l'orifice eleve d'autant `z_max`."""
     if coefficient < 0:
