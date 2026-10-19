@@ -10,13 +10,25 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
-from polytech.fluides.application import macros_activite_2
+from polytech.fluides.application import (
+    macros_activite_2,
+    macros_activite_2_complements,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+
+def _activite_2() -> dict[str, str]:
+    """Les resultats des trois exercices, puis ce qui les eprouve."""
+    return {
+        **macros_activite_2.macros(),
+        **macros_activite_2_complements.macros_complements(),
+    }
+
+
 JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
-    "activite-integration-2": macros_activite_2.macros,
+    "activite-integration-2": _activite_2,
 }
 
 
