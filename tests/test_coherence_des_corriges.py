@@ -220,9 +220,26 @@ dit lesquels comptent.
 """
 
 
-MISES_EN_PAGE = frozenset({"devoir.tex", "devoir_1pager.tex"})
+MISES_EN_PAGE = frozenset(
+    {
+        "devoir.tex",
+        "devoir_1pager.tex",
+        "rapport.tex",
+        "rapport_paysage.tex",
+        "rapport_corps.tex",
+        "rapport_style.tex",
+        "activite_integration_2_paysage.tex",
+        "entete.tex",
+        "schemas.tex",
+    }
+)
 """Ce qui accompagne un corrige sans en etre un : l'imposition a imprimer,
-qui ne fait qu'inclure son PDF, et la feuille de reponses d'une page."""
+qui ne fait qu'inclure son PDF, la feuille de reponses d'une page, et le
+rapport a remettre quand un devoir en exige un (le devoir cote de fluides,
+2026-10-19) -- il lit les memes macros, sous les contraintes de l'enonce,
+en deux mises en page (portrait et paysage) d'un meme corps. Une activite
+d'integration a de meme sa version paysage, et l'en-tete que les deux
+partagent (2026-10-19)."""
 
 
 def _document_du_travail(travail: str) -> Path:

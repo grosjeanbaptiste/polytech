@@ -14,6 +14,7 @@ from polytech.fluides.application import (
     activite_2_bateau,
     macros_activite_2,
     macros_activite_2_complements,
+    macros_devoir_cylindre,
 )
 
 if TYPE_CHECKING:
@@ -31,6 +32,7 @@ def _activite_2() -> dict[str, str]:
 
 JEUX_DE_MACROS: Final[dict[str, Callable[[], dict[str, str]]]] = {
     "activite-integration-2": _activite_2,
+    "devoir-cote-cylindre": macros_devoir_cylindre.macros,
 }
 
 

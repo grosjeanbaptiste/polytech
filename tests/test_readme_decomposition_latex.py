@@ -77,6 +77,7 @@ NUMERAUX: Final = {
 ANNONCE = re.compile(r"\*\*(\d+) documents LaTeX\*\*")
 DECOMPOSITION = re.compile(
     r"les [\w-]+ des deux activités\s+d'intégration de mécanique des fluides, "
+    r"les [\w-]+ du devoir coté,\s+"
     r"(?:celui du TP 1|[\w-]+ corrigés) de thermique,\s+"
     r"(?:une?|[\w-]+)\s+corrigés? d'électronique,\s+"
     r"(?:une?|[\w-]+)\s+corrigés? de mathématique,\s+"
@@ -121,6 +122,25 @@ def _documents_des_activites() -> int:
         for source in fluides.glob("activite-integration-*/*.tex")
         if r"\begin{document}" in source.read_text(encoding="utf-8")
     )
+
+
+DEVOIR = re.compile(r"les ([\w-]+) du devoir coté")
+"""Le devoir cote de fluides : corrige detaille et rapport en deux mises en page."""
+
+
+def _documents_du_devoir_cote() -> int:
+    dossier = RACINE / "travaux" / "MecaniqueFluides" / "devoir-cote-cylindre"
+    return sum(
+        1
+        for source in dossier.glob("*.tex")
+        if r"\begin{document}" in source.read_text(encoding="utf-8")
+    )
+
+
+def test_le_nombre_de_documents_du_devoir_cote_annonce_en_lettres_est_exact() -> None:
+    trouve = DEVOIR.search(README.read_text(encoding="utf-8"))
+    assert trouve is not None
+    assert NUMERAUX[trouve.group(1)] == _documents_du_devoir_cote()
 
 
 def test_le_nombre_de_documents_des_activites_annonce_en_lettres_est_exact() -> None:
@@ -246,6 +266,7 @@ def test_la_decomposition_fait_bien_le_total_annonce() -> None:
     programmation = _corriges_de(TRAVAUX_PROGRAMMATION)
     somme = (
         _documents_des_activites()
+        + _documents_du_devoir_cote()
         + thermique
         + electronique
         + mathematique
