@@ -9,6 +9,7 @@ __pycache__/
 *.fdb_latexmk
 *.fls
 *.synctex.gz
+*.toc
 
 # Seuls les PDF sources restent hors du depot : ils pesent des centaines de
 # Mo, et un binaire regenerable ou recopiable n'a rien a faire dans

@@ -84,7 +84,9 @@ DECOMPOSITION = re.compile(
     r"(?:une?|[\w-]+)\s+corrigés? d'optimisation,\s+"
     r"(?:une?|[\w-]+)\s+corrigés? de programmation,\s+"
     r"(?:une?|[\w-]+)\s+corrigés? de signaux, "
-    r"(?:une?|[\w-]+)\s+fiches? de révision, "
+    r"(?:une?|[\w-]+)\s+fiches? de révision(?: \([^)]*\))?, "
+    r"les [\w-]+ syllabus qui les réunissent, "
+    r"les [\w-]+ échelles des bases(?: \([^)]*\))?, "
     r"les\s+([\w-]+(?: et un)?) corrigés "
     r"d'électromagnétisme déjà écrits, et les (\d+) planches",
 )
@@ -150,8 +152,49 @@ def test_le_nombre_de_documents_des_activites_annonce_en_lettres_est_exact() -> 
     assert NUMERAUX[trouve.group(1)] == _documents_des_activites()
 
 
-FICHES = re.compile(r"(une?|[\w-]+)\s+fiches? de révision, ")
-"""Le terme des fiches, ouvert par celle de mathematique."""
+FICHES = re.compile(r"(une?|[\w-]+)\s+fiches? de révision(?: \([^)]*\))?, ")
+"""Le terme des fiches, ouvert par celle de mathematique ; chaque fiche compte
+deux documents depuis le 2026-10-20, son portrait et son paysage."""
+
+SYLLABUS = re.compile(r"les ([\w-]+) syllabus qui les réunissent")
+"""Le syllabus des fiches, en portrait et en paysage (2026-10-20)."""
+
+
+def _syllabus() -> int:
+    dossier = RACINE / "travaux" / "Transversal" / "syllabus-des-fiches"
+    return sum(
+        1
+        for source in dossier.glob("*.tex")
+        if r"\begin{document}" in source.read_text(encoding="utf-8")
+    )
+
+
+def test_le_nombre_de_syllabus_annonce_en_lettres_est_exact() -> None:
+    trouve = SYLLABUS.search(README.read_text(encoding="utf-8"))
+    assert trouve is not None
+    assert NUMERAUX[trouve.group(1)] == _syllabus()
+
+
+ECHELLES = re.compile(r"les ([\w-]+) échelles des bases")
+"""Les echelles des bases, trois collections en portrait et en paysage (2026-10-21)."""
+
+
+def _echelles() -> int:
+    """Les documents composes des echelles, que `outils.echelle` ecrit."""
+    from outils.echelle import COLLECTIONS  # noqa: PLC0415 -- outil du depot
+
+    return sum(
+        1
+        for collection in COLLECTIONS.values()
+        for source in collection.dossier.glob("*.tex")
+        if "documentclass" in source.read_text(encoding="utf-8")
+    )
+
+
+def test_le_nombre_d_echelles_annonce_en_lettres_est_exact() -> None:
+    trouve = ECHELLES.search(README.read_text(encoding="utf-8"))
+    assert trouve is not None
+    assert NUMERAUX[trouve.group(1)] == _echelles()
 
 
 def test_le_nombre_de_fiches_de_revision_annonce_en_lettres_est_exact() -> None:
@@ -274,6 +317,8 @@ def test_la_decomposition_fait_bien_le_total_annonce() -> None:
         + programmation
         + signaux
         + _fiches_de_revision()
+        + _syllabus()
+        + _echelles()
         + NUMERAUX[trouve.group(1)]
         + int(trouve.group(2))
     )
