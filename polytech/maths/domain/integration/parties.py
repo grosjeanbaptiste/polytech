@@ -4,10 +4,10 @@ Ce que le lecteur doit voir est la ligne `u v - integrale de v du`, avec
 `u` et `v` nommes. `etape()` la rend telle quelle, l'integrale restante non
 evaluee : c'est l'etat intermediaire du raisonnement.
 
-`resultat()`, lui, conclut -- et il conclut en **iterant** le geste. La
-reponse 3 du fascicule, `(x^3 - 3x^2 + 6x - 6) e^x`, demande trois parties
-successives ; un appel unique qui rendrait la reponse priverait le corrige
-de ses deux etapes intermediaires.
+`resultat()`, lui, conclut : il rend la primitive que sympy calcule, sans
+montrer d'etape. La reponse 3 du fascicule, `(x^3 - 3x^2 + 6x - 6) e^x`,
+demande trois parties successives : c'est `parties_repetees.jusqu_au_bout`
+qui les itere et les expose une a une.
 """
 
 from __future__ import annotations
@@ -43,5 +43,5 @@ class IntegrationParParties:
         return self.u * self.v() - self.integrale_restante()
 
     def resultat(self) -> sp.Expr:
-        """La primitive, obtenue en iterant le geste jusqu'a epuisement."""
+        """La primitive, calculee d'un bloc (les etapes : `jusqu_au_bout`)."""
         return sp.simplify(sp.integrate(self.u * self.derivee_de_v, VARIABLE))

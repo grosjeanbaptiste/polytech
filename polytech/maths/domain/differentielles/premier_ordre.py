@@ -27,12 +27,19 @@ SONDES = (1, 2, 3, -1, sp.Rational(1, 2))
 
 
 class Type(Enum):
-    """Les quatre types que le cours enumere."""
+    """Les types que le cours enumere.
+
+    `EquationDuPremierOrdre.type` reconnait les trois premiers ;
+    `reconnaissance.type_du_cours` les trois suivants, qui demandent la
+    fraction ecrite (syllabus de mathematiques appliquees, 1.3.5 a 1.3.8).
+    """
 
     VARIABLES_SEPAREES = "a variables separees"
     HOMOGENE = "homogene de degre 0"
     EXACTE = "exacte"
     LINEAIRE = "lineaire"
+    FACTEUR_INTEGRANT = "exacte apres un facteur integrant"
+    BERNOULLI = "de Bernoulli"
 
 
 @dataclass(frozen=True, slots=True)

@@ -41,3 +41,19 @@ def equation_en_z(second_membre: sp.Expr) -> tuple[sp.Expr, sp.Expr]:
         raise ValueError(msg)
     en_z = sp.simplify(second_membre.subs(INCONNUE, Z * VARIABLE))
     return en_z, sp.simplify(en_z - Z)
+
+
+def integrale_premiere(second_membre: sp.Expr) -> sp.Expr:
+    """`G(x, y) = int dz / (f(z) - z) - ln x`, en `z = y / x`.
+
+    `G = C` le long des solutions.
+
+    `x z' = f(z) - z` se separe en `dz / (f(z) - z) = dx / x` ; il faut
+    `f(z) - z` non nul, sans quoi l'equation est deja `y' = y / x`.
+    """
+    _, ecart = equation_en_z(second_membre)
+    if ecart == 0:
+        msg = "f(z) = z : l'equation est y' = y/x, a variables separees"
+        raise ValueError(msg)
+    primitive = sp.integrate(1 / ecart, Z)
+    return sp.simplify(primitive.subs(Z, INCONNUE / VARIABLE) - sp.log(VARIABLE))

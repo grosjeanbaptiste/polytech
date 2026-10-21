@@ -59,15 +59,19 @@ class SystemeDifferentiel:
         return brute.applyfunc(lambda e: sp.simplify(sp.re(sp.expand_complex(e))))
 
     def par_exponentielle(
-        self, conditions: sp.Matrix, force: sp.Matrix | None = None
+        self,
+        conditions: sp.Matrix,
+        force: sp.Matrix | None = None,
+        *,
+        t0: object = 0,
     ) -> sp.Matrix:
-        """`e^(At) c + int_0^t e^(A(t - tau)) x(tau) d tau`."""
+        """`e^(A(t - t0)) c + int_t0^t e^(A(t - tau)) x(tau) d tau`, `y(t0) = c`."""
         exponentielle = self.exponentielle()
-        libre = exponentielle * conditions
+        libre = exponentielle.subs(TEMPS, TEMPS - sp.sympify(t0)) * conditions
         if force is None:
             return sp.simplify(libre)
         noyau = exponentielle.subs(TEMPS, TEMPS - _TAU) * force.subs(TEMPS, _TAU)
-        forcee = noyau.applyfunc(lambda e: sp.integrate(e, (_TAU, 0, TEMPS)))
+        forcee = noyau.applyfunc(lambda e: sp.integrate(e, (_TAU, t0, TEMPS)))
         return sp.simplify(libre + forcee)
 
     def par_laplace(

@@ -45,3 +45,19 @@ def droite_de_regression(
     ordonnees = sp.Matrix([y for _, y in points])
     pente, ordonnee = au_sens_des_moindres_carres(matrice, ordonnees)
     return pente, ordonnee
+
+
+def projection_et_residu(
+    matrice: sp.Matrix, second_membre: sp.Matrix
+) -> tuple[sp.Matrix, sp.Matrix]:
+    """`proj_W b` et `b - proj_W b`, `W` engendre par les colonnes, liees ou non.
+
+    Une base orthogonale de `W` (Gram-Schmidt sur les colonnes libres) donne
+    la projection : elle existe et est unique meme quand les colonnes sont
+    liees, la ou les equations normales n'ont plus de solution unique.
+    """
+    projete = sp.zeros(*second_membre.shape)
+    for colonne in sp.GramSchmidt(matrice.columnspace()):
+        projete += (colonne.dot(second_membre) / colonne.dot(colonne)) * colonne
+    projete = sp.simplify(projete)
+    return projete, sp.simplify(second_membre - projete)

@@ -65,3 +65,24 @@ def ordre_de_la_racine(
         ordre += 1
         courant = sp.diff(courant, variable)
     return ordre
+
+
+def par_deductions_successives(
+    dividende: sp.Expr, diviseur: sp.Expr, variable: sp.Symbol = VARIABLE
+) -> tuple[tuple[sp.Expr, ...], sp.Expr]:
+    """Les coefficients du quotient, deduits un a un du plus haut, et le reste.
+
+    Chaque coefficient est choisi pour que le terme de meme degre du produit
+    `diviseur . quotient` soit celui du dividende (IV.1, page 49).
+    """
+    d = sp.Poly(diviseur, variable)
+    if d.degree() < 1:
+        msg = f"le diviseur doit etre de degre au moins 1 : {diviseur}"
+        raise ValueError(msg)
+    reste = sp.Poly(dividende, variable)
+    coefficients: list[sp.Expr] = []
+    for degre in range(reste.degree() - d.degree(), -1, -1):
+        coefficient = reste.coeff_monomial(variable ** (degre + d.degree())) / d.LC()
+        coefficients.append(sp.nsimplify(coefficient))
+        reste -= sp.Poly(coefficient * variable**degre, variable) * d
+    return tuple(coefficients), sp.expand(reste.as_expr())

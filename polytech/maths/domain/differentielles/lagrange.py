@@ -51,6 +51,17 @@ class EquationDeLagrange:
         primitive = sp.integrate(sp.simplify(q * facteur), PENTE)
         return sp.simplify((sp.sympify(constante) + primitive) / facteur)
 
+    def solution_generale(self, constante: object) -> tuple[sp.Expr, ...]:
+        """`y(x)`, `z` elimine entre `x = x(z)` et `y = x psi(z) + phi(z)`.
+
+        Une branche par racine `z(x)` de `x = x(z)` (exemple 1.20, page 37).
+        """
+        branches = sp.solve(sp.Eq(VARIABLE, self.x_de_z(constante)), PENTE)
+        return tuple(
+            sp.simplify((VARIABLE * self.psi + self.phi).subs(PENTE, z))
+            for z in branches
+        )
+
     def pentes_constantes(self) -> tuple[sp.Expr, ...]:
         """Les zeros de `z - psi(z)`."""
         racines = sp.solve(sp.Eq(PENTE - self.psi, 0), PENTE)

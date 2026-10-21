@@ -23,3 +23,21 @@ def forme_sur_la_surface(
         sp.simplify(sp.diff(b, u) - c * sp.diff(a, u)),
         sp.simplify(sp.diff(b, v) - c * sp.diff(a, v)),
     )
+
+
+def integrer_sur_la_surface(
+    parametrage: tuple[object, object, object], u: sp.Symbol, v: sp.Symbol
+) -> sp.Expr:
+    """`G(u, v)`, constante le long des solutions, quand `A du + B dv = 0` se separe.
+
+    `dv / du = -A / B = f(u) g(v)` donne `int dv / g(v) - int f(u) du = C`
+    (exemple 1.18, page 33).
+    """
+    en_u, en_v = forme_sur_la_surface(parametrage, u, v)
+    pente = sp.simplify(-en_u / en_v)
+    facteurs = sp.separatevars(pente, symbols=[u, v], dict=True)
+    if facteurs is None:
+        msg = f"dv/du = {pente} ne se separe pas en f(u) g(v)"
+        raise ValueError(msg)
+    f = facteurs["coeff"] * facteurs[u]
+    return sp.simplify(sp.integrate(1 / facteurs[v], v) - sp.integrate(f, u))
