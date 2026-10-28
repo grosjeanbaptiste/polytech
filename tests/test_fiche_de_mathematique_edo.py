@@ -9,7 +9,6 @@ Laplace : chaque formule, piege, cas chiffre et point de figure de
 from __future__ import annotations
 
 import sympy as sp
-from sympy.calculus.util import continuous_domain
 
 from polytech.maths.domain.comparaison import egales
 from polytech.maths.domain.differentielles.lineaire import EquationLineaire
@@ -17,6 +16,7 @@ from polytech.maths.domain.differentielles.operateurs import D, OperateurDiffere
 from polytech.maths.domain.differentielles.ordre_n import solution_de_cauchy
 from polytech.maths.domain.differentielles.particulieres import pour_un_polynome
 from polytech.maths.domain.differentielles.premier_ordre import VARIABLE as X
+from polytech.maths.domain.differentielles.prolongement import intervalles_de_definition
 from polytech.maths.domain.differentielles.second_ordre import EquationDuSecondOrdre
 from polytech.maths.domain.laplace.heaviside import fractions_simples
 from polytech.maths.domain.laplace.ordre_n import ProblemeLineaire
@@ -43,13 +43,13 @@ def test_janvier_2021_3_les_solutions_de_y_prime_moins_2ty_egal_t() -> None:
 
 
 def test_janvier_2021_3_tan_et_cot_ne_sont_definies_que_par_intervalles() -> None:
-    """`intervalles_de_definition` leve sur ces poles periodiques : sympy direct."""
-    tangente = continuous_domain(sp.tan(X), X, sp.S.Reals)
-    cotangente = continuous_domain(sp.cot(X), X, sp.S.Reals)
-    assert all(tangente.contains(v) for v in (0, 1))
-    assert not any(tangente.contains(v) for v in (sp.pi / 2, -sp.pi / 2))
-    assert all(cotangente.contains(v) for v in (1, sp.pi / 2))
-    assert not any(cotangente.contains(v) for v in (0, sp.pi))
+    demi = sp.pi / 2
+    etude = sp.Interval(-2, 4)
+    tangente = intervalles_de_definition(sp.tan(X), etude)
+    assert sp.Interval.open(-demi, demi) in tangente
+    cotangente = intervalles_de_definition(sp.cot(X), etude)
+    assert sp.Interval.open(0, sp.pi) in cotangente
+    assert all(not i.contains(0) for i in cotangente)
 
 
 def test_les_racines_caracteristiques_des_deux_examens_et_de_la_figure() -> None:

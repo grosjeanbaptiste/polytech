@@ -2,13 +2,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import Callable, Sequence
 
 from outils.fiches.pgf import Trace, Valeur, traces
 from tests.fiches_toml import figure
-
-if TYPE_CHECKING:
-    from collections.abc import Callable, Sequence
 
 Reference = Callable[[float], Valeur]
 ECHANTILLONS = 9
