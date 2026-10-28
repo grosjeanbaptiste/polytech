@@ -6,6 +6,8 @@ Articles 10, 11 et 37 a 40 de `cursus/fiches/ElectroniqueInstrumentation.toml`.
 from __future__ import annotations
 
 import math
+import tomllib
+from pathlib import Path
 
 import sympy as sp
 
@@ -91,3 +93,12 @@ def test_la_patte_opposee_d_un_boitier_est_n_plus_un_moins_k() -> None:
     for pattes in (8, 14, 16):
         for k in range(1, pattes + 1):
             assert numero_oppose_sur_un_dip(k, pattes) == pattes + 1 - k
+
+
+def test_la_figure_du_convertisseur_ecrit_le_meme_pas_que_l_article() -> None:
+    """Article « Choisir le convertisseur » : `2^n - 1` partout, jamais `2^n`."""
+    chemin = Path(__file__).resolve().parent.parent / "cursus" / "fiches"
+    fiche = tomllib.loads((chemin / "ElectroniqueInstrumentation.toml").read_text("utf-8"))
+    article = next(a for a in fiche["article"] if a["notion"] == "echantillonnage_et_quantification")
+    assert "2^n - 1" in article["formule"]
+    assert "2^n - 1" in article["figure"]

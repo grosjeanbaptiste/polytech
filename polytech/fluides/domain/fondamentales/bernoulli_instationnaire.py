@@ -31,6 +31,7 @@ def terme_instationnaire(
 def pression_en_aval_instationnaire(  # noqa: PLR0913 -- les sept grandeurs de l'equation
     pression_amont: float,
     masse_volumique: float,
+    *,
     vitesse_amont: float,
     vitesse_aval: float,
     altitude_amont: float,

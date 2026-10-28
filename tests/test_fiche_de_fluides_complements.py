@@ -107,10 +107,24 @@ def test_une_aspiration_trop_haute_cavite() -> None:
 
 def test_bernoulli_s_ecrit_a_un_instant_et_le_terme_instationnaire_le_dit() -> None:
     assert "deux instants" in _article("equation_de_bernoulli")["piege"]
-    stationnaire = pression_en_aval_instationnaire(2e5, 1000.0, 1.0, 1.0, 0.0, 0.0, 0.0)
+    stationnaire = pression_en_aval_instationnaire(
+        2e5,
+        1000.0,
+        vitesse_amont=1.0,
+        vitesse_aval=1.0,
+        altitude_amont=0.0,
+        altitude_aval=0.0,
+        terme=0.0,
+    )
     terme = terme_instationnaire(0.01, [(5.0, 0.01)])
     instationnaire = pression_en_aval_instationnaire(
-        2e5, 1000.0, 1.0, 1.0, 0.0, 0.0, terme
+        2e5,
+        1000.0,
+        vitesse_amont=1.0,
+        vitesse_aval=1.0,
+        altitude_amont=0.0,
+        altitude_aval=0.0,
+        terme=terme,
     )
     assert stationnaire - instationnaire == pytest.approx(1000.0 * 5.0)
 

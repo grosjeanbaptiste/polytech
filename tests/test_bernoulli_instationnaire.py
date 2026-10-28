@@ -47,31 +47,77 @@ def test_un_troncon_absent_ou_degenere_leve(
 def test_la_colonne_horizontale_obeit_a_newton() -> None:
     rho, longueur, a = 1000.0, 4.0, 0.5
     terme = terme_instationnaire(a * 0.01, [(longueur, 0.01)])
-    p2 = pression_en_aval_instationnaire(2e5, rho, 1.0, 1.0, 0.0, 0.0, terme)
+    p2 = pression_en_aval_instationnaire(
+        2e5,
+        rho,
+        vitesse_amont=1.0,
+        vitesse_aval=1.0,
+        altitude_amont=0.0,
+        altitude_aval=0.0,
+        terme=terme,
+    )
     assert 2e5 - p2 == pytest.approx(rho * longueur * a)
 
 
 def test_sans_acceleration_la_charge_de_bernoulli_se_conserve() -> None:
     rho, p1, v1, v2, z1, z2 = 1000.0, 2e5, 1.0, 3.0, 5.0, 2.0
-    p2 = pression_en_aval_instationnaire(p1, rho, v1, v2, z1, z2, 0.0)
+    p2 = pression_en_aval_instationnaire(
+        p1,
+        rho,
+        vitesse_amont=v1,
+        vitesse_aval=v2,
+        altitude_amont=z1,
+        altitude_aval=z2,
+        terme=0.0,
+    )
     avant = p1 + rho * PESANTEUR * z1 + rho * v1**2 / 2
     apres = p2 + rho * PESANTEUR * z2 + rho * v2**2 / 2
     assert apres == pytest.approx(avant)
 
 
 def test_une_acceleration_positive_abaisse_la_pression_en_aval() -> None:
-    stationnaire = pression_en_aval_instationnaire(2e5, 1000.0, 1.0, 1.0, 0.0, 0.0, 0.0)
+    stationnaire = pression_en_aval_instationnaire(
+        2e5,
+        1000.0,
+        vitesse_amont=1.0,
+        vitesse_aval=1.0,
+        altitude_amont=0.0,
+        altitude_aval=0.0,
+        terme=0.0,
+    )
     instationnaire = pression_en_aval_instationnaire(
-        2e5, 1000.0, 1.0, 1.0, 0.0, 0.0, 2.0
+        2e5,
+        1000.0,
+        vitesse_amont=1.0,
+        vitesse_aval=1.0,
+        altitude_amont=0.0,
+        altitude_aval=0.0,
+        terme=2.0,
     )
     assert instationnaire == pytest.approx(stationnaire - 2000.0)
 
 
 def test_une_deceleration_releve_la_pression_c_est_le_coup_de_belier() -> None:
-    p = pression_en_aval_instationnaire(2e5, 1000.0, 1.0, 1.0, 0.0, 0.0, -2.0)
+    p = pression_en_aval_instationnaire(
+        2e5,
+        1000.0,
+        vitesse_amont=1.0,
+        vitesse_aval=1.0,
+        altitude_amont=0.0,
+        altitude_aval=0.0,
+        terme=-2.0,
+    )
     assert p == pytest.approx(2e5 + 2000.0)
 
 
 def test_une_masse_volumique_non_positive_leve() -> None:
     with pytest.raises(ValueError, match="masse volumique"):
-        pression_en_aval_instationnaire(2e5, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0)
+        pression_en_aval_instationnaire(
+            2e5,
+            0.0,
+            vitesse_amont=1.0,
+            vitesse_aval=1.0,
+            altitude_amont=0.0,
+            altitude_aval=0.0,
+            terme=0.0,
+        )
