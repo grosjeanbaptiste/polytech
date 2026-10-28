@@ -1,4 +1,4 @@
-"""Les courbes de rayonnement de la fiche de thermique, calculees par la bibliotheque."""
+"""Les courbes de rayonnement de la fiche de thermique, par la bibliotheque."""
 
 from __future__ import annotations
 
@@ -60,7 +60,7 @@ def transmission_du_verre() -> Points:
 
 
 def facteur_de_deux_plans() -> Points:
-    """`F_12` selon `epsilon_2`, `epsilon_1 = 0,9` : le flux sur `sigma (T_1^4 - T_2^4)`."""
+    """`F_12` selon `epsilon_2` (`epsilon_1 = 0,9`) : flux sur `sigma dT4`."""
     t1, t2 = 400.0, 300.0
     ecart = emittance(t1) - emittance(t2)
     return [

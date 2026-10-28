@@ -1,4 +1,4 @@
-"""Les courbes de convection et d'echangeurs de la fiche, calculees par la bibliotheque."""
+"""Les courbes de convection et d'echangeurs de la fiche, par la bibliotheque."""
 
 from __future__ import annotations
 
