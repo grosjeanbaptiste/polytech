@@ -64,3 +64,35 @@ def cherche(motif: str, texte: str, groupe: int = 0) -> str:
         msg = f"motif absent de la figure : {motif}"
         raise AssertionError(msg)
     return trouve.group(groupe)
+
+
+def texte(matiere: str, notion: str) -> str:
+    """Tout le texte d'un article : formule, raison, piege et cas."""
+    article = articles(matiere)[notion]
+    morceaux = [article.get(c, "") for c in ("formule", "raison", "piege")]
+    morceaux += [c["texte"] for c in article.get("cas", [])]
+    return "\n".join(morceaux)
+
+
+def latex_vers_sympy(fragment: str) -> sp.Expr:
+    r"""Un fragment LaTeX de la fiche (`\frac`, `\sqrt`, `^{}`, `\ln`...) en sympy."""
+    s = re.sub(r"\\[,;]|\\ ", "", fragment)
+    s = re.sub(r"\\[td]frac", r"\\frac", s)
+    s = re.sub(r"\\frac(\d)(\d)", r"\\frac{\1}{\2}", s)
+    s = re.sub(r"\\sqrt(\d)", r"\\sqrt{\1}", s)
+    s = re.sub(r"\^\{([^{}]*)\}", r"**(\1)", s)
+    for _ in range(4):
+        s = re.sub(r"\\frac\{([^{}]*)\}\{([^{}]*)\}", r"((\1)/(\2))", s)
+        s = re.sub(r"\\sqrt\{([^{}]*)\}", r"sqrt(\1)", s)
+    s = s.replace("\\ln", "log").replace("\\arctan", "atan").replace("\\pi", "pi")
+    s = re.sub(r"(atan|log) ?(\d+)", r"\1(\2)", s)
+    s = re.sub(r"\^(\w)", r"**\1", s)
+    s = re.sub(r"(?<![A-Za-z])e\*\*", "E**", s).replace("{", "(").replace("}", ")")
+    from sympy.parsing.sympy_parser import (  # noqa: PLC0415 -- import local : sympy.parsing est lent
+        implicit_multiplication_application,
+        parse_expr,
+        standard_transformations,
+    )
+
+    transformations = (*standard_transformations, implicit_multiplication_application)
+    return sp.sympify(parse_expr(s, transformations=transformations))

@@ -49,6 +49,10 @@ class VitreSelective:
     def _fraction(self, temperature: float) -> float:
         return fraction_emise_sous(self.coupure, temperature)
 
+    def transmission_spectrale(self, longueur_d_onde: float) -> float:
+        """`tau_lambda` : la marche, `tau` sous la coupure et zero au-dela."""
+        return self.transmission_courte if longueur_d_onde < self.coupure else 0.0
+
     def transmission(self, temperature: float) -> float:
         """La transmission globale pour une source a cette temperature."""
         return self.transmission_courte * self._fraction(temperature)

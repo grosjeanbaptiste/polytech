@@ -27,15 +27,21 @@ def test_les_extremites_donnent_le_rendement_du_cocourant() -> None:
 def test_le_bilan_et_la_moyenne_logarithmique_sont_coherents() -> None:
     """`C_1 (t_1E - t_1S) = K S dt_log`, avec `N = K S / C_1`."""
     unites, c1 = 0.9, 100.0
-    chaud, froid = profils_cocourants(*ENTREES, unites=unites, rapport=1.0, position=1.0)
+    chaud, froid = profils_cocourants(
+        *ENTREES, unites=unites, rapport=1.0, position=1.0
+    )
     ecart_b = chaud - froid
     flux = c1 * (90.0 - chaud)
-    assert proches_relativement(flux, unites * c1 * moyenne_logarithmique(70.0, ecart_b), 1e-9)
+    assert proches_relativement(
+        flux, unites * c1 * moyenne_logarithmique(70.0, ecart_b), 1e-9
+    )
 
 
 def test_a_l_entree_les_temperatures_sont_celles_de_l_entree() -> None:
     """`x = 0` : rien n'a ete echange."""
-    assert profils_cocourants(*ENTREES, unites=1.0, rapport=1.0, position=0.0) == ENTREES
+    assert (
+        profils_cocourants(*ENTREES, unites=1.0, rapport=1.0, position=0.0) == ENTREES
+    )
 
 
 def test_une_position_hors_de_l_echangeur_est_refusee() -> None:
