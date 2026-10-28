@@ -83,5 +83,23 @@ def test_une_edition_de_liens_qui_echoue_partout_est_nommee(tmp_path: Path) -> N
         encoding="utf-8",
     )
     faux.chmod(0o755)
-    with pytest.raises(EditionDeLiensImpossible, match="library not found"):
+    with pytest.raises(
+        EditionDeLiensImpossible, match="edition de liens impossible"
+    ) as e:
+        CompilateurClang(candidats=(str(faux),)).executer("int main(){}")
+    assert "ld: library not found" in str(e.value)
+
+
+def test_un_programme_qui_rend_un_code_d_erreur_est_nomme(tmp_path: Path) -> None:
+    # Faux compilateur : la syntaxe et le lien passent, le binaire produit sort en 3.
+    faux = tmp_path / "faux-clang"
+    faux.write_text(
+        "#!/bin/sh\n"
+        'for a in "$@"; do [ "$a" = -fsyntax-only ] && exit 0; done\n'
+        'while [ $# -gt 0 ]; do [ "$1" = -o ] && sortie="$2"; shift; done\n'
+        'printf "#!/bin/sh\\nexit 3\\n" > "$sortie"\nchmod +x "$sortie"\n',
+        encoding="utf-8",
+    )
+    faux.chmod(0o755)
+    with pytest.raises(RuntimeError, match="le programme a rendu le code 3"):
         CompilateurClang(candidats=(str(faux),)).executer("int main(){}")

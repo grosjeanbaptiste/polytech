@@ -95,4 +95,5 @@ def _lier(commande: list[str]) -> None:
     if lien.returncode != 0 and SDK_DE_REPLI.exists():
         lien = _lancer(commande, {**os.environ, "SDKROOT": str(SDK_DE_REPLI)})
     if lien.returncode != 0:
-        raise EditionDeLiensImpossible(lien.stderr.strip()[-300:])
+        msg = f"edition de liens impossible : {lien.stderr.strip()[-300:]}"
+        raise EditionDeLiensImpossible(msg)
