@@ -5,7 +5,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final
 
 from polytech.thermique.domain.convection.couches_limites import angle_de_decollement
-from polytech.thermique.domain.convection.forcee import nusselt_plaque
+from polytech.thermique.domain.convection.forcee import (
+    REYNOLDS_CRITIQUE_TUBE,
+    nusselt_plaque,
+)
 from polytech.thermique.domain.convection.naturelle import (
     grashof,
     nusselt_lame_de_fluide,
@@ -126,3 +129,8 @@ def efficacite_a_courants_paralleles() -> Points:
 
 def _efficacite(sens: Sens, rapport: float) -> Points:
     return [(n / 20, rendement(sens, n / 20, rapport)) for n in range(1, 101)]
+
+
+def reynolds_critique_du_tube() -> float:
+    """Le seuil laminaire / turbulent en tube du formulaire : 2400."""
+    return float(REYNOLDS_CRITIQUE_TUBE)

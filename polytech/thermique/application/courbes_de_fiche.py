@@ -56,6 +56,7 @@ VALEURS: dict[str, Callable[[], float]] = {
     "temperature_du_soleil": ray.temperature_du_soleil,
     "temperature_du_corps": ray.temperature_du_corps,
     "decollement": conv.angle_de_separation,
+    "reynolds_critique_du_tube": conv.reynolds_critique_du_tube,
     "rc_charge_a_tau": em.charge_a_tau,
     "echangeur_dt1_froid": lambda: conv.ecart_en(0.02)[0],
     "echangeur_dt1_chaud": lambda: conv.ecart_en(0.02)[1],
