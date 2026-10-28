@@ -23,9 +23,10 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from scipy import signal
+from scipy.interpolate import CubicSpline
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Callable, Sequence
 
 TOLERANCE_DE_DOMINANCE = 1e-9
 """Deux poles conjugues ont la meme partie reelle, a l'arrondi pres."""
@@ -76,20 +77,44 @@ def routh_du_troisieme_degre(coefficients: Sequence[float]) -> float:
     return deux * un - trois * zero
 
 
+_POINTS_DE_LA_GRILLE = 20_001
+
+
+def _simulee(
+    simulateur: Callable[..., tuple[np.ndarray, np.ndarray]],
+    systeme: tuple[Sequence[float], Sequence[float]],
+    instants: np.ndarray,
+) -> np.ndarray:
+    """La reponse aux instants donnes, quels qu'ils soient.
+
+    `scipy.signal` exige des instants regulierement espaces et simule depuis
+    `T[0]` comme si c'etait `t = 0`. Hors de ce cas, on simule sur une grille
+    reguliere depuis l'origine et on interpole (spline cubique).
+    """
+    temps = np.asarray(instants, dtype=float)
+    if temps.size == 0 or temps.min() < 0:
+        msg = f"instant negatif ou liste vide : {temps}"
+        raise ValueError(msg)
+    regulier = temps.size > 1 and np.allclose(np.diff(temps), temps[1] - temps[0])
+    if temps[0] == 0 and regulier:
+        return np.asarray(simulateur(systeme, T=temps)[1], dtype=float)
+    grille = np.linspace(0.0, max(float(temps.max()), 1e-12), _POINTS_DE_LA_GRILLE)
+    reponse = np.asarray(simulateur(systeme, T=grille)[1], dtype=float)
+    return np.asarray(CubicSpline(grille, reponse)(temps), dtype=float)
+
+
 def reponse_impulsionnelle(
     numerateur: Sequence[float], denominateur: Sequence[float], instants: np.ndarray
 ) -> np.ndarray:
     """`h(t)`, l'original de la transmittance, aux instants donnes."""
-    _, reponse = signal.impulse((numerateur, denominateur), T=instants)
-    return np.asarray(reponse, dtype=float)
+    return _simulee(signal.impulse, (numerateur, denominateur), instants)
 
 
 def reponse_indicielle(
     numerateur: Sequence[float], denominateur: Sequence[float], instants: np.ndarray
 ) -> np.ndarray:
     """La reponse a l'echelon, aux instants donnes."""
-    _, reponse = signal.step((numerateur, denominateur), T=instants)
-    return np.asarray(reponse, dtype=float)
+    return _simulee(signal.step, (numerateur, denominateur), instants)
 
 
 def approximation_dominante(

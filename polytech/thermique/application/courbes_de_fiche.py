@@ -6,7 +6,7 @@ nombre) : le gabarit les remplace par ce que la bibliotheque calcule.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from polytech.electromagnetisme.application import courbes_fiche as em
 from polytech.thermique.application import (
@@ -19,6 +19,9 @@ from polytech.thermique.application import (
     courbes_fiche_rayonnement as ray,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 type Points = list[tuple[float, float]]
 
 COURBES: dict[str, Callable[[], Points]] = {
@@ -26,6 +29,7 @@ COURBES: dict[str, Callable[[], Points]] = {
     "continuite_cordes": cond.cordes,
     "tube_flux": cond.flux_du_tube_isole,
     "barre_refroidie": cond.barre_refroidie,
+    "ailette_efficacite": cond.efficacite_d_ailette,
     "solide_decroissance": cond.decroissance_du_solide,
     "solide_tangente": cond.tangente_du_solide,
     "planck_soleil": ray.planck_du_soleil,

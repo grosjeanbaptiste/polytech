@@ -11,12 +11,13 @@ from typing import Final
 
 import sympy as sp
 
-from polytech.thermique.domain.conduction.barre_isolee import profil_de_barre_isolee
-from polytech.thermique.domain.conduction.parois import Tube, flux_lineique_de_tubes
-from polytech.thermique.domain.conduction.rayon_critique import rayon_critique
 from polytech.thermique.domain.coefficient_global import (
     coefficient_de_rayonnement_exact,
 )
+from polytech.thermique.domain.conduction.ailettes import AiletteDroite
+from polytech.thermique.domain.conduction.barre_isolee import profil_de_barre_isolee
+from polytech.thermique.domain.conduction.parois import Tube, flux_lineique_de_tubes
+from polytech.thermique.domain.conduction.rayon_critique import rayon_critique
 from polytech.thermique.domain.continuite_du_flux import temperature_superficielle
 from polytech.thermique.domain.inertie import SolideIsotherme
 
@@ -30,6 +31,7 @@ AMBIANT: Final = 300.0
 EMISSIVITE: Final = 0.9
 BORNES_DU_BILAN: Final = (280.0, 360.0)
 CORDE: Final = (300.0, 340.0)
+RAPPORT_MAXIMAL: Final = 8.0
 
 
 def ecart_de_bilan(temperature: float) -> float:
@@ -65,9 +67,13 @@ def racine_du_bilan() -> float:
 
 def flux_du_tube_isole() -> Points:
     """Flux par metre / `2 pi` selon `r_e / r_i` (`lambda = 2 K r_i`, `Dt = 1`)."""
-    pas = [1.02 + 0.07 * i for i in range(100) if 1.02 + 0.07 * i <= 8]
+    pas = [1.02 + 0.07 * i for i in range(100) if 1.02 + 0.07 * i <= RAPPORT_MAXIMAL]
     return [
-        (x, flux_lineique_de_tubes([Tube(1.0, x, 2.0)], 1.0, 0.0, exterieur=1.0) / (2 * math.pi))
+        (
+            x,
+            flux_lineique_de_tubes([Tube(1.0, x, 2.0)], 1.0, 0.0, exterieur=1.0)
+            / (2 * math.pi),
+        )
         for x in pas
     ]
 
@@ -103,5 +109,15 @@ def decroissance_du_solide() -> Points:
 def tangente_du_solide() -> Points:
     """La tangente a l'origine, tiree de la derivee de la decroissance."""
     tau = sp.Symbol("tau", nonnegative=True)
-    pente = float(sp.diff(SolideIsotherme(1.0, 1.0).ecart_reduit(tau), tau).subs(tau, 0))
+    pente = float(
+        sp.diff(SolideIsotherme(1.0, 1.0).ecart_reduit(tau), tau).subs(tau, 0)
+    )
     return [(0.0, 1.0), (1.0, 1.0 + pente)]
+
+
+def efficacite_d_ailette() -> Points:
+    """`tanh(m l) / (m l)` pour `m l` de 0,01 a 3 (`m = 1`, `l` variable)."""
+    return [
+        (x, AiletteDroite(1.0, x).efficacite())
+        for x in (0.01 + 2.99 * i / 99 for i in range(100))
+    ]

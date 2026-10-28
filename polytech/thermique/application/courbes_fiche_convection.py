@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
-from polytech.thermique.application.courbes_fiche_conduction import Points
 from polytech.thermique.domain.convection.couches_limites import angle_de_decollement
 from polytech.thermique.domain.convection.forcee import nusselt_plaque
 from polytech.thermique.domain.convection.naturelle import (
@@ -17,6 +16,9 @@ from polytech.thermique.domain.echangeurs_a_courants_paralleles import Sens
 from polytech.thermique.domain.profils_d_echangeur import profils_cocourants
 from polytech.thermique.domain.rendement_d_echangeur import rendement
 
+if TYPE_CHECKING:
+    from polytech.thermique.application.courbes_fiche_conduction import Points
+
 REYNOLDS_PLAQUE: Final = 1e5
 PRANDTL: Final = 0.71
 ENTREES: Final = (90.0, 20.0)
@@ -25,6 +27,8 @@ UNITES: Final = 1.0
 LAME: Final = (1 / 283.0, 20.0, 1.236e-5)
 """`(beta, ecart, nu)` de la lame d'air du syllabus (tome 2, 1.7)."""
 CONDUCTIVITE_DE_L_AIR: Final = 0.023
+BORD: Final = 1e-9
+"""Marge relative pour ne pas tomber dans la zone non correlee par arrondi."""
 
 
 def coefficient_local_de_la_plaque() -> Points:
@@ -54,6 +58,10 @@ def _epaisseur_au_rayleigh(valeur: float) -> float:
     return float((valeur / unitaire) ** (1 / 3))
 
 
+def _resistance(epaisseur: float, nusselt: float) -> float:
+    return epaisseur / (CONDUCTIVITE_DE_L_AIR * nusselt)
+
+
 def resistance_de_la_lame() -> Points:
     """`b / (lambda Nu)` reduite, `b` en mm : les points ou la correlation existe.
 
@@ -61,17 +69,24 @@ def resistance_de_la_lame() -> Points:
     les deux bornes, qui sont des points de la correlation.
     """
     beta, ecart, nu = LAME
-    bornes = [_epaisseur_au_rayleigh(1400.0), _epaisseur_au_rayleigh(6000.0)]
-    epaisseurs = [b / 1000 for b in range(1, 41) if not bornes[0] < b / 1000 < bornes[1]]
-    epaisseurs = sorted({*epaisseurs, *bornes})
-    brut = [
-        (b, b / (CONDUCTIVITE_DE_L_AIR * nusselt_lame_de_fluide(
-            rayleigh(grashof(beta, ecart, b, nu), PRANDTL)
-        )))
-        for b in epaisseurs
+    bas, haut = _epaisseur_au_rayleigh(1400.0), _epaisseur_au_rayleigh(6000.0)
+    points = [
+        (
+            b,
+            _resistance(
+                b,
+                nusselt_lame_de_fluide(rayleigh(grashof(beta, ecart, b, nu), PRANDTL)),
+            ),
+        )
+        for b in (m / 1000 for m in range(1, 41))
+        if not bas * (1 - BORD) <= b <= haut * (1 + BORD)
     ]
-    maximum = max(r for _, r in brut)
-    return [(b * 1000, r / maximum) for b, r in brut]
+    points += [
+        (bas, _resistance(bas, nusselt_lame_de_fluide(1400.0 * (1 - BORD)))),
+        (haut, _resistance(haut, nusselt_lame_de_fluide(6000.0 * (1 + BORD)))),
+    ]
+    maximum = max(r for _, r in points)
+    return [(b * 1000, r / maximum) for b, r in sorted(points)]
 
 
 def profil_chaud() -> Points:

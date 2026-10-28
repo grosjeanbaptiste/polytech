@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
-from polytech.thermique.application.courbes_fiche_conduction import Points
 from polytech.thermique.domain.coefficient_global import (
     coefficient_de_rayonnement_linearise,
 )
@@ -17,6 +16,9 @@ from polytech.thermique.domain.rayonnement.surfaces_grises import (
     flux_entre_deux_plans_gris,
 )
 from polytech.thermique.domain.rayonnement.vitre_selective import VitreSelective
+
+if TYPE_CHECKING:
+    from polytech.thermique.application.courbes_fiche_conduction import Points
 
 MICRO: Final = 1e-6
 SOLEIL: Final = 5800.0
@@ -83,4 +85,3 @@ def temperature_du_soleil() -> float:
 def temperature_du_corps() -> float:
     """Pour la legende."""
     return CORPS
-

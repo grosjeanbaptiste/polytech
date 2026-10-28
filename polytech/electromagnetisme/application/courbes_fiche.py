@@ -14,7 +14,10 @@ type Points = list[tuple[float, float]]
 
 def _courbe(expression: sp.Expr, debut: float, fin: float, pas: int) -> Points:
     return [
-        (debut + (fin - debut) * i / pas, float(expression.subs(TEMPS, debut + (fin - debut) * i / pas)))
+        (
+            debut + (fin - debut) * i / pas,
+            float(expression.subs(TEMPS, debut + (fin - debut) * i / pas)),
+        )
         for i in range(pas + 1)
     ]
 
