@@ -5,6 +5,8 @@ import sys
 
 import pytest
 
+from polytech import noyau
+
 
 def test_l_extension_absente_leve_en_disant_comment_la_construire(
     monkeypatch: pytest.MonkeyPatch,
@@ -17,6 +19,4 @@ def test_l_extension_absente_leve_en_disant_comment_la_construire(
 
 
 def test_l_extension_presente_est_exposee() -> None:
-    from polytech import noyau
-
     assert noyau.core.en_degres(0.0) == 0.0

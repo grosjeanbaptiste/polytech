@@ -50,3 +50,8 @@ def erreur_de_perturbation(boucle: Boucle, amplitude: sp.Expr) -> sp.Expr:
     """`e_P(infini)` sous une perturbation constante `P^0`."""
     _exiger_la_stabilite(boucle)
     return sp.limit(boucle.vis_a_vis_de_la_perturbation() * amplitude, P, 0, "+")
+
+
+def erreur_de_consigne_selon_la_fiche(boucle: Boucle, amplitude: sp.Expr) -> sp.Expr:
+    """`Y_i - y(infini)`, l'ecart que le cours ecrit : l'oppose de la precedente."""
+    return -erreur_de_consigne(boucle, amplitude)

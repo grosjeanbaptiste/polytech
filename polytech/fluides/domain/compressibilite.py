@@ -9,8 +9,42 @@ valeur d'arret, `(rho_0 - rho) / rho_0`, et c'est elle qui vaut 4,4 % a
 
 from __future__ import annotations
 
-from polytech.fluides.domain.regimes import GAMMA_DE_L_AIR
+from enum import Enum
+from typing import Final
+
+from polytech.fluides.domain.regimes import GAMMA_DE_L_AIR, MACH_INCOMPRESSIBLE
 from polytech.noyau import core
+
+MACH_SONIQUE: Final = 1.0
+"""La vitesse du son : `Ma = 1`, par definition du nombre de Mach."""
+
+MACH_HYPERSONIQUE: Final = 5.0
+"""Convention usuelle de l'aerodynamique (hors planche) : hypersonique au-dela."""
+
+
+class RegimeDeMach(Enum):
+    """Les quatre domaines que la fiche dessine sur l'axe des Mach."""
+
+    INCOMPRESSIBLE = "incompressible"
+    SUBSONIQUE = "subsonique"
+    SUPERSONIQUE = "supersonique"
+    HYPERSONIQUE = "hypersonique"
+
+
+def regime_de_mach(mach: float) -> RegimeDeMach:
+    """Le domaine de `Ma` : `< 0,3`, `< 1`, `<= 5`, au-dela."""
+    if mach < 0:
+        msg = f"nombre de Mach negatif : {mach}"
+        raise ValueError(msg)
+    if mach < MACH_INCOMPRESSIBLE:
+        return RegimeDeMach.INCOMPRESSIBLE
+    if mach < MACH_SONIQUE:
+        return RegimeDeMach.SUBSONIQUE
+    return (
+        RegimeDeMach.SUPERSONIQUE
+        if mach <= MACH_HYPERSONIQUE
+        else RegimeDeMach.HYPERSONIQUE
+    )
 
 
 def variation_relative_a_l_arret(mach: float) -> float:

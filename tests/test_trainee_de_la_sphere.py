@@ -1,8 +1,8 @@
 """La courbe C_D(Re) de la sphere et la crise de trainee (fascicule 8).
 
 Oracles : la loi de Stokes `24 / Re` (planche de la sphere), la
-correlation publiee de Morrison (2013, *An improved correlation for drag
-on a smooth sphere*, valable jusqu'a Re = 10^6), et la fiche : la
+correlation de Morrison (2013, valable jusqu'a Re = 10^6, lue dans
+https://fluids.readthedocs.io/_modules/fluids/drag.html), et la fiche : la
 couche limite devient turbulente, la traînée chute vers Re ~ 3.10^5.
 """
 

@@ -6,7 +6,11 @@ Colebrook, le terme `2,51 / (Re sqrt(lambda))` devient negligeable devant
 `eps / (3,71 D)` et il reste
 `1 / sqrt(lambda) = -2 log10(eps / (3,71 D))` -- la limite que
 Nikuradse ecrit `1,14 - 0,868 ln(eps / D)`. Le critere de Nikuradse est
-`Re_eps = Re (eps / D) sqrt(lambda / 8) > 70`.
+`Re_eps = Re (eps / D) sqrt(lambda / 8) > 70`, c'est-a-dire
+`k_s+ = k_s u_tau / nu` avec `u_tau = V sqrt(lambda / 8)` : « lisse hydrauliquement
+pour `k_s+ < 5`, completement rugueux pour `k_s+ > 70` » (Nikuradse 1933,
+cite par Abderrahaman-Elena et al., JFM 865, 2019 ;
+https://ar5iv.org/abs/1808.10825, verifie par KAG).
 """
 
 from __future__ import annotations

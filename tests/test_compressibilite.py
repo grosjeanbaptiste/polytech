@@ -4,7 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from polytech.fluides.domain.compressibilite import variation_relative_a_l_arret
+from polytech.fluides.domain.compressibilite import (
+    MACH_HYPERSONIQUE,
+    MACH_SONIQUE,
+    RegimeDeMach,
+    regime_de_mach,
+    variation_relative_a_l_arret,
+)
 from polytech.fluides.domain.regimes import (
     ecart_rapporte_a_rho,
     variation_de_masse_volumique,
@@ -38,3 +44,16 @@ def test_un_mach_negatif_leve() -> None:
 def test_l_alias_nomme_la_definition_rapportee_a_rho() -> None:
     assert ecart_rapporte_a_rho is variation_de_masse_volumique
     assert ecart_rapporte_a_rho(0.3) > variation_relative_a_l_arret(0.3)
+
+
+def test_les_regimes_de_mach_et_leurs_bornes() -> None:
+    assert (MACH_SONIQUE, MACH_HYPERSONIQUE) == (1.0, 5.0)
+    assert regime_de_mach(0.2) is RegimeDeMach.INCOMPRESSIBLE
+    assert regime_de_mach(0.5) is RegimeDeMach.SUBSONIQUE
+    assert regime_de_mach(2.0) is RegimeDeMach.SUPERSONIQUE
+    assert regime_de_mach(6.0) is RegimeDeMach.HYPERSONIQUE
+
+
+def test_un_mach_negatif_n_a_pas_de_regime() -> None:
+    with pytest.raises(ValueError, match="negatif"):
+        regime_de_mach(-1.0)
