@@ -9,15 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from polytech.electronique.domain.amplification import (
-    gain_inverseur,
-    gain_non_inverseur,
-)
-from polytech.electronique.domain.defauts_aop import (
-    erreur_de_courant_de_decalage,
-    erreur_de_courant_de_polarisation,
-    erreur_de_tension_de_decalage,
-)
+from polytech.noyau import core
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,11 +29,13 @@ def decalage_du_non_inverseur(
     source: float,
 ) -> float:
     """`G (e_0 - R_s I_+) + R_f I_-`, `G = 1 + R_f / R_m`, en volts."""
-    gain = gain_non_inverseur(vers_la_masse, contre_reaction)
-    return (
-        erreur_de_tension_de_decalage(defauts.tension_de_decalage, gain)
-        - gain * erreur_de_courant_de_polarisation(defauts.courant_plus, source)
-        + erreur_de_courant_de_decalage(defauts.courant_moins, contre_reaction)
+    return core.decalage_du_non_inverseur(
+        defauts.tension_de_decalage,
+        defauts.courant_plus,
+        defauts.courant_moins,
+        vers_la_masse,
+        contre_reaction,
+        source,
     )
 
 
@@ -53,9 +47,11 @@ def decalage_de_l_inverseur(
     contre_reaction: float,
 ) -> float:
     """`-(R_f / R_e) V_e + (1 + R_f / R_e) e_0 + R_f I_-`, en volts."""
-    gain_de_bruit = gain_non_inverseur(resistance_entree, contre_reaction)
-    return (
-        gain_inverseur(resistance_entree, contre_reaction) * entree
-        + erreur_de_tension_de_decalage(defauts.tension_de_decalage, gain_de_bruit)
-        + erreur_de_courant_de_decalage(defauts.courant_moins, contre_reaction)
+    return core.decalage_de_l_inverseur(
+        entree,
+        defauts.tension_de_decalage,
+        defauts.courant_plus,
+        defauts.courant_moins,
+        resistance_entree,
+        contre_reaction,
     )

@@ -86,6 +86,7 @@ DECOMPOSITION = re.compile(
     r"(?:une?|[\w-]+)\s+corrigés? de signaux, "
     r"(?:une?|[\w-]+)\s+fiches? de révision(?: \([^)]*\))?, "
     r"les [\w-]+ syllabus qui les réunissent, "
+    r"le socle de preuves, "
     r"les [\w-]+ échelles des bases(?: \([^)]*\))?, "
     r"les\s+([\w-]+(?: et un)?) corrigés "
     r"d'électromagnétisme déjà écrits, et les (\d+) planches",
@@ -173,6 +174,21 @@ def test_le_nombre_de_syllabus_annonce_en_lettres_est_exact() -> None:
     trouve = SYLLABUS.search(README.read_text(encoding="utf-8"))
     assert trouve is not None
     assert NUMERAUX[trouve.group(1)] == _syllabus()
+
+
+def _socle_de_preuves() -> int:
+    """Le socle de preuves : un seul document, sous `travaux/Transversal/`."""
+    dossier = RACINE / "travaux" / "Transversal" / "socle-de-preuves"
+    return sum(
+        1
+        for source in dossier.glob("*.tex")
+        if r"\begin{document}" in source.read_text(encoding="utf-8")
+    )
+
+
+def test_le_socle_de_preuves_annonce_compte_un_document() -> None:
+    assert "le socle de preuves, " in README.read_text(encoding="utf-8")
+    assert _socle_de_preuves() == 1
 
 
 ECHELLES = re.compile(r"les ([\w-]+) échelles des bases")
@@ -318,6 +334,7 @@ def test_la_decomposition_fait_bien_le_total_annonce() -> None:
         + signaux
         + _fiches_de_revision()
         + _syllabus()
+        + _socle_de_preuves()
         + _echelles()
         + NUMERAUX[trouve.group(1)]
         + int(trouve.group(2))

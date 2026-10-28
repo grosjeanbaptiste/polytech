@@ -6,9 +6,9 @@ est celle de la source pour l'absorptivite, celle du corps pour l'emissivite.
 
 from __future__ import annotations
 
-import itertools
 from typing import TYPE_CHECKING
 
+from polytech.noyau import core
 from polytech.thermique.domain.rayonnement.corps_noir import fraction_emise_sous
 
 if TYPE_CHECKING:
@@ -22,15 +22,6 @@ def absorptivite_par_bandes(
 
     Il y a une bande de plus que de coupures : la derniere va a l'infini.
     """
-    if len(facteurs) != len(coupures) + 1:
-        msg = f"{len(facteurs)} facteurs, {len(coupures)} coupures (un de plus attendu)"
-        raise ValueError(msg)
-    if any(not 0 <= f <= 1 for f in facteurs):
-        msg = f"facteur hors de [0, 1] : {list(facteurs)}"
-        raise ValueError(msg)
-    if any(b <= a for a, b in itertools.pairwise(coupures)):
-        msg = f"coupures non croissantes : {list(coupures)}"
-        raise ValueError(msg)
+    core.valider_bandes(list(facteurs), list(coupures))
     parts = [fraction_emise_sous(c, temperature) for c in coupures]
-    bornes = [0.0, *parts, 1.0]
-    return sum(f * (bornes[i + 1] - bornes[i]) for i, f in enumerate(facteurs))
+    return core.moyenne_par_bandes(list(facteurs), parts)

@@ -21,7 +21,7 @@ CRITIQUES = [1, 1.0, sp.Integer(1), sp.Float(1.0), sp.Rational(2, 2)]
 def test_un_amortissement_unite_est_critique_sous_toute_ecriture(
     amortissement: object,
 ) -> None:
-    systeme = SecondOrdre(gain=1, constante=1, amortissement=amortissement)  # type: ignore[arg-type]
+    systeme = SecondOrdre(gain=1, constante=1, amortissement=amortissement)
     assert systeme.regime() == "poles reels confondus"
 
 
@@ -29,7 +29,7 @@ def test_un_amortissement_unite_est_critique_sous_toute_ecriture(
 def test_la_reponse_indicielle_critique_est_finie_sous_toute_ecriture(
     amortissement: object,
 ) -> None:
-    systeme = SecondOrdre(gain=1, constante=1, amortissement=amortissement)  # type: ignore[arg-type]
+    systeme = SecondOrdre(gain=1, constante=1, amortissement=amortissement)
     attendu = 1 - (1 + T) * sp.exp(-T)
     assert indicielle(systeme).subs(T, 1).is_finite
     assert egales(indicielle(systeme), attendu)

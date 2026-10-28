@@ -18,9 +18,16 @@ s'y ramene par son diametre hydraulique, `4 A / p`.
 
 from __future__ import annotations
 
-from polytech.thermique.domain.convection.couches_limites import (
-    REYNOLDS_CRITIQUE_EN_TUBE,
+from typing import Final
+
+from polytech.thermique.domain.convection.forcee import (
+    REYNOLDS_CRITIQUE_TUBE_FORMULAIRE_2019,
 )
+
+REYNOLDS_GARDE_TURBULENT: Final = REYNOLDS_CRITIQUE_TUBE_FORMULAIRE_2019
+"""Garde de Colburn, Sieder-Tate et de la transition : `Re > 2400`, comme le
+formulaire de 2019 et les examens. Changement de comportement assume : la
+garde etait 2320 (section 1.3.2 du tome 2, qui reste celle de `L_e`)."""
 
 _TIERS = 1.0 / 3.0
 
@@ -31,7 +38,7 @@ def sous_couche_en_tube(diametre: float, reynolds: float) -> float:
 
 
 def _exiger_le_turbulent(reynolds: float) -> None:
-    if reynolds <= REYNOLDS_CRITIQUE_EN_TUBE:
+    if reynolds <= REYNOLDS_GARDE_TURBULENT:
         msg = f"ecoulement non turbulent : Re_d = {reynolds:.3g}"
         raise ValueError(msg)
 

@@ -8,11 +8,9 @@ quand sa derivee en `r_e` s'annule, c'est-a-dire en `r_e = lambda / K_e`.
 
 from __future__ import annotations
 
-from polytech.thermique.domain.validation import exiger_strictement_positif
+from polytech.noyau import core
 
 
 def rayon_critique(conductivite: float, echange: float) -> float:
     """`r_c = lambda / K_e`, en metres."""
-    exiger_strictement_positif(conductivite, "conductivite de l'isolant")
-    exiger_strictement_positif(echange, "coefficient d'echange exterieur")
-    return conductivite / echange
+    return core.rayon_critique(conductivite, echange)

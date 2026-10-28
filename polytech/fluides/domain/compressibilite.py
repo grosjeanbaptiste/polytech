@@ -10,12 +10,9 @@ valeur d'arret, `(rho_0 - rho) / rho_0`, et c'est elle qui vaut 4,4 % a
 from __future__ import annotations
 
 from polytech.fluides.domain.regimes import GAMMA_DE_L_AIR
+from polytech.noyau import core
 
 
 def variation_relative_a_l_arret(mach: float) -> float:
     """`1 - (1 + (gamma - 1) Ma^2 / 2)^(-1/(gamma - 1))`, en ecoulement isentropique."""
-    if mach < 0:
-        msg = f"nombre de Mach negatif : {mach}"
-        raise ValueError(msg)
-    base = 1 + (GAMMA_DE_L_AIR - 1) * mach**2 / 2
-    return float(1 - base ** (-1 / (GAMMA_DE_L_AIR - 1)))
+    return core.variation_relative_a_l_arret(mach, GAMMA_DE_L_AIR)

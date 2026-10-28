@@ -46,8 +46,23 @@ def test_la_longueur_d_etablissement_suit_le_seuil_de_la_section_1_3_2() -> None
         couches_limites.longueur_d_etablissement(0.02, 2321.0)
 
 
-def test_colburn_suit_aujourd_hui_le_seuil_de_la_section_1_3_2() -> None:
-    """Etat constate, pas decision : le formulaire dit `Re > 2400`."""
+def test_la_garde_turbulente_suit_le_seuil_du_formulaire() -> None:
+    """Changement assume : Colburn, Sieder-Tate et la transition disent `Re > 2400`."""
+    assert (
+        tube_turbulent.REYNOLDS_GARDE_TURBULENT
+        == forcee.REYNOLDS_CRITIQUE_TUBE_FORMULAIRE_2019
+    )
+
+
+@pytest.mark.parametrize("reynolds", [2320.0, 2350.0, 2400.0])
+def test_la_bande_2320_a_2400_est_refusee_comme_la_source(reynolds: float) -> None:
     with pytest.raises(ValueError, match="non turbulent"):
-        tube_turbulent.nusselt_de_colburn(2320.0, 0.7)
-    assert tube_turbulent.nusselt_de_colburn(2350.0, 0.7) > 0
+        tube_turbulent.nusselt_de_colburn(reynolds, 0.7)
+    with pytest.raises(ValueError, match="non turbulent"):
+        tube_turbulent.nusselt_turbulent_de_sieder_et_tate(reynolds, 0.7)
+    with pytest.raises(ValueError, match="non turbulent"):
+        tube_turbulent.nusselt_de_transition(reynolds, 0.7, elancement=0.1)
+
+
+def test_juste_au_dessus_de_2400_colburn_calcule() -> None:
+    assert tube_turbulent.nusselt_de_colburn(2400.5, 0.7) > 0

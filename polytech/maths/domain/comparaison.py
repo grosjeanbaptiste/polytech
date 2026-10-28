@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING
 import sympy as sp
 
 from polytech.maths.domain.algebre.complexes import argument
+from polytech.noyau import core
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -79,26 +80,19 @@ def egales(obtenue: object, attendue: object) -> bool:
     return _ecart_nul(premiere - seconde)
 
 
-def _tolerance_valide(tolerance: float) -> float:
-    if math.isnan(tolerance) or tolerance < 0:
-        msg = f"tolerance invalide : {tolerance} (un ecart se mesure par un reel >= 0)"
-        raise ValueError(msg)
-    return tolerance
-
-
 def proches(valeur: complex, reference: complex, tolerance: float) -> bool:
     """`|valeur - reference| <= tolerance`."""
-    return abs(valeur - reference) <= _tolerance_valide(tolerance)
+    return core.proches(valeur, reference, tolerance)
 
 
 def eloignees(valeur: complex, reference: complex, d_au_moins: float) -> bool:
     """`|valeur - reference| > d_au_moins` : la valeur citee est bien exclue."""
-    return abs(valeur - reference) > _tolerance_valide(d_au_moins)
+    return core.eloignees(valeur, reference, d_au_moins)
 
 
 def proches_relativement(valeur: complex, reference: complex, tolerance: float) -> bool:
     """`|valeur - reference| <= tolerance |reference|` ; en zero, l'egalite exacte."""
-    return abs(valeur - reference) <= _tolerance_valide(tolerance) * abs(reference)
+    return core.proches_relativement(valeur, reference, tolerance)
 
 
 def suites_proches(
@@ -154,7 +148,7 @@ def exponentielle(exposant: float) -> float:
 
 def en_degres(radians: float) -> float:
     """Les radians lus en degres."""
-    return math.degrees(radians)
+    return core.en_degres(radians)
 
 
 def _complexe(z: object) -> complex:
