@@ -73,6 +73,9 @@ def test_la_fonction_test_du_syllabus_est_lisse_et_a_support_compact() -> None:
     assert FONCTION_TEST.subs(X, 2) == 0
     assert FONCTION_TEST.subs(X, -2) == 0
     interieur = sp.exp(1 / (X**2 - 1))
+    # la formule interieure seule (branche nulle pour `t >= 1` uniquement)
+    # ne s'annule pas pour `t <= -1` : en t = -2, e^(1/3)
+    assert interieur.subs(X, -2) == sp.exp(sp.Rational(1, 3))
     for ordre in range(4):
         assert sp.limit(sp.diff(interieur, X, ordre), X, 1, "-") == 0
         assert sp.limit(sp.diff(interieur, X, ordre), X, -1, "+") == 0

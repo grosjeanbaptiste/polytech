@@ -45,12 +45,20 @@ def permeabilite_lineaire(induction: float, champ: float) -> float:
     return induction / champ
 
 
-def inductance_de_rosa(cote: float, rayon_du_fil: float) -> float:
-    """La formule de Rosa ; leve si le fil depasse la boucle."""
+def inductance_de_rosa(
+    cote: float, rayon_du_fil: float, *, decimales_du_logarithme: int | None = None
+) -> float:
+    """La formule de Rosa ; leve si le fil depasse la boucle.
+
+    `decimales_du_logarithme` reproduit un calcul a la main qui arrondit
+    `ln(a / rho)` avant de multiplier (153,28 nH au lieu de 153,27).
+    """
     if not 0 < rayon_du_fil < cote:
         msg = f"rayon du fil {rayon_du_fil} incompatible avec le cote {cote}"
         raise ValueError(msg)
     logarithme = math.log(cote / rayon_du_fil)
+    if decimales_du_logarithme is not None:
+        logarithme = round(logarithme, decimales_du_logarithme)
     return MU0_SUR_4PI * 8 * cote * (logarithme + rayon_du_fil / cote - 0.524)
 
 

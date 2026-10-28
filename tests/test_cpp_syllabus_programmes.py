@@ -31,6 +31,8 @@ import math
 
 import pytest
 
+from polytech.algorithmique.domain.caracteres import caractere_de_code, code_ascii
+from polytech.algorithmique.domain.cercle import disque_du_syllabus
 from polytech.algorithmique.domain.controle import (
     boucle_for,
     jusqu_au_break,
@@ -55,20 +57,28 @@ FICHIER_DE_LA_PAGE_80 = "1 2 3 4 5\n6 7 8 9\n10 11 12\n13 14\n15"
 
 def test_la_surface_et_la_circonference_du_programme_2_3() -> None:
     """Page 17 : rayon 2 -- « vaut 12.5664 » pour l'une comme pour l'autre."""
-    temp = PI_DU_SYLLABUS * 2
-    assert (ecrire_un_reel(temp * 2), ecrire_un_reel(2 * temp)) == ("12.5664",) * 2
+    disque = disque_du_syllabus(PI_DU_SYLLABUS, 2)
+    assert (ecrire_un_reel(disque.surface), ecrire_un_reel(disque.circonference)) == (
+        "12.5664",
+    ) * 2
 
 
 def test_la_surface_et_la_circonference_du_programme_2_8() -> None:
     """Page 19 : rayon 5 -- surface 78.5399, circonference 31.416."""
-    temp = PI_DU_SYLLABUS * 5
-    assert (ecrire_un_reel(temp * 5), ecrire_un_reel(2 * temp)) == ("78.5399", "31.416")
+    disque = disque_du_syllabus(PI_DU_SYLLABUS, 5)
+    assert (ecrire_un_reel(disque.surface), ecrire_un_reel(disque.circonference)) == (
+        "78.5399",
+        "31.416",
+    )
 
 
 def test_la_constante_pi_du_syllabus_est_fautive() -> None:
     """Ecart : `3.141596` pour 3.141593 ; avec pi, la surface serait 78.5398."""
     assert ecrire_un_reel(math.pi, 7) == "3.141593"
-    assert ecrire_un_reel(math.pi * 25) == "78.5398"
+    assert ecrire_un_reel(disque_du_syllabus(math.pi, 5).surface) == "78.5398"
+    assert ecrire_un_reel(disque_du_syllabus(math.pi, 5).circonference) == "31.4159"
+    with pytest.raises(ValueError, match="rayon negatif"):
+        disque_du_syllabus(math.pi, -1)
 
 
 def test_les_precisions_du_programme_2_5() -> None:
@@ -101,8 +111,11 @@ def test_les_tailles_du_programme_2_4() -> None:
 
 def test_le_code_de_l_apostrophe_n_est_pas_celui_du_tableau() -> None:
     """Ecart de la page 10 : `0x2C` est la virgule ; l'apostrophe vaut `0x27`."""
-    assert (ord("'"), chr(0x2C)) == (0x27, ",")
-    assert (ord("\\"), ord("\a"), ord("\n")) == (0x5C, 0x07, 0x0A)
+    assert (code_ascii("'"), caractere_de_code(0x2C)) == (0x27, ",")
+    assert code_ascii(caractere_de_code(0x2C)) == 0x2C
+    assert (code_ascii("\\"), code_ascii("\a"), code_ascii("\n")) == (0x5C, 7, 0x0A)
+    with pytest.raises(ValueError, match="hors de la table ASCII"):
+        code_ascii("é")
 
 
 def test_les_identificateurs_de_l_exercice_2_1() -> None:

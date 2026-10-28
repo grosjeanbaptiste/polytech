@@ -33,6 +33,7 @@ from polytech.maths.domain.differentielles.wronskien import (
     determinant_par_la_trace,
 )
 from polytech.maths.domain.laplace.green import fonction_de_green
+from polytech.maths.domain.symboles import CONSTANTE
 from polytech.maths.domain.symboles import IMAGE as P
 from polytech.maths.domain.symboles import TEMPS as T
 
@@ -326,6 +327,20 @@ def test_sans_predateur_les_proies_croissent_en_e_puissance_a_t() -> None:
     assert proies.subs(y, 0) == a * x
     assert predateurs.subs(x, 0) == -c * y
     assert sp.diff(exp(a * T), T) == a * exp(a * T)
+
+
+def test_les_populations_isolees_sont_exponentielles_en_t_par_la_bibliotheque() -> None:
+    """La lib resout `x' = a x` et `y' = -c y` : `C e^(a t)`, `C e^(-c t)`."""
+    a, alpha, c, gamma = sp.symbols("a alpha c gamma", positive=True)
+    modele = PredateurProie(a, alpha, c, gamma)
+    proies, predateurs = modele.evolution_isolee()
+    assert proies == CONSTANTE * exp(a * T)
+    assert predateurs == CONSTANTE * exp(-c * T)
+    x, y = PredateurProie.POPULATIONS
+    assert not proies.has(x, y)
+    assert not predateurs.has(x, y)
+    assert proies != CONSTANTE * exp(a * x)
+    assert predateurs != CONSTANTE * exp(-c * y)
 
 
 @pytest.mark.parametrize(

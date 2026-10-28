@@ -34,7 +34,11 @@ from polytech.electromagnetisme.domain.effet_pelliculaire import (
     CONDUCTIVITE_DU_CUIVRE,
     epaisseur_de_peau,
 )
-from polytech.electronique.domain.delai_de_propagation import amplitude_de_l_ecart
+from polytech.electronique.domain.delai_de_propagation import (
+    amplitude_de_l_ecart,
+    pire_ecart_sur_une_periode,
+    retard_de_phase_en_degres,
+)
 from polytech.electronique.domain.laplace import (
     decomposition_en_fractions_simples,
     reponse_impulsionnelle,
@@ -135,10 +139,8 @@ def test_a_un_vingtieme_de_longueur_d_onde_l_erreur_atteint_31_pour_cent() -> No
     amplitude = amplitude_de_l_ecart(1.0, 20.0)
     assert amplitude == pytest.approx(0.313, abs=5e-4)
     assert amplitude / 2 == pytest.approx(0.16, abs=5e-3)
-    assert math.degrees(math.pi / 20) == pytest.approx(9.0)
-    instants = [k * 2 * math.pi / 360 for k in range(360)]
-    pire = max(abs(math.sin(x - 2 * math.pi / 20) - math.sin(x)) for x in instants)
-    assert pire == pytest.approx(amplitude, rel=1e-4)
+    assert retard_de_phase_en_degres(1.0, 20.0) == pytest.approx(9.0)
+    assert pire_ecart_sur_une_periode(1.0, 20.0) == pytest.approx(amplitude, rel=1e-4)
 
 
 def test_l_exemple_2_7_deux_poles_doubles() -> None:

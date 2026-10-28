@@ -82,11 +82,12 @@ def test_le_frottement_est_tangent_a_la_paroi() -> None:
     angle = math.radians(70.0)
     facette = Facette(pression=0.0, frottement=5.0, angle=angle, aire=1.0)
     selon_x, selon_y = facette.force()
-    assert selon_x * math.cos(angle) + selon_y * math.sin(angle) == pytest.approx(0.0)
+    assert facette.composante_normale((selon_x, selon_y)) == pytest.approx(0.0)
     assert selon_x > 0 > selon_y
-    de_la_planche = (5.0 * math.sin(angle), 5.0 * math.cos(angle))
-    normale = de_la_planche[0] * math.cos(angle) + de_la_planche[1] * math.sin(angle)
+    de_la_planche = facette.force_avec_le_signe_de_la_planche_22()
+    normale = facette.composante_normale(de_la_planche)
     assert normale == pytest.approx(5.0 * math.sin(2 * angle))
+    assert normale == pytest.approx(3.2139, abs=5e-5)
 
 
 def test_une_facette_sans_aire_est_refusee() -> None:

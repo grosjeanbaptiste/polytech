@@ -90,8 +90,12 @@ def test_la_seconde_ecriture_de_r4_est_la_fautive() -> None:
     32,845 le produit vaut 103 ohms ; avec 31,845, il vaut 100. C'est donc
     le premier chiffre qui etait juste, et la ligne finale porte un lapsus.
     """
-    facteur = 3.14e6
-    assert 31.845 * MICRO * facteur == pytest.approx(100.0, rel=1e-3)
+    cellule = TowThomas(pulsation=15.70e3, qualite=1 / math.sqrt(2), gain=2.0)
+    facteur = cellule.facteur_d_echelle(
+        resistance_minimale=100.0, capacite_maximale=1e-6
+    )
+    assert cellule.r4_normalisee() * facteur == pytest.approx(100.0, rel=1e-3)
+    assert 32.845 * MICRO * facteur == pytest.approx(103.13, abs=0.005)
     assert 32.845 * MICRO * facteur != pytest.approx(100.0, rel=1e-3)
 
 
@@ -102,7 +106,7 @@ def test_le_facteur_d_echelle_respecte_les_deux_contraintes() -> None:
         resistance_minimale=100.0,
         capacite_maximale=1e-6,
     )
-    assert facteur == pytest.approx(3.14e6, rel=1e-2)
+    assert facteur == pytest.approx(3.14e6, rel=1e-6)
     assert cellule.r4_normalisee() * facteur >= 100.0
     assert 1.0 / facteur <= 1e-6
 

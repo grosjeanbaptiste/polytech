@@ -47,6 +47,11 @@ def _non_inverseur(e0: float, i_plus: float, i_moins: float) -> float:
     return float(sortie_ideale(circuit, 4, 4))
 
 
+def decalage_du_non_inverseur(e0: float, i_plus: float, i_moins: float) -> float:
+    """Exercice 5 pour des defauts quelconques (`e0`, `I+`, `I-` donnes)."""
+    return _non_inverseur(e0, i_plus, i_moins)
+
+
 def decalage_lm741() -> float:
     """`e0 = 1 mV`, `Ibias = 80 nA`, `Ioffset = 20 nA` (valeurs typiques)."""
     return _non_inverseur(1e-3, *courants_d_entree(80e-9, 20e-9))
@@ -67,14 +72,14 @@ def decalage_ca3140a() -> float:
     return _non_inverseur(2e-3, *courants_d_entree(10e-12, 0.5e-12))
 
 
-def decalage_de_l_exercice_7() -> float:
+def decalage_de_l_exercice_7(e0: float = 1e-3) -> float:
     """L'inverseur `R1 = 10 k`, `R2 = 50 k` sur LM741, entree eteinte.
 
     L'entree `+` est a la masse : `I+` n'y traverse aucune resistance.
     """
     i_plus, i_moins = courants_d_entree(80e-9, 20e-9)
     circuit: list[Element] = [
-        SourceDeTension(1, 0, _exact(1e-3), _I),
+        SourceDeTension(1, 0, _exact(e0), _I),
         SourceDeCourant(1, 0, _exact(i_plus)),
         Admittance(2, 0, _exact(1 / 10e3)),
         Admittance(2, 3, _exact(1 / 50e3)),

@@ -78,6 +78,11 @@ class EnceinteAParoiAdiabatique:
             emittance(self.temperature_2) + flux * seconde,
         )
 
+    def flux_pour_la_radiosite_2(self, radiosite_2: float) -> float:
+        """`(J1 - J2) S1S2_noir` : le flux que le schema impose pour ce `J2`."""
+        j1, _ = self.radiosites()
+        return (j1 - radiosite_2) * self.echange_noir()
+
     def temperature_de_la_paroi(self) -> float:
         """`sigma T3^4 = (S1S3 J1 + S2S3 J2) / (S1S3 + S2S3)` ; leve sans paroi."""
         total = self.echange_13 + self.echange_23

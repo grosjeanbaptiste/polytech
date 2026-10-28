@@ -16,6 +16,7 @@ import pytest
 import sympy as sp
 
 from polytech.maths.domain.differentielles.operateurs import D, OperateurDifferentiel
+from polytech.maths.domain.fourier.dispersion import ecart_type
 from polytech.maths.domain.fourier.proprietes import (
     de_la_derivee,
     de_la_modulation,
@@ -70,11 +71,6 @@ def test_la_gaussienne_etroite_devient_large() -> None:
     `e^(-a^2 t^2)` est `1/(2 a^2)`.
     """
     image = transformee_de_fourier(GAUSSIENNE)
-
-    def ecart_type(densite: sp.Expr, variable: sp.Symbol) -> sp.Expr:
-        masse = sp.integrate(densite, (variable, -sp.oo, sp.oo))
-        second = sp.integrate(variable**2 * densite, (variable, -sp.oo, sp.oo))
-        return sp.sqrt(sp.simplify(second / masse))
 
     assert ecart_type(GAUSSIENNE, T) == 1 / (A * sp.sqrt(2))
     assert sp.simplify(ecart_type(image, W) - A * sp.sqrt(2)) == 0
@@ -279,3 +275,20 @@ def test_un_oscillateur_sans_amortissement_n_a_pas_d_image_a_la_resonance() -> N
     """`P(jw)` s'annule en `w = w0` quand `gamma = 0` : l'image n'est plus fonction."""
     with pytest.raises(ValueError, match="le polynome caracteristique s'annule"):
         image_de_la_solution(OperateurDifferentiel(D**2 + 4), sp.Integer(1))
+
+
+def test_l_inverse_au_signe_moins_rend_f_de_moins_t_et_un_autre_signe_leve() -> None:
+    decalee = sp.exp(-((T - 1) ** 2))
+    image = transformee_de_fourier(decalee)
+    assert sp.simplify(transformee_inverse(image) - decalee) == 0
+    assert sp.simplify(transformee_inverse(image, signe=-1) - decalee.subs(T, -T)) == 0
+    with pytest.raises(ValueError, match="signe"):
+        transformee_inverse(image, signe=2)
+
+
+def test_l_ecart_type_de_la_gaussienne_et_de_son_image() -> None:
+    image = transformee_de_fourier(GAUSSIENNE)
+    assert ecart_type(GAUSSIENNE, T) == 1 / (A * sp.sqrt(2))
+    assert sp.simplify(ecart_type(image, W) - A * sp.sqrt(2)) == 0
+    with pytest.raises(ValueError, match="masse nulle"):
+        ecart_type(T * GAUSSIENNE, T)

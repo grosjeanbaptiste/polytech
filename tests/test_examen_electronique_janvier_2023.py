@@ -12,10 +12,14 @@ import pytest
 import sympy as sp
 
 from polytech.electronique.domain.acquisition import (
+    densite_de_bruit_maximale,
+    tension_de_bruit_en_courant,
     bits_necessaires,
     cadence_du_multiplexeur,
+    courant_de_bruit_integre,
     gain_de_chaine,
     nyquist,
+    puissance_de_bruit_en_courant,
 )
 from polytech.electronique.domain.amplification import nombre_d_etages
 from polytech.electronique.domain.chebyshev import elements_de_chebyshev
@@ -235,15 +239,15 @@ def test_le_multiplexeur_en_tete_deposerait_288_microvolts_de_bruit() -> None:
 
 def test_le_filtre_en_tete_en_deposerait_48() -> None:
     """Question 10.5 : un microvolt par racine de hertz sur la meme bande."""
-    bruit = 1 * MICROVOLT * math.sqrt(2500 - 200)
+    bruit = courant_de_bruit_integre(1 * MICROVOLT, 2500.0 - 200.0)
     assert bruit == pytest.approx(47.96 * MICROVOLT, rel=1e-3)
     assert bruit > 1 * MICROVOLT
 
 
 def test_le_pire_bruit_en_courant_vaut_9592_femtoamperes() -> None:
     """Question 10.6 : 200 fA par racine de hertz sur 2300 Hz."""
-    assert 200 * FEMTOAMPERE * math.sqrt(2300) == pytest.approx(
-        9592 * FEMTOAMPERE, rel=1e-3, abs=0
+    assert courant_de_bruit_integre(200 * FEMTOAMPERE, 2300.0) == pytest.approx(
+        9592 * FEMTOAMPERE, rel=1e-4, abs=0
     )
 
 
@@ -253,15 +257,17 @@ def test_ce_bruit_en_courant_fait_1_92_nanovolt_et_non_millivolt() -> None:
     Le corrige ecrit « 3,68 (mV)^2 » puis « 1,92 mV << 1 microV », ce que
     l'inegalite elle-meme contredit.
     """
-    tension = 200.0 * (200 * FEMTOAMPERE * math.sqrt(2300))
-    assert tension**2 == pytest.approx(3.68e-18, rel=1e-2, abs=0)
-    assert tension == pytest.approx(1.92 * NANOVOLT, rel=1e-2, abs=0)
+    puissance = puissance_de_bruit_en_courant(200 * FEMTOAMPERE, 200.0, 2300.0)
+    tension = tension_de_bruit_en_courant(200 * FEMTOAMPERE, 200.0, 2300.0)
+    assert tension**2 == pytest.approx(puissance, rel=1e-12)
+    assert puissance == pytest.approx(3.68e-18, rel=1e-9, abs=0)
+    assert tension == pytest.approx(1.92 * NANOVOLT, abs=0.005 * NANOVOLT)
     assert tension < 1 * MICROVOLT
 
 
 def test_la_densite_maximale_admissible_vaut_20_85_nanovolts() -> None:
     """Question 10.6 : c'est elle qui ecarte AMP1 et garde AMP2 et AMP3."""
-    plafond = 1 * MICROVOLT / math.sqrt(2300)
+    plafond = densite_de_bruit_maximale(1 * MICROVOLT, 2300.0)
     assert plafond == pytest.approx(20.85 * NANOVOLT, rel=1e-3)
     assert plafond < 200 * NANOVOLT
     assert plafond > 10 * NANOVOLT

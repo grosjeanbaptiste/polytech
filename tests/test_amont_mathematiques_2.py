@@ -15,6 +15,7 @@ import pytest
 import sympy as sp
 
 from polytech.maths.domain.analyse_vectorielle import divergence, rotationnel
+from polytech.maths.domain.surfaces import SurfaceEnGraphe, circulation
 
 X, Y, Z = sp.symbols("x y z", real=True)
 ESPACE = (X, Y, Z)
@@ -56,21 +57,17 @@ def test_la_circulation_de_l_exercice_resolu_de_stokes_vaut_trois_pi_sur_deux() 
     Second chemin, sans Stokes : la circulation le long de
     `(cos t, sin t, 1 - cos t - sin t)`.
     """
-    tourbillon = rotationnel(CHAMP_DE_STOKES, ESPACE)
-    normale = (1, 1, 1)
-    integrande = sum(a * b for a, b in zip(tourbillon, normale, strict=True))
-    polaire = sp.simplify(
-        integrande.subs({X: RAYON * sp.cos(ANGLE), Y: RAYON * sp.sin(ANGLE)})
-    )
-    par_stokes = sp.integrate(polaire * RAYON, (RAYON, 0, 1), (ANGLE, 0, 2 * sp.pi))
-    chemin = (sp.cos(ANGLE), sp.sin(ANGLE), 1 - sp.cos(ANGLE) - sp.sin(ANGLE))
-    sur_le_chemin = dict(zip(ESPACE, chemin, strict=True))
-    travail = sum(
-        composante.subs(sur_le_chemin) * sp.diff(coordonnee, ANGLE)
-        for composante, coordonnee in zip(CHAMP_DE_STOKES, chemin, strict=True)
-    )
-    directe = sp.integrate(travail, (ANGLE, 0, 2 * sp.pi))
+    surface = SurfaceEnGraphe(1 - X - Y, X, Y)
+    assert surface.normale() == (1, 1, 1)
+    assert surface.element_d_aire() == sp.sqrt(3)
+    assert surface.normale_unitaire() == tuple(c / sp.sqrt(3) for c in (1, 1, 1))
+    par_stokes = surface.flux_du_rotationnel(CHAMP_DE_STOKES, ESPACE, rayon=1)
+    contour = surface.contour_du_disque(ANGLE, rayon=1)
+    assert contour == (sp.cos(ANGLE), sp.sin(ANGLE), 1 - sp.cos(ANGLE) - sp.sin(ANGLE))
+    directe = circulation(CHAMP_DE_STOKES, ESPACE, contour, ANGLE, (0, 2 * sp.pi))
     assert par_stokes == directe == 3 * sp.pi / 2
+    with pytest.raises(ValueError, match="rayon non positif"):
+        surface.flux_du_rotationnel(CHAMP_DE_STOKES, ESPACE, rayon=0)
 
 
 @pytest.mark.parametrize(

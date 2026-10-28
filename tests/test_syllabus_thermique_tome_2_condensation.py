@@ -27,6 +27,11 @@ from polytech.thermique.domain.condensation_sur_tubes import (
     reynolds_du_film,
     reynolds_sous_une_colonne,
 )
+from polytech.thermique.domain.condenseur import (
+    debit_par_metre_de_colonne,
+    surface_des_tubes,
+    temperature_de_saturation,
+)
 from polytech.thermique.domain.film_de_condensat import (
     Condensat,
     debit_du_film,
@@ -245,24 +250,39 @@ def test_la_vapeur_n_a_besoin_que_d_un_dixieme_de_metre_par_seconde() -> None:
 def test_l_exercice_iii_5_2_le_vide_d_un_condenseur() -> None:
     """75,56 kg/s sur 6230 tubes de 22 mm : `t_sat = 32,03` degres, 0,0476 bar.
 
-    L'equation (III) imprime « 75,86 » ; son resultat emploie 75,56.
+    L'equation (III) imprime « 75,86 » ; son resultat emploie 75,56. Le
+    `h = 5307` du syllabus est celui que la bibliotheque rend pour
+    75,86 kg/s (5308,3), et non pour 75,56 (5315,3) ; le `32,03` combine
+    donc ce `h` (arrondi) avec le debit 75,56 (32,02 avec le `h` exact).
     """
-    colonnes = 6230 / 10
-    lineique = 75.56 / (colonnes * 8.0)
-    assert lineique == pytest.approx(0.01516, abs=5e-6)
-    surface = 6230 * 8.0 * math.pi * 0.022
+    surface = surface_des_tubes(6230, 8.0, 0.022)
     assert surface == pytest.approx(3444.7, abs=0.1)
     film = eau_saturee((32.0 + 22.0) / 2)
     assert film.viscosite == pytest.approx(859e-6, abs=1e-6)
     assert film.conductivite == pytest.approx(0.6138, abs=5e-4)
     condensat = Condensat(996.6, 0.0, 859e-6, 0.6138, 2425900.0)
+    lineique = debit_par_metre_de_colonne(75.56, 6230, 10, 8.0)
+    assert lineique == pytest.approx(0.01516, abs=5e-6)
     nombre = reynolds_sous_une_colonne(lineique, 859e-6)
     assert nombre == pytest.approx(35.3, abs=0.01)
     echange = coefficient_horizontal_par_le_debit(condensat, lineique)
-    assert echange == pytest.approx(5307.0, rel=2e-3)
-    saturation = 22.0 + 75.56 * 2425900.0 / (surface * 5307.0)
-    assert saturation == pytest.approx(32.03, abs=0.005)
-    assert 22.0 + 75.86 * 2425900.0 / (surface * 5307.0) == pytest.approx(
-        32.07, abs=0.005
+    assert echange == pytest.approx(5315.3, abs=0.05)
+    echange_586 = coefficient_horizontal_par_le_debit(
+        condensat, debit_par_metre_de_colonne(75.86, 6230, 10, 8.0)
     )
-    assert pression_de_saturation(saturation) == pytest.approx(4760.0, abs=5.0)
+    assert echange_586 == pytest.approx(5308.3, abs=0.05)
+    assert echange_586 == pytest.approx(5307.0, rel=3e-4)
+
+    def saturation(debit: float, h: float) -> float:
+        return temperature_de_saturation(22.0, debit, 2425900.0, surface, h)
+
+    assert saturation(75.56, echange) == pytest.approx(32.01, abs=0.005)
+    assert saturation(75.86, echange_586) == pytest.approx(32.06, abs=0.005)
+    assert saturation(75.56, echange_586) == pytest.approx(32.02, abs=0.005)
+    assert temperature_de_saturation(
+        22.0, 75.56, 2425900.0, surface, 5307.0
+    ) == pytest.approx(32.03, abs=0.005)
+    assert saturation(75.86, 5307.0) == pytest.approx(32.07, abs=0.005)
+    assert pression_de_saturation(saturation(75.56, echange_586)) == pytest.approx(
+        4760.0, abs=5.0
+    )

@@ -23,6 +23,10 @@ from polytech.fluides.domain.variables_repetees import dimensions_du_produit
 from polytech.maths.domain.algebre import complexes_exacts, metrique
 from polytech.maths.domain.algebre.varietes_affines import VarieteAffine
 from polytech.maths.domain.series.mac_laurin import coefficients_de_mac_laurin
+from polytech.maths.domain.series.taylor import (
+    coefficients_de_taylor,
+    polynome_de_taylor,
+)
 from polytech.maths.domain.symboles import VARIABLE
 
 CHUTE = {
@@ -102,6 +106,26 @@ def test_les_developpements_de_mac_laurin_de_l_annexe_5() -> None:
         -quart,
     )
     assert coefficients_de_mac_laurin(sp.sin(x), 4) == (0, 1, 0, -1 / f(3))
+
+
+def test_taylor_en_a_prend_les_derivees_en_a_et_non_en_zero() -> None:
+    """Annexe 5, (5.1) : en `a = 1`, les coefficients de `(x - a)^n` sont `f^(n)(1)/n!`.
+
+    Pour `f = ln x`, la bibliotheque donne `0, 1, -1/2, 1/3` ; les `f^(n)(0)/n!`
+    n'existent pas (`ln` n'est pas defini en 0) : la formule en 0 ne vaut que
+    pour `a = 0`.
+    """
+    coefficients = coefficients_de_taylor(sp.log(VARIABLE), 1, 4)
+    assert coefficients == (0, 1, -sp.Rational(1, 2), sp.Rational(1, 3))
+    polynome = polynome_de_taylor(sp.exp(VARIABLE), 1, 3)
+    attendu = sum(
+        (sp.E * (VARIABLE - 1) ** n / sp.factorial(n) for n in range(4)), sp.Integer(0)
+    )
+    assert sp.expand(polynome - attendu) == 0
+    en_zero = sum(
+        (VARIABLE**n / sp.factorial(n) for n in range(4)), sp.Integer(0)
+    )  # exp en 0 : ce que donnerait f^(n)(0) pris pour a = 1
+    assert sp.simplify(polynome - en_zero) != 0
 
 
 def test_la_formule_de_moivre_et_les_racines_niemes() -> None:

@@ -29,6 +29,7 @@ from polytech.thermique.domain.conduction.generation import (
     BarreauGenerateur,
     chute_dans_une_gaine,
     chute_de_convection,
+    flux_lineique,
 )
 
 X = sp.Symbol("x", nonnegative=True)
@@ -127,6 +128,7 @@ def test_le_profil_parabolique_du_crayon() -> None:
     assert isinstance(profil, sp.Expr)
     cylindrique = sp.diff(rayon * sp.diff(profil, rayon), rayon) / rayon
     assert sp.simplify(cylindrique + q / conductivite) == 0
+    assert sp.simplify(cylindrique - q / conductivite) != 0
     assert profil.subs(rayon, grand) == 0
     lineique = q * sp.pi * grand**2
     au_centre = profil.subs(rayon, 0)
@@ -135,24 +137,30 @@ def test_le_profil_parabolique_du_crayon() -> None:
 
 def test_les_resultats_du_crayon_de_la_planche_24() -> None:
     """`q = 800e6 W/m^3` : 37,2 kW/m, 1696, 61,2 et 53,2 degres ; `t_c = 2145`."""
-    lineique = 800e6 * math.pi * 0.00385**2
-    assert lineique == pytest.approx(37.2e3, rel=2e-3)
+    assert flux_lineique(800e6, 0.0077) == pytest.approx(37.2e3, rel=2e-3)
     au_centre = float(CRAYON.echauffement_au_centre())
-    assert au_centre == pytest.approx(1696.0, abs=3.0)
+    assert au_centre == pytest.approx(1698.9, abs=0.05)  # la planche imprime 1696
     gaine = chute_dans_une_gaine(800e6, 0.0077, 0.0089, conductivite=14.0)
-    assert gaine == pytest.approx(61.2, abs=0.15)
+    assert gaine == pytest.approx(61.34, abs=0.005)  # la planche imprime 61,2
     ebullition = chute_de_convection(800e6, 0.0077, 0.0089, echange=25000.0)
-    assert ebullition == pytest.approx(53.2, abs=0.15)
+    assert ebullition == pytest.approx(53.29, abs=0.005)  # la planche imprime 53,2
     face_externe = 335.0 + ebullition
     assert face_externe == pytest.approx(388.0, abs=0.5)
-    assert face_externe + gaine + au_centre == pytest.approx(2145.0, abs=3.5)
+    assert face_externe + gaine + au_centre == pytest.approx(2148.5, abs=0.1)
+    assert face_externe + gaine + au_centre == pytest.approx(2145.0, abs=3.6)
 
 
 def test_la_planche_24_imprime_459_pour_449() -> None:
     """`t_1 = t_2 + 61,2 = 449 degres`. La planche ecrit 459 ; son `t_c` suppose 449."""
-    assert pytest.approx(449.2) == 388.0 + 61.2
-    assert pytest.approx(2145.0, abs=0.5) == 449.2 + 1696.0
-    assert pytest.approx(2145.0, abs=5.0) != 459.0 + 1696.0
+    ebullition = chute_de_convection(800e6, 0.0077, 0.0089, echange=25000.0)
+    gaine = chute_dans_une_gaine(800e6, 0.0077, 0.0089, conductivite=14.0)
+    premiere = 335.0 + ebullition + gaine
+    assert premiere == pytest.approx(449.63, abs=0.01)
+    centre = float(CRAYON.echauffement_au_centre())
+    assert premiere + centre == pytest.approx(2148.5, abs=0.1)
+    assert premiere + centre - 2145.0 == pytest.approx(3.5, abs=0.1)
+    assert 459.0 + centre == pytest.approx(2157.9, abs=0.1)
+    assert 459.0 + centre - 2145.0 == pytest.approx(12.9, abs=0.1)
 
 
 def test_la_dissipation_est_de_quelques_centaines_de_megawatts() -> None:

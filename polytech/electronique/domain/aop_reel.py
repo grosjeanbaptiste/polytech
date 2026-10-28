@@ -39,7 +39,11 @@ def impedance_de_sortie_du_non_inverseur(
     contre_reaction: float,
     entree: float,
 ) -> float:
-    """`Z_out` du non-inverseur, sans masse virtuelle, en ohms."""
+    """`Z_out` du non-inverseur, sans masse virtuelle, en ohms.
+
+    Un `gain` negatif reproduit le signe de la planche 20
+    (`I_OA = (V_out - A_v V_-) / R_o`), qui rend une impedance negative.
+    """
     parallele = entree * vers_la_masse / (entree + vers_la_masse)
     retour = parallele / (parallele + contre_reaction)
     par_le_pont = 1 / (contre_reaction + parallele)
@@ -55,3 +59,15 @@ def impedance_d_entree_chargee(inverse: sp.Matrix, charge: object) -> sp.Expr:
     g_11, g_12, g_21, g_22 = inverse
     ramene = g_12 * g_21 / (g_22 + sp.sympify(charge))
     return 1 / (g_11 - ramene)
+
+
+def impedance_d_entree_chargee_selon_la_planche_50(
+    a_vide: float, ouverte: float, fermee: float, charge: float, gains: float
+) -> float:
+    """La formule imprimee : le terme exact divise par `A_ol / A_cl`.
+
+    La planche prend `Z_in,cl / Z_in,ol` pour un ; le courrier a
+    l'enseignant releve que ce rapport vaut `1 + beta A_ol`.
+    """
+    terme = (ouverte / charge) / (1 + fermee / charge) / gains
+    return a_vide / (1 + terme)

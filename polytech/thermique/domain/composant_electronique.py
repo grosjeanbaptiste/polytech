@@ -31,13 +31,57 @@ class ComposantSurRefroidisseur:
     boitier_refroidisseur: float
     vers_l_ambiance: float
 
+    def refroidisseur_moyen(
+        self, *, ambiance: float, puissance: float, des_autres: float
+    ) -> float:
+        """`t_R = t_A + (Phi + Phi_2) R_RA`."""
+        return ambiance + (puissance + des_autres) * self.vers_l_ambiance
+
+    def boitier_moyen(
+        self, *, ambiance: float, puissance: float, des_autres: float
+    ) -> float:
+        """`t_B = t_R + Phi R_BR`."""
+        refroidisseur = self.refroidisseur_moyen(
+            ambiance=ambiance, puissance=puissance, des_autres=des_autres
+        )
+        return refroidisseur + puissance * self.boitier_refroidisseur
+
     def jonction_moyenne(
         self, *, ambiance: float, puissance: float, des_autres: float
     ) -> float:
         """`t_J = t_A + Phi (R_JB + R_BR) + (Phi + Phi_2) R_RA`."""
-        refroidisseur = ambiance + (puissance + des_autres) * self.vers_l_ambiance
-        interne = self.jonction_boitier + self.boitier_refroidisseur
-        return refroidisseur + puissance * interne
+        boitier = self.boitier_moyen(
+            ambiance=ambiance, puissance=puissance, des_autres=des_autres
+        )
+        return boitier + puissance * self.jonction_boitier
+
+    def bilan_du_boitier(
+        self, *, ambiance: float, puissance: float, des_autres: float
+    ) -> float:
+        """`Phi + (t_R - t_B) / R_BR` : nul, le boitier evacue ce qu'il recoit."""
+        mesures = {
+            "ambiance": ambiance,
+            "puissance": puissance,
+            "des_autres": des_autres,
+        }
+        evacue = (
+            self.refroidisseur_moyen(**mesures) - self.boitier_moyen(**mesures)
+        ) / self.boitier_refroidisseur
+        return puissance + evacue
+
+    def bilan_imprime_du_boitier(
+        self, *, ambiance: float, puissance: float, des_autres: float
+    ) -> float:
+        """`Phi + (t_J - t_B) / R_JB`, le bilan imprime : il vaut 2 Phi, non 0."""
+        mesures = {
+            "ambiance": ambiance,
+            "puissance": puissance,
+            "des_autres": des_autres,
+        }
+        evacue = (
+            self.jonction_moyenne(**mesures) - self.boitier_moyen(**mesures)
+        ) / self.jonction_boitier
+        return puissance + evacue
 
     def transmittance(self, capacite: Grandeur) -> sp.Expr:
         """`F(p) = [t_J] / [Phi] = R_JB + R_BR / (1 + p R_BR C_B)`."""

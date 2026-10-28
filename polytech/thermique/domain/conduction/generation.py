@@ -59,6 +59,11 @@ def _flux_lineique(generation: float, pastille: float) -> float:
     return math.pi * pastille**2 * generation / 4
 
 
+def flux_lineique(generation: float, pastille: float) -> float:
+    """`pi d_1^2 q / 4`, par metre de crayon, en W/m."""
+    return _flux_lineique(generation, pastille)
+
+
 def chute_dans_une_gaine(
     generation: float, pastille: float, gaine: float, *, conductivite: float
 ) -> float:

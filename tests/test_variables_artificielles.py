@@ -12,14 +12,17 @@ from __future__ import annotations
 
 import sympy as sp
 
-from polytech.optimisation.domain.algorithme import Issue
+from polytech.optimisation.domain.algorithme import Issue, Regle, pivoter
 from polytech.optimisation.domain.artificielles import (
     chasser_les_nulles,
     sans_colonnes,
     somme_des_artificielles,
 )
 from polytech.optimisation.domain.contraintes import Optimisation
-from polytech.optimisation.domain.criteres import colonnes_reduisant_la_penalite
+from polytech.optimisation.domain.criteres import (
+    colonne_sans_solution_finie,
+    colonnes_reduisant_la_penalite,
+)
 from polytech.optimisation.domain.depart import (
     a_seconds_membres_non_negatifs,
     base_evidente,
@@ -29,7 +32,7 @@ from polytech.optimisation.domain.depart import (
 from polytech.optimisation.domain.formes import FormeStandard
 from polytech.optimisation.domain.grand_m import GRAND_M as M
 from polytech.optimisation.domain.phase_un import methode_des_variables_artificielles
-from polytech.optimisation.domain.tableau import TableauSimplexe
+from polytech.optimisation.domain.tableau import TableauSimplexe, tableau_de_la_base
 
 R = sp.Rational
 MAX, MIN = Optimisation.MAX, Optimisation.MIN
@@ -272,6 +275,27 @@ def test_un_probleme_augmente_non_borne_ne_prouve_pas_que_p_le_soit() -> None:
     assert (
         somme_des_artificielles(resolution.tableaux[-1], resolution.artificielles) > 0
     )
+
+
+def test_le_probleme_augmente_de_la_page_95_est_non_borne_artificielles_a_1() -> None:
+    """`P^a` est non borne : le simplexe y trouve une colonne sans solution finie.
+
+    Le rayon `x1 = x2 = t` garde les deux artificielles a 1 avec `z = 4 t - 2 M`.
+    """
+    forme = FormeStandard(
+        couts=sp.Matrix([[2, 2, 0, 0]]),
+        matrice=sp.Matrix([[-1, 1, -1, 0], [1, -1, 0, -1]]),
+        seconds_membres=sp.Matrix([1, 1]),
+    )
+    augmente, base = probleme_augmente(forme, MAX)
+    tableau = tableau_de_la_base(augmente, base)
+    assert colonne_sans_solution_finie(tableau, MAX) is None
+    tableau = pivoter(tableau, MAX, Regle.PLUS_FORT_COEFFICIENT)
+    assert colonne_sans_solution_finie(tableau, MAX) is not None
+    for t in (0, 5, 100):
+        point = sp.Matrix([t, t, 0, 0, 1, 1])
+        assert augmente.matrice * point == augmente.seconds_membres
+        assert (augmente.couts * point)[0] == 4 * t - 2 * M
 
 
 def test_les_colonnes_qui_reduisent_la_penalite_ont_un_terme_en_m_favorable() -> None:

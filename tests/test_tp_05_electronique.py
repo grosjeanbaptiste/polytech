@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import math
 
+import pytest
+
 from polytech.electronique.application import amplification_tp_05 as am
 from polytech.electronique.application import combinaisons_tp_05 as cb
 from polytech.electronique.application import montages_tp_05 as mt
@@ -45,6 +47,16 @@ def test_ex8_la_boucle_ouverte_sature_presque_toujours() -> None:
 def test_ex8c_la_premiere_demi_periode_est_au_rail_negatif() -> None:
     """`V- = sin > 0` sur la premiere demi-periode : `A (0 - V-) < 0`."""
     assert sa.boucle_ouverte()["c"] == -12
+
+
+def test_ex8c_la_sortie_est_un_carre_a_rapport_cyclique_50_pour_cent() -> None:
+    """Rail negatif sur la premiere demi-periode, positif sur la seconde."""
+    periode, pas = 1e-3, 1000
+    sorties = [sa.sortie_du_cas_c((k + 0.5) * periode / pas) for k in range(pas)]
+    assert sa.entree_differentielle_du_cas_c(0.25e-3) == pytest.approx(-1.0)
+    assert set(sorties) == {-12.0, 12.0}
+    assert sorties[: pas // 2] == [-12.0] * (pas // 2)
+    assert sorties[pas // 2 :] == [12.0] * (pas // 2)
 
 
 def test_ex10_les_deux_gains() -> None:

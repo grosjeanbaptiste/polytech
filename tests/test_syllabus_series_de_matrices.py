@@ -238,6 +238,21 @@ def test_l_inverse_de_p_imprime_page_133_est_faux() -> None:
     assert PASSAGE * BLOCS * imprimee != JORDAN
 
 
+def test_l_exponentielle_avec_l_inverse_imprime_porte_5_e_moins_2_sur_9() -> None:
+    """Avec le `P^-1` imprime, `P e^J P^-1` ne change que l'entree (2, 2)."""
+    imprimee = sp.Matrix([[-6, 5, 5], [6, 0, -2], [0, 0, 6]]) / 9
+    juste = PASSAGE * par_jordan(BLOCS) * PASSAGE.inv()
+    fausse = PASSAGE * par_jordan(BLOCS) * imprimee
+    assert juste[1, 1] == E**-2
+    assert sp.simplify(fausse[1, 1] - R(5, 9) * E**-2) == 0
+    ecart = fausse - juste
+    assert sp.simplify(ecart[1, 1] - R(-4, 9) * E**-2) == 0
+    for i in range(3):
+        for j in range(3):
+            if (i, j) != (1, 1):
+                assert sp.simplify(ecart[i, j]) == 0
+
+
 def test_l_exponentielle_d_un_bloc_de_jordan() -> None:
     """Page 132 : `e^lambda` fois la matrice triangulaire des `1/k!`."""
     lam = sp.Symbol("lambda")

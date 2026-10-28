@@ -29,7 +29,10 @@ from polytech.thermique.domain.conduction.elements_finis import (
 from polytech.thermique.domain.conduction.noeuds_de_frontiere import (
     noeud_fictif_de_fourier,
     noeud_fictif_de_neumann,
+    premier_membre_du_noeud,
+    second_membre_du_noeud,
     temperature_de_frontiere,
+    temperature_interieure_en_champ_lineaire,
 )
 from polytech.thermique.domain.conduction.paroi_en_tranches import (
     ParoiEnTranches,
@@ -39,7 +42,11 @@ from polytech.thermique.domain.differences_finies import (
     derivee_seconde_centree,
     laplacien_a_cinq_points,
 )
-from polytech.thermique.domain.stabilite_numerique import est_stable_en_explicite
+from polytech.thermique.domain.stabilite_numerique import (
+    amplitude_maximale_apres,
+    est_stable_en_explicite,
+    fourier_critique,
+)
 
 
 def _erreur(schema: str, pas: float) -> float:
@@ -118,14 +125,20 @@ def test_l_equation_du_noeud_de_frontiere_a_le_signe_plus() -> None:
     """
     flux, conductivite, pas = 400.0, 2.0, 0.01
     surface = 80.0
-    interieur = surface - flux * pas / conductivite
+    interieur = temperature_interieure_en_champ_lineaire(
+        surface, pas, conductivite, flux=flux
+    )
+    assert interieur == pytest.approx(78.0)
     frontiere = temperature_de_frontiere(
         interieur, (surface, surface), pas, conductivite, flux=flux
     )
     assert frontiere == pytest.approx(surface)
-    membre = 4 * surface - 2 * interieur - surface - surface
-    assert membre == pytest.approx(2 * pas * flux / conductivite)
-    assert membre != pytest.approx(-2 * pas * flux / conductivite)
+    membre = premier_membre_du_noeud(surface, interieur, (surface, surface))
+    assert membre == pytest.approx(second_membre_du_noeud(pas, conductivite, flux=flux))
+    assert membre == pytest.approx(4.0)
+    imprime = second_membre_du_noeud(pas, conductivite, flux=-flux)
+    assert imprime == pytest.approx(-4.0)
+    assert membre != pytest.approx(imprime)
 
 
 def test_le_noeud_fictif_d_une_condition_de_fourier() -> None:
@@ -138,28 +151,18 @@ def test_le_noeud_fictif_d_une_condition_de_fourier() -> None:
     assert fictif == pytest.approx(par_neumann)
 
 
-def _pas_explicite(valeurs: list[float], fourier: float) -> list[float]:
-    interieur = [
-        centre + fourier * (gauche - 2 * centre + droite)
-        for gauche, centre, droite in zip(
-            valeurs, valeurs[1:], valeurs[2:], strict=False
-        )
-    ]
-    return [valeurs[0], *interieur, valeurs[-1]]
-
-
 def test_la_condition_de_stabilite_est_imprimee_a_l_envers() -> None:
     """Page 90 : « il faut Fo = a Dtau / Dx^2 > 0,5 ». C'est l'inverse.
 
     Au-dela d'un demi le schema explicite diverge ; en deca il s'amortit.
     """
+    assert fourier_critique(1) == 0.5
+    assert fourier_critique(2) == 0.25
     assert est_stable_en_explicite(0.4, 1)
     assert not est_stable_en_explicite(0.6, 1)
-    stable = instable = [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
-    for _ in range(40):
-        stable, instable = _pas_explicite(stable, 0.4), _pas_explicite(instable, 0.6)
-    assert max(abs(v) for v in stable) < 1e-2
-    assert max(abs(v) for v in instable) > 10
+    impulsion = [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
+    assert amplitude_maximale_apres(impulsion, 0.4, 40) < 1e-2
+    assert amplitude_maximale_apres(impulsion, 0.6, 40) > 10
 
 
 BRIQUES = Tranches(epaisseur=0.23, conductivite=1.15, capacite=3150 * 1050, nombre=6)

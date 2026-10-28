@@ -21,6 +21,13 @@ import math
 
 import pytest
 
+from polytech.chemistry.domain.transformations_de_gaz import (
+    capacite_isochore,
+    chaleur_isochore,
+    rapport_des_pressions_a_volume_constant,
+    temperature_apres_detente_adiabatique,
+)
+
 R = 8.314
 JOULES_PAR_CALORIE = 4.186
 PASCALS_PAR_ATMOSPHERE = 101325
@@ -339,12 +346,24 @@ def test_2023_le_manuscrit_ecrit_443_90_pour_une_temperature_de_442_90() -> None
     p4 = 2,443 bar et Q41 = -607280 J. Un chiffre des unites a glisse a la
     recopie de la reponse.
     """
-    exacte = 1000 - 800000 / (MASSE_2023 * CV_2023)
-    assert exacte == pytest.approx(442.90, abs=0.01)
-    assert (exacte + ZERO_CELSIUS) / FROID_2023 == pytest.approx(2.443, abs=5e-4)
-    assert MASSE_2023 * CV_2023 * (20 - exacte) == pytest.approx(-607280, rel=1e-5)
-    assert pytest.approx(2.446, abs=5e-4) == (443.90 + ZERO_CELSIUS) / FROID_2023
-    assert pytest.approx(-608720, rel=1e-5) == MASSE_2023 * CV_2023 * (20 - 443.90)
+    assert capacite_isochore(2, 718) == 1436
+    exacte = temperature_apres_detente_adiabatique(1000.0, 2, 718, 800000.0)
+    assert exacte == pytest.approx(442.90, abs=0.005)
+    arrondie = 442.90
+    assert chaleur_isochore(2, 718, exacte, 20.0) == pytest.approx(-607280.0, abs=0.05)
+    assert chaleur_isochore(2, 718, arrondie, 20.0) == pytest.approx(
+        -607284.4, abs=0.05
+    )
+    assert rapport_des_pressions_a_volume_constant(20.0, exacte) == pytest.approx(
+        2.4426, abs=5e-5
+    )
+    assert rapport_des_pressions_a_volume_constant(20.0, arrondie) == pytest.approx(
+        2.4426, abs=5e-5
+    )
+    assert rapport_des_pressions_a_volume_constant(20.0, 443.90) == pytest.approx(
+        2.4460, abs=5e-5
+    )
+    assert chaleur_isochore(2, 718, 443.90, 20.0) == pytest.approx(-608720.4, abs=0.05)
 
 
 def test_2023_question_2_masse_de_methanol_evapore() -> None:

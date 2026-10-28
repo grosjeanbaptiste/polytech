@@ -31,6 +31,7 @@ from polytech.electronique.application.donnees_lab_03 import (
     UnTrois,
     UnUn,
 )
+from polytech.electronique.domain.chaine_d_acquisition import bruit_efficace
 
 # --- Exercice 1.1 -----------------------------------------------------
 
@@ -76,11 +77,11 @@ def test_ex11_les_cinq_puissances_de_bruit() -> None:
 def test_ex11_la_somme_que_l_officiel_ecrit_n_est_pas_la_somme() -> None:
     """Page 4 : « 2,504 » ; les cinq termes font 2,5402."""
     total, efficace, densite = un.bruit_total()
-    assert total == pytest.approx(5e-7 + 2e-6 + 2e-8 + 2e-10 + 2e-8)
+    assert total == pytest.approx(2.5402e-6, rel=1e-9)
     assert total * 1e6 == pytest.approx(2.5402)
     assert abs(total * 1e6 - 2.504) > 0.03
     assert efficace * 1e3 == pytest.approx(1.594, abs=5e-4)
-    assert math.sqrt(2.504e-6) * 1e3 == pytest.approx(1.58, abs=5e-3)
+    assert bruit_efficace([2.504e-6]) * 1e3 == pytest.approx(1.58, abs=5e-3)
     assert densite * 1e6 == pytest.approx(11.27, abs=5e-3)
     assert densite == pytest.approx(efficace / math.sqrt(20e3))
 

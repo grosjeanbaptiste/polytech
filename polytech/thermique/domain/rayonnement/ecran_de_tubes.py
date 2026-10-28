@@ -23,24 +23,35 @@ from __future__ import annotations
 import math
 
 
-def aire_entre_deux_tubes(diametre: float, pas: float) -> float:
-    """`12`, en m^2 par metre de tube."""
+def aire_entre_deux_tubes(
+    diametre: float, pas: float, *, prefacteur: float = 1.0
+) -> float:
+    """`12`, en m^2 par metre de tube.
+
+    `prefacteur` vaut 1 (cordes) ; 2 donne la forme imprimee au syllabus,
+    que le courrier a l'enseignant releve comme fausse.
+    """
     if pas < diametre:
         msg = f"tubes qui se chevauchent : pas {pas} m, diametre {diametre} m"
         raise ValueError(msg)
     tangente = math.sqrt(pas**2 - diametre**2)
-    return tangente + diametre * math.asin(diametre / pas) - pas
+    return prefacteur * (tangente + diametre * math.asin(diametre / pas) - pas)
 
 
-def facteur_d_un_tube_vers_le_plan(diametre: float, pas: float) -> float:
+def facteur_d_un_tube_vers_le_plan(
+    diametre: float, pas: float, *, prefacteur: float = 1.0
+) -> float:
     """`F_1P = (1 - 2 F_12) / 2`."""
-    vers_le_voisin = aire_entre_deux_tubes(diametre, pas) / (math.pi * diametre)
+    aire = aire_entre_deux_tubes(diametre, pas, prefacteur=prefacteur)
+    vers_le_voisin = aire / (math.pi * diametre)
     return (1 - 2 * vers_le_voisin) / 2
 
 
-def facteur_du_plan_vers_la_rangee(diametre: float, pas: float) -> float:
+def facteur_du_plan_vers_la_rangee(
+    diametre: float, pas: float, *, prefacteur: float = 1.0
+) -> float:
     """`F_PT`, la part du rayonnement du plan que la rangee intercepte."""
-    vers_le_plan = facteur_d_un_tube_vers_le_plan(diametre, pas)
+    vers_le_plan = facteur_d_un_tube_vers_le_plan(diametre, pas, prefacteur=prefacteur)
     return math.pi * diametre / pas * vers_le_plan
 
 

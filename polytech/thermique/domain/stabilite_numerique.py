@@ -69,3 +69,21 @@ def fourier_critique_du_maillage(noeuds: int) -> float:
 def est_stable_en_explicite(fourier: float, dimensions: int) -> bool:
     """Vrai si ce nombre de Fourier de maille tient sous la borne du cours."""
     return fourier <= fourier_critique(dimensions)
+
+
+def avancer_en_explicite(valeurs: list[float], fourier: float) -> list[float]:
+    """Un pas d'Euler explicite sur un fil dont les deux bouts sont tenus."""
+    interieur = [
+        centre + fourier * (gauche - 2 * centre + droite)
+        for gauche, centre, droite in zip(
+            valeurs, valeurs[1:], valeurs[2:], strict=False
+        )
+    ]
+    return [valeurs[0], *interieur, valeurs[-1]]
+
+
+def amplitude_maximale_apres(valeurs: list[float], fourier: float, pas: int) -> float:
+    """`max |t|` apres `pas` pas : il s'amortit sous la borne, diverge au-dela."""
+    for _ in range(pas):
+        valeurs = avancer_en_explicite(valeurs, fourier)
+    return max(abs(v) for v in valeurs)

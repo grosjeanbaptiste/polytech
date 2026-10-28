@@ -27,7 +27,11 @@ LECTURES: Final = {1e2: (40.0, -90.0), 1e3: (0.0, -170.0), 1e4: (-40.0, -160.0)}
 Les phases et deux des gains sont ceux du corrige officiel. Le gain a
 `10^3 rad/s` est relu : l'officiel y lit -10 dB.
 """
-ENTREES: Final = ((1.0, 1e2, 0.0), (5.0, 1e4, 0.0), (2.0, 1e3, 30.0))
+ENTREES: Final = (
+    (1.0, 1e2, 0.0),
+    (5.0, 1e4, 0.0),
+    (2.0, 1e3, math.degrees(math.pi / 6)),
+)
 """Amplitude en volts, pulsation en rad/s, phase en degres (`pi / 6 = 30`)."""
 
 
@@ -71,18 +75,23 @@ def phases_en_marches(transfert: sp.Expr) -> tuple[float, float, float]:
     return basse, mediane, haute
 
 
+def amplitude_de_sortie(amplitude: float, gain_en_db: float) -> float:
+    """L'amplitude d'entree multipliee par `|H|`, lu en decibels."""
+    return amplitude * 10 ** (gain_en_db / 20)
+
+
 def sorties() -> list[tuple[float, float]]:
     """Question 8 : l'amplitude, en volts, et la phase, en degres, de chaque sortie."""
     resultats = []
     for amplitude, pulsation, phase in ENTREES:
         gain, dephasage = LECTURES[pulsation]
-        resultats.append((amplitude * 10 ** (gain / 20), phase + dephasage))
+        resultats.append((amplitude_de_sortie(amplitude, gain), phase + dephasage))
     return resultats
 
 
 def sortie_de_l_officiel() -> tuple[float, float]:
     """La troisieme sortie telle que l'officiel l'obtient : -10 dB et 60 degres."""
-    return 2.0 * 10 ** (-10 / 20), 60.0 - 170.0
+    return amplitude_de_sortie(2.0, -10.0), 60.0 - 170.0
 
 
 def pente_entre_les_lectures() -> float:

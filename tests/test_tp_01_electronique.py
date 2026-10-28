@@ -43,6 +43,7 @@ def test_l_inductance_exacte_et_celle_de_l_officiel() -> None:
 def test_la_boucle_coupe_vers_dix_megahertz() -> None:
     inductance, basse, haute = croisements()
     assert inductance == pytest.approx(153.3e-9, abs=0.1e-9)
+    assert inductance == pytest.approx(153.27e-9, abs=0.01e-9)
     assert basse == pytest.approx(10.38e6, rel=1e-3)
     assert haute == pytest.approx(10.38e12, rel=1e-3)
 

@@ -9,7 +9,7 @@ Le syllabus n'est pas tout a fait coherent avec lui-meme : il ecrit
 `Q+ = 392 C` a l'exemple 1.3.2 et `394 C` a l'exemple 1.4.1, puis
 `-13,56 C` et `-27,03 C` pour un et deux electrons perdus, alors que le
 second devrait etre le double du premier. Le calcul refait ici donne
-`394,3 C`, `-13,60 C` et `-27,19 C` ; les valeurs imprimees s'en ecartent
+`394,5 C`, `-13,60 C` et `-27,21 C` ; les valeurs imprimees s'en ecartent
 de moins d'un pour cent.
 """
 
@@ -39,7 +39,7 @@ def test_le_nombre_de_protons_est_z_fois_le_nombre_d_atomes() -> None:
 
 
 def test_la_charge_positive_totale() -> None:
-    """`Q+ = N e` ; 394,3 C, ou le syllabus imprime 392 puis 394."""
+    """`Q+ = N e` ; 394,5 C, ou le syllabus imprime 392 puis 394."""
     q_plus = _millimetre_cube().charge_positive
     assert math.isclose(q_plus, 29 * 8960e-9 / 63.546e-3 * N_A * E)
     assert math.isclose(q_plus, 394, rel_tol=0.01)
@@ -66,6 +66,14 @@ def test_deux_electrons_perdus_font_le_double_d_un_seul() -> None:
     echantillon = _millimetre_cube()
     assert math.isclose(echantillon.charge_mobile(2), 2 * echantillon.charge_mobile(1))
     assert not math.isclose(-27.03, 2 * -13.56, rel_tol=1e-3)
+
+
+def test_les_valeurs_proposees_aux_enseignants_sont_celles_de_la_bibliotheque() -> None:
+    """Les chiffres des courriers (394,5 ; -13,60 ; -27,21) sont ceux du calcul."""
+    echantillon = _millimetre_cube()
+    assert round(echantillon.charge_positive, 1) == 394.5
+    assert round(echantillon.charge_mobile(1), 2) == -13.60
+    assert round(echantillon.charge_mobile(2), 2) == -27.21
 
 
 def test_la_charge_mobile_est_petite_devant_la_charge_totale() -> None:

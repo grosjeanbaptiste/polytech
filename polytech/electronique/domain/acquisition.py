@@ -45,6 +45,14 @@ def bits_necessaires(etendue: float, pas_maximal: float) -> int:
     return math.ceil(math.log2(etendue / pas_maximal))
 
 
+def courant_de_bruit_integre(densite_de_courant: float, bande: float) -> float:
+    """`i_n sqrt(B)` : le courant efficace de bruit sur la bande, en ampere."""
+    if bande <= 0:
+        msg = f"bande non positive : {bande}"
+        raise ValueError(msg)
+    return densite_de_courant * math.sqrt(bande)
+
+
 def puissance_de_bruit_en_courant(
     densite_de_courant: float,
     impedance: float,
@@ -59,6 +67,15 @@ def puissance_de_bruit_en_courant(
         msg = f"bande non positive : {bande}"
         raise ValueError(msg)
     return (densite_de_courant * impedance) ** 2 * bande
+
+
+def tension_de_bruit_en_courant(
+    densite_de_courant: float, impedance: float, bande: float
+) -> float:
+    """La tension efficace que ce bruit en courant fait aux bornes de l'impedance."""
+    return math.sqrt(
+        puissance_de_bruit_en_courant(densite_de_courant, impedance, bande)
+    )
 
 
 def densite_de_bruit_maximale(tension_efficace: float, bande: float) -> float:

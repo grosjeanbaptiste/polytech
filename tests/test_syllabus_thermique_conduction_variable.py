@@ -23,6 +23,7 @@ from polytech.thermique.domain.conduction.plaque_variable import (
     PlaqueEnEchelon,
     produit_des_plaques,
 )
+from polytech.thermique.domain.conduction.terme_de_la_serie import TermeDeLaSerie
 from polytech.thermique.domain.conduction.semi_infini import (
     amortissement_en_profondeur,
     attenuation_a_la_surface,
@@ -68,19 +69,14 @@ def test_chaque_terme_de_la_serie_resout_l_equation_et_ses_conditions() -> None:
     (4.7) imprime l'exposant « -delta_n (a tau / l^2) » ; c'est
     `delta_n^2`, comme dans le mode fondamental de la page suivante.
     """
-    racine, demi, echange = (
-        PLAQUE.valeurs_propres(1)[0],
-        sp.Rational(1, 2),
-        sp.Integer(4),
+    terme = TermeDeLaSerie(PLAQUE, rang=0, demi_epaisseur=sp.Rational(1, 2))
+    champ = terme.champ()
+    assert terme.residu_de_diffusion(champ) == 0
+    assert terme.pente_au_centre(champ) == 0
+    assert terme.residu_de_fourier(champ, echange=sp.Integer(4)) == pytest.approx(
+        0.0, abs=1e-9
     )
-    conductivite = echange * demi / 2
-    terme = sp.exp(-(racine**2) * A * TAU / demi**2) * sp.cos(racine * X / demi)
-    assert _residu_de_diffusion(terme) == 0
-    assert sp.diff(terme, X).subs(X, 0) == 0
-    au_bord = -conductivite * sp.diff(terme, X) - echange * terme
-    assert float(au_bord.subs({X: demi, TAU: 0})) == pytest.approx(0.0, abs=1e-9)
-    faux = sp.exp(-racine * A * TAU / demi**2) * sp.cos(racine * X / demi)
-    assert _residu_de_diffusion(faux) != 0
+    assert terme.residu_de_diffusion(terme.champ(exposant_imprime=True)) != 0
 
 
 def test_la_serie_part_de_l_ecart_initial() -> None:

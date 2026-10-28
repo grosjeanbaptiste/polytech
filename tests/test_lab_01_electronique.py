@@ -199,7 +199,10 @@ def test_question_8_les_trois_sorties() -> None:
     assert deuxieme[0] == pytest.approx(0.05)
     assert troisieme[0] == pytest.approx(2.0)
     assert troisieme[1] == pytest.approx(30.0 + bo.LECTURES[1e3][1])
-    assert bo.sortie_de_l_officiel()[0] == pytest.approx(0.64, abs=0.01)
+    assert troisieme[1] == pytest.approx(-140.0)
+    officiel = bo.sortie_de_l_officiel()[0]
+    assert officiel == pytest.approx(bo.amplitude_de_sortie(2.0, -10.0), rel=1e-12)
+    assert round(officiel, 3) == 0.632
     assert bo.sortie_de_l_officiel()[1] == pytest.approx(-110.0)
 
 
@@ -208,7 +211,7 @@ def test_question_8_la_lecture_a_mille_radians_par_seconde() -> None:
     assert bo.gain_interpole(1e3) == pytest.approx(0.0, abs=1e-9)
     assert bo.pente_entre_les_lectures() == pytest.approx(-40.0)
     assert bo.LECTURES[1e3][0] == 0.0
-    assert math.degrees(math.pi / 6) == pytest.approx(30.0)
+    assert bo.ENTREES[2][2] == pytest.approx(30.0)  # pi/6, calcule par la lib
 
 
 # --- Les courbes du document ------------------------------------------

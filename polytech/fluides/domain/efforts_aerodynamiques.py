@@ -51,6 +51,18 @@ class Facette:
         selon_y = -self.pression * sinus - self.frottement * cosinus
         return (selon_x * self.aire, selon_y * self.aire)
 
+    def force_avec_le_signe_de_la_planche_22(self) -> tuple[float, float]:
+        """Le frottement seul, `+ tau_w cos(theta)` selon y comme imprime : faux."""
+        cosinus, sinus = math.cos(self.angle), math.sin(self.angle)
+        return (
+            self.frottement * sinus * self.aire,
+            self.frottement * cosinus * self.aire,
+        )
+
+    def composante_normale(self, force: tuple[float, float]) -> float:
+        """La part de `force` portee par la normale `(cos theta, sin theta)`."""
+        return force[0] * math.cos(self.angle) + force[1] * math.sin(self.angle)
+
 
 def resultante(facettes: Sequence[Facette]) -> tuple[float, float]:
     """`(D, L)` : la trainee suivant l'ecoulement, la portance en travers."""

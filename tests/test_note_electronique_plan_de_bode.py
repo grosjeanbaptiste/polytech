@@ -35,6 +35,7 @@ from polytech.electronique.domain.laplace import (
     impedance_de_resistance,
 )
 from polytech.electronique.domain.second_ordre import PasseBasCanonique
+from polytech.signaux.domain.lecture_d_expressions import exposant_de, module_de
 from polytech.signaux.domain.bode_par_intervalles import (
     Factorisation,
     distance_logarithmique,
@@ -109,16 +110,18 @@ def test_les_expressions_approchees_de_la_page_5() -> None:
 
 
 def test_la_cinquieme_expression_de_la_page_5_est_un_palier() -> None:
-    """Entre `z_1` et `p_2` : `A_0 p_0 p_1 / (z_0 z_1)`, et non la forme imprimee."""
-    palier = LITTERALE.approchee(ORDRE, 4, sp.I * W)
-    assert sp.simplify(palier - A0 * P0 * P1 / (Z0 * Z1)) == 0
+    """Entre `z_1` et `p_2` : un palier de pente nulle, et non la forme imprimee."""
+    assert LITTERALE.pente(ORDRE, 4) == 0
+    palier = LITTERALE.gain_du_palier(ORDRE, 4)
+    assert palier.free_symbols == {A0, Z0, Z1, P0, P1}
     imprimee = A0 * P0 * P1 * P2 / (-(W**2) * Z0 * Z1)
-    assert sp.simplify(palier - imprimee) != 0
+    assert exposant_de(imprimee, W) == -2
     valeurs = {A0: 1, Z0: 1e2, Z1: 1e8, P0: 1e4, P1: 1e6, P2: 1e10, W: 1e9}
-    assert float(palier.subs(valeurs)) == pytest.approx(1.0)
-    assert abs(complex(imprimee.subs(valeurs))) == pytest.approx(1e20 / (1e18 * 1e10))
-    au_milieu = abs(complex(EXEMPLE.exacte(P).subs(P, 1e9j)))
-    assert au_milieu == pytest.approx(1.0, rel=0.02)
+    assert module_de(palier, valeurs) == pytest.approx(1.0)
+    assert module_de(imprimee, valeurs) == pytest.approx(1e-8, rel=1e-9)
+    assert EXEMPLE.module_exact(1e9) == pytest.approx(1.0, rel=0.02)
+    with pytest.raises(ValueError, match="pas un palier"):
+        LITTERALE.gain_du_palier(ORDRE, 3)
 
 
 def test_le_trace_reel_colle_au_trace_asymptotique_loin_des_cassures() -> None:

@@ -54,3 +54,32 @@ def temperature_de_frontiere(  # noqa: PLR0913 -- trois voisins, le reseau, deux
     fictif = noeud_fictif_de_neumann(interieur, pas, conductivite, flux=flux)
     source = generation * pas**2 / conductivite
     return (interieur + fictif + sum(lateraux) + source) / 4
+
+
+def temperature_interieure_en_champ_lineaire(
+    surface: float, pas: float, conductivite: float, *, flux: float
+) -> float:
+    """Le noeud a `Delta x` sous la surface : `t_0 - phi_0 Delta x / lambda`.
+
+    Fourier sur un champ lineaire : le flux entrant `phi_0` descend vers
+    l'interieur, la temperature baisse donc d'autant par maille.
+    """
+    if conductivite <= 0:
+        msg = f"conductivite nulle ou negative : {conductivite}"
+        raise ValueError(msg)
+    return surface - flux * pas / conductivite
+
+
+def premier_membre_du_noeud(
+    frontiere: float, interieur: float, lateraux: tuple[float, float]
+) -> float:
+    """`4 t_0 - 2 t_1 - t_2 - t_4`, le membre de gauche de (5.7)."""
+    return 4 * frontiere - 2 * interieur - sum(lateraux)
+
+
+def second_membre_du_noeud(
+    pas: float, conductivite: float, *, flux: float, generation: float = 0.0
+) -> float:
+    """`q Delta x^2 / lambda + 2 Delta x phi_0 / lambda`, le signe plus."""
+    fictif = noeud_fictif_de_neumann(0.0, pas, conductivite, flux=flux)
+    return generation * pas**2 / conductivite + fictif

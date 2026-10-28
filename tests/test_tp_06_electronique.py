@@ -51,6 +51,13 @@ def test_ex5_le_decalage_du_lm741() -> None:
     assert math.isclose(dc.decalage_lm741(), _sortie_decalee(1e-3, 90e-9, 70e-9))
 
 
+def test_ex5_le_decalage_total_du_lm741_vaut_1_63_millivolt() -> None:
+    """+10 mV, -9 mV et +0,63 mV : 1,63 mV au total."""
+    e0, plus, moins = dc.decalage_lm741_par_source()
+    assert (e0 * 1e3, plus * 1e3, moins * 1e3) == pytest.approx((10.0, -9.0, 0.63))
+    assert dc.decalage_lm741() * 1e3 == pytest.approx(1.63, abs=5e-3)
+
+
 def test_ex5_le_decalage_du_ca3140a() -> None:
     attendu = _sortie_decalee(2e-3, 10.25e-12, 9.75e-12)
     assert math.isclose(dc.decalage_ca3140a(), attendu)
@@ -58,7 +65,8 @@ def test_ex5_le_decalage_du_ca3140a() -> None:
 
 def test_ex5_lu_en_picoamperes_le_lm741_rendrait_le_chiffre_de_l_officiel() -> None:
     """`9.99 mV` : la valeur qu'on obtient en prenant les nA pour des pA."""
-    assert round(_sortie_decalee(1e-3, 90e-12, 70e-12) * 1e3, 2) == 9.99
+    en_pico = dc.decalage_du_non_inverseur(1e-3, *dc.courants_d_entree(80e-12, 20e-12))
+    assert round(en_pico * 1e3, 2) == 9.99
 
 
 def test_ex6_le_point_de_repos_est_a_mi_alimentation() -> None:
@@ -91,7 +99,8 @@ def test_ex7_le_decalage_avec_un_millivolt() -> None:
 
 
 def test_ex7_le_chiffre_de_l_officiel_suppose_cinq_millivolts() -> None:
-    assert math.isclose(6 * 5e-3 + 50e3 * 70e-9, 33.5e-3)
+    assert dc.decalage_de_l_exercice_7(5e-3) * 1e3 == pytest.approx(33.5)
+    assert dc.decalage_de_l_exercice_7() * 1e3 == pytest.approx(9.5)
 
 
 def test_ex8_le_lm741_suffit() -> None:

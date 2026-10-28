@@ -58,3 +58,15 @@ def nusselt_moyen_mixte(
     laminaire = 0.664 * min(reynolds, critique) ** 0.5
     turbulent = 0.037 * (max(reynolds, critique) ** 0.8 - critique**0.8)
     return float((laminaire + turbulent) * prandtl**_TIERS)
+
+
+def constante_de_raccord(critique: float = _CRITIQUE) -> float:
+    """`C` de `Nu = 0,037 Pr^1/3 (Re^0,8 - C)` : `Re_c^0,8 - (0,664/0,037) Re_c^0,5`."""
+    return float(critique**0.8 - 0.664 / 0.037 * critique**0.5)
+
+
+def nusselt_moyen_a_constante(
+    reynolds: float, prandtl: float, constante: float
+) -> float:
+    """`0,037 Pr^1/3 (Re^0,8 - C)` pour une constante `C` donnee (23 100 imprime)."""
+    return float(0.037 * prandtl**_TIERS * (reynolds**0.8 - constante))

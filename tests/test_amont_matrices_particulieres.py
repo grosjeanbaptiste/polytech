@@ -15,7 +15,7 @@ from __future__ import annotations
 import pytest
 import sympy as sp
 
-from polytech.maths.domain.algebre import exponentielle
+from polytech.maths.domain.algebre import exponentielle, rotation_plane
 from polytech.maths.domain.algebre.diagonalisation import (
     diagonaliser_orthogonalement,
     est_diagonalisable,
@@ -99,12 +99,15 @@ def test_la_rotation_de_la_page_5_et_ses_deux_coquilles() -> None:
     `(-1)^(k+1)`, puisque `A` y porte `-theta`. Elle ecrit aussi la diagonale
     de `e^A` en `1 + theta2/2! + ...`, sans alternance : c'est le cosinus.
     """
-    generatrice = THETA * ROTATION
-    assert (generatrice**3)[0, 1] == THETA**3
+    generatrice = rotation_plane.generatrice(THETA)
+    assert rotation_plane.coin_haut_droit(generatrice, 1) == THETA**3
+    for k in range(5):
+        coin = rotation_plane.coin_haut_droit(generatrice, k)
+        assert coin == rotation_plane.coin_corrige(THETA, k)
+        assert coin != rotation_plane.coin_imprime(THETA, k)
     serie = exponentielle.par_la_serie(generatrice, 4)
-    assert serie[0, 0] == 1 - THETA**2 / 2 + THETA**4 / 24
-    rotation = sp.Matrix(
-        [[sp.cos(THETA), -sp.sin(THETA)], [sp.sin(THETA), sp.cos(THETA)]]
-    )
+    cosinus = coefficients_de_mac_laurin(sp.cos(X), 5)
+    assert serie[0, 0] == sum(c * THETA**i for i, c in enumerate(cosinus))
+    rotation = rotation_plane.rotation(THETA)
     obtenue = exponentielle.par_jordan(generatrice)
     assert sp.simplify((obtenue - rotation).rewrite(sp.exp)).is_zero_matrix

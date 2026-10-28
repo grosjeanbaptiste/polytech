@@ -218,7 +218,20 @@ def test_l_aire_d_echange_entre_deux_tubes() -> None:
     rapport = pas / diametre
     crochet = math.sqrt(rapport**2 - 1) - rapport + math.pi / 2 - math.acos(1 / rapport)
     assert aire_entre_deux_tubes(diametre, pas) == pytest.approx(diametre * crochet)
-    assert aire_entre_deux_tubes(diametre, pas) != pytest.approx(2 * diametre * crochet)
+    imprimee = aire_entre_deux_tubes(diametre, pas, prefacteur=2.0)
+    assert aire_entre_deux_tubes(diametre, pas) != pytest.approx(imprimee)
+    assert aire_entre_deux_tubes(diametre, pas) == pytest.approx(0.01278, abs=5e-6)
+    assert aire_entre_deux_tubes(diametre, pas) / diametre == pytest.approx(
+        0.2556, abs=5e-5
+    )
+    assert imprimee == pytest.approx(0.02556, abs=1e-5)
+    # F_PT du courrier : 0,66 (cordes) contre 0,53 (prefacteur 2 d), p = 2.
+    assert facteur_du_plan_vers_la_rangee(diametre, pas) == pytest.approx(
+        0.66, abs=0.005
+    )
+    assert facteur_du_plan_vers_la_rangee(
+        diametre, pas, prefacteur=2.0
+    ) == pytest.approx(0.53, abs=0.005)
     with pytest.raises(ValueError, match="tubes qui se chevauchent"):
         aire_entre_deux_tubes(0.05, 0.04)
 
@@ -230,11 +243,7 @@ def test_la_courbe_1_de_la_figure_2_15(rapport: float, lue: float) -> None:
     """`F_PT = (pi d / 2 l)(1 - 2 F_12)`, lu sur l'abaque a 0,01 pres."""
     facteur = facteur_du_plan_vers_la_rangee(1.0, rapport)
     assert facteur == pytest.approx(lue, abs=0.01)
-    avec_le_double = (
-        math.pi
-        / (2 * rapport)
-        * (1 - 4 * aire_entre_deux_tubes(1.0, rapport) / math.pi)
-    )
+    avec_le_double = facteur_du_plan_vers_la_rangee(1.0, rapport, prefacteur=2.0)
     assert abs(avec_le_double - lue) > 0.005
 
 
@@ -282,14 +291,15 @@ def test_l_exercice_ii_2_1_deux_plaques_noires() -> None:
     """1,5 x 3 m a 1,5 m, 500 et 250 degres : `F = 0,285`, 20 481 W.
 
     Le syllabus ecrit 524 K pour 250 degres ; avec 523,15 K et le facteur
-    non arrondi, 20 599 W.
+    non arrondi, 20 601 W.
     """
     facteur = rectangles_paralleles(3.0 / 1.5, 1.5 / 1.5)
     assert facteur == pytest.approx(0.285, abs=0.001)
-    imprime = 1.5 * 3.0 * 0.285 * SIGMA * (773.0**4 - 524.0**4)
-    assert imprime == pytest.approx(20481.0, abs=1.0)
+    imprime = flux_entre_surfaces_noires(1.5 * 3.0 * 0.285, 773.0, 524.0)
+    assert imprime == pytest.approx(20482.2, abs=0.1)
+    assert imprime == pytest.approx(20481.0, abs=1.5)  # le syllabus arrondit
     flux = flux_entre_surfaces_noires(1.5 * 3.0 * facteur, 773.15, 523.15)
-    assert flux == pytest.approx(20599.0, abs=5.0)
+    assert flux == pytest.approx(20601.0, abs=0.5)
 
 
 def test_l_exercice_ii_2_2_les_resistances_en_rangee() -> None:
@@ -309,3 +319,12 @@ def test_l_exercice_ii_2_2_les_resistances_en_rangee() -> None:
     seule = temperature_d_equilibre(dissipe, perimetre, 293.15)
     assert seule == pytest.approx(1091.0, abs=1.0)
     assert en_rangee > seule
+
+
+def test_a_un_pas_de_deux_diametres_le_prefacteur_d_donne_0_66_et_2d_donne_0_53() -> (
+    None
+):
+    rapport = 2.0
+    assert facteur_du_plan_vers_la_rangee(1.0, rapport) == pytest.approx(0.66, abs=0.01)
+    avec_le_double = facteur_du_plan_vers_la_rangee(1.0, rapport, prefacteur=2.0)
+    assert avec_le_double == pytest.approx(0.53, abs=0.005)

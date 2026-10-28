@@ -128,13 +128,13 @@ def test_la_temperature_moyenne_de_la_jonction() -> None:
     « 0 = Phi + (t_J - t_B) / R_JB » qui contredit la ligne qui le
     precede ; son resultat final, lui, est juste.
     """
-    moyenne = MONTAGE.jonction_moyenne(ambiance=25.0, puissance=4.0, des_autres=6.0)
-    refroidisseur = 25.0 + (4.0 + 6.0) * 2.0
-    assert moyenne == pytest.approx(refroidisseur + 4.0 * (3.125 + 0.25))
-    boitier = refroidisseur + 4.0 * 0.25
-    assert moyenne - boitier == pytest.approx(4.0 * 3.125)
-    assert 4.0 + (refroidisseur - boitier) / 0.25 == pytest.approx(0.0)
-    assert 4.0 + (moyenne - boitier) / 3.125 != pytest.approx(0.0)
+    mesures = {"ambiance": 25.0, "puissance": 4.0, "des_autres": 6.0}
+    moyenne = MONTAGE.jonction_moyenne(**mesures)
+    assert MONTAGE.refroidisseur_moyen(**mesures) == pytest.approx(45.0)
+    assert MONTAGE.boitier_moyen(**mesures) == pytest.approx(46.0)
+    assert moyenne == pytest.approx(58.5)
+    assert MONTAGE.bilan_du_boitier(**mesures) == pytest.approx(0.0, abs=1e-12)
+    assert MONTAGE.bilan_imprime_du_boitier(**mesures) == pytest.approx(8.0)
 
 
 def test_la_transmittance_de_la_jonction() -> None:

@@ -129,6 +129,11 @@ def flux_lineique_de_tubes(
     return (chaude - froide) / en_serie(*resistances)
 
 
+def densite_de_flux_a_la_face(flux_lineique: float, rayon: float) -> float:
+    """`phi = Phi / (2 pi r)`, en W/m^2, sur la face de rayon `rayon`."""
+    return flux_lineique / (2 * math.pi * rayon)
+
+
 def conductivite_interpolee(
     table: Sequence[tuple[float, float]], temperature: float
 ) -> float:

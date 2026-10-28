@@ -31,6 +31,7 @@ from polytech.thermique.domain.conduction.parois import (
     Couche,
     Tube,
     conductivite_interpolee,
+    densite_de_flux_a_la_face,
     flux_de_plaque,
     flux_entre_deux_fluides,
     flux_lineique_de_tubes,
@@ -207,7 +208,11 @@ def test_l_exemple_2_2_1_la_tuyauterie_calorifugee() -> None:
 
 def test_la_densite_de_flux_a_la_face_externe_du_calorifuge() -> None:
     """`phi_3 = Phi / (2 pi r_3)`. Le syllabus imprime 35,36 ; c'est 35,13."""
-    densite = 27.59 / (math.pi * 0.25)
+    acier = Tube(0.0255, 0.029, 46.5)
+    isolant = conductivite_interpolee(TABLE, 90.0)
+    flux = flux_lineique_de_tubes((acier, Tube(0.029, 0.125, isolant)), 150.0, 30.0)
+    densite = densite_de_flux_a_la_face(flux, 0.125)
+    assert flux == pytest.approx(27.59, abs=0.005)
     assert densite == pytest.approx(35.13, abs=0.005)
     assert abs(densite - 35.36) > 0.2
 

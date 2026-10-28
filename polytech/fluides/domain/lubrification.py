@@ -87,6 +87,14 @@ class Patin:
         echelle = 6 * self.viscosite * self.vitesse * self.longueur
         return echelle * portee / (epaisseur**2 * (self.entree**2 - self.sortie**2))
 
+    def surpression_imprimee_planche_12(self, epaisseur: float) -> float:
+        """La formule de la planche 12 telle qu'imprimee : sans `h^2`.
+
+        Elle vaut `p(h) h^2`, une pression fois une surface : le defaut
+        releve dans le courrier a l'enseignant. Ne sert qu'a le montrer.
+        """
+        return self.surpression(epaisseur) * epaisseur**2
+
     def epaisseur_du_maximum(self) -> float:
         """`h = 2 h_0 h_L / (h_0 + h_L)`."""
         return 2 * self.entree * self.sortie / (self.entree + self.sortie)

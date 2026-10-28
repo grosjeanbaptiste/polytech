@@ -22,7 +22,10 @@ from polytech.maths.domain.algebre.triangularisation import (
     completer_en_base,
     est_triangulaire_superieure,
     est_triangularisable,
+    produit_de_passage,
+    reconstruit_par,
     semblable_par,
+    semblable_par_inverse_donnee,
     triangulariser,
 )
 
@@ -159,13 +162,35 @@ def test_pour_a_egal_trois_le_systeme_est_indetermine() -> None:
 def test_la_solution_ecrite_page_33_a_perdu_un_facteur() -> None:
     """Le manuscrit ecrit `x = (6/a) y + a - 3/a = 2y + 2` ; c'est `(5a - 3)/a`, soit 4.
 
-    Scan relu a plus haute resolution. Second chemin : la seconde equation,
-    `2x - 4y = 8`, que `x = 2y + 2` ne verifie pas.
+    Scan relu a plus haute resolution. Toute la chaine passe par la
+    bibliotheque : la forme generale en `a` (premiere equation resolue en
+    `x`), sa valeur en `a = 3` (le systeme indetermine), puis le residu de la
+    seconde equation `2x - 4y = 8` pour chacune des deux formes.
     """
-    y = sp.Symbol("y")
-    juste = sp.Rational(6, 3) * y + sp.Rational(5 * 3 - 3, 3)
-    ecrite = sp.Rational(6, 3) * y + 3 - sp.Rational(3, 3)
-    assert juste == 2 * y + 4
-    assert ecrite == 2 * y + 2
-    assert sp.expand(2 * juste - 4 * y) == 8
-    assert sp.expand(2 * ecrite - 4 * y) == 4
+    premiere = SystemeLineaire(sp.Matrix([[A, -6]]), sp.Matrix([5 * A - 3]))
+    x_general, libre = solution_generale(premiere)
+    assert sp.simplify(x_general - (6 * libre / A + (5 * A - 3) / A)) == 0
+    assert sp.simplify(x_general - (6 * libre / A + A - 3 / A)) != 0
+
+    systeme = SystemeLineaire(sp.Matrix([[3, -6], [2, -4]]), sp.Matrix([12, 8]))
+    x_lib, y_lib = solution_generale(systeme)
+    assert sp.simplify(x_general.subs(A, 3) - x_lib.subs(y_lib, libre)) == 0
+    assert sp.expand(x_lib - (2 * y_lib + 4)) == 0
+
+    def residu(x: sp.Expr, y: sp.Expr) -> sp.Matrix:
+        return systeme.matrice * sp.Matrix([x, y]) - systeme.second_membre
+
+    ecrite = (6 * libre / A + A - 3 / A).subs(A, 3)
+    assert sp.expand(ecrite - (2 * libre + 2)) == 0
+    assert sp.expand(residu(x_general.subs(A, 3), libre)) == sp.zeros(2, 1)
+    assert sp.expand(residu(ecrite, libre)) == sp.Matrix([-6, -4])
+
+
+def test_un_inverse_donne_qui_n_en_est_pas_un_leve() -> None:
+    passage = sp.Matrix([[1, 0], [0, 2]])
+    with pytest.raises(ValueError, match="pas l'inverse"):
+        semblable_par_inverse_donnee(sp.eye(2), passage, sp.eye(2))
+    assert produit_de_passage(passage, sp.eye(2)) == passage
+    inverse = sp.Matrix([[1, 0], [0, R(1, 2)]])
+    assert semblable_par_inverse_donnee(sp.eye(2), passage, inverse) == sp.eye(2)
+    assert reconstruit_par(passage, sp.eye(2), inverse) == sp.eye(2)

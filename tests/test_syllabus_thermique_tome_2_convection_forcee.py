@@ -32,8 +32,10 @@ from polytech.thermique.domain.convection.forcee import (
     reynolds,
 )
 from polytech.thermique.domain.convection.plaque_plane import (
+    constante_de_raccord,
     epaisseur_turbulente,
     nusselt_local_laminaire,
+    nusselt_moyen_a_constante,
     nusselt_moyen_mixte,
     rapport_de_la_sous_couche,
     rapport_des_couches_limites,
@@ -98,18 +100,18 @@ def test_le_nusselt_moyen_d_une_plaque_en_partie_turbulente() -> None:
     Raccorder (3.2) a la loi turbulente en `Re_crit = 5e5` donne
     23 550 ; le syllabus imprime 23 100.
     """
-    constante = 5e5**0.8 - 0.664 / 0.037 * math.sqrt(5e5)
-    assert constante == pytest.approx(23550.0, abs=1.0)
+    constante = constante_de_raccord(5e5)
+    assert constante == pytest.approx(23549.0, abs=0.5)
     mixte = nusselt_moyen_mixte(2e6, 0.7)
-    assert mixte == pytest.approx(0.037 * 0.7 ** (1 / 3) * (2e6**0.8 - constante))
-    imprime = 0.037 * 0.7 ** (1 / 3) * (2e6**0.8 - 23100.0)
-    assert mixte == pytest.approx(imprime, rel=0.006)
+    assert mixte == pytest.approx(nusselt_moyen_a_constante(2e6, 0.7, constante))
+    imprime = nusselt_moyen_a_constante(2e6, 0.7, 23100.0)
+    assert mixte / imprime - 1 == pytest.approx(-0.0052, abs=1e-4)
     assert nusselt_moyen_mixte(5e5, 0.7) == pytest.approx(
         0.664 * math.sqrt(5e5) * 0.7 ** (1 / 3)
     )
     court = nusselt_moyen_mixte(1e5, 0.7)
     assert court == pytest.approx(0.664 * math.sqrt(1e5) * 0.7 ** (1 / 3))
-    tout_turbulent = 0.037 * 0.7 ** (1 / 3) * 1e8**0.8
+    tout_turbulent = nusselt_moyen_a_constante(1e8, 0.7, 0.0)
     assert nusselt_moyen_mixte(1e8, 0.7) == pytest.approx(tout_turbulent, rel=0.01)
 
 
@@ -128,7 +130,7 @@ def test_le_nusselt_etabli_et_la_theorie_de_hausen() -> None:
     entree = groupe_d_entree(450.0, 177.7, 0.014, 2.0)
     with pytest.raises(ValueError, match="longueur nulle ou negative"):
         groupe_d_entree(450.0, 177.7, 0.014, 0.0)
-    assert entree == pytest.approx(559.8, abs=0.1)
+    assert entree == pytest.approx(559.8, abs=0.05)
     attendu = 3.65 + 0.0668 * entree / (1 + 0.04 * entree ** (2 / 3))
     assert nusselt_de_hausen(entree) == pytest.approx(attendu)
     assert nusselt_de_hausen(entree, viscosites=2.0) == pytest.approx(
@@ -146,10 +148,13 @@ def test_la_relation_de_sieder_et_tate_vaut_pour_les_tubes_courts() -> None:
     assert nusselt_de_sieder_et_tate(10.0) == pytest.approx(
         nusselt_de_hausen(10.0), rel=0.05
     )
-    assert NUSSELT_ETABLI > 1.86 * 1.0 ** (1 / 3)
+    assert nusselt_de_sieder_et_tate(10.0) == pytest.approx(4.0, abs=0.05)
+    hors_domaine = nusselt_de_sieder_et_tate(1.0, hors_validite=True)
+    assert hors_domaine == pytest.approx(1.86)
+    assert hors_domaine < NUSSELT_ETABLI
     with pytest.raises(ValueError, match="tube trop long"):
         nusselt_de_sieder_et_tate(1.0)
-    assert (2.0 / 0.014) / (450.0 * 177.7) < 0.1
+    assert 1 / groupe_d_entree(450.0, 177.7, 0.014, 2.0) < 0.1
 
 
 def test_la_sous_couche_visqueuse_d_un_tube() -> None:
@@ -193,7 +198,12 @@ def test_le_facteur_j_efface_la_viscosite() -> None:
         nusselt = nusselt_turbulent_de_sieder_et_tate(1e5, 30.0, viscosites=viscosites)
         facteur = facteur_j(nusselt, 1e5, 30.0, viscosites=viscosites)
         assert facteur == pytest.approx(0.027 * 1e5**-0.2)
-    assert pytest.approx(0.0027) == 0.027 * 1e5**-0.2
+        avec_le_signe_plus = facteur_j(
+            nusselt, 1e5, 30.0, viscosites=viscosites, exposant=0.14
+        )
+        if viscosites != 1.0:
+            assert avec_le_signe_plus != pytest.approx(facteur, rel=1e-3)
+    assert facteur == pytest.approx(0.0027, abs=5e-6)
 
 
 def test_le_diametre_hydraulique() -> None:

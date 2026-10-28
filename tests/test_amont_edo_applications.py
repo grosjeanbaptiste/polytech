@@ -53,5 +53,7 @@ def test_les_racines_du_systeme_amorti_n_ont_pas_le_j_de_la_page_39() -> None:
     """
     operateur = masse_amortisseur_ressort(1, 3, 2)
     assert operateur.racines() == {-1: 1, -2: 1}
+    r = sp.Symbol("r")
+    assert sp.discriminant(r**2 + 3 * r + 2, r) == 1
     de_la_planche = sp.Rational(-3, 2) + sp.I / 2
     assert operateur.en(de_la_planche) != 0

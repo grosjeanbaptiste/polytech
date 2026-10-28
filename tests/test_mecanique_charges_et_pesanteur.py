@@ -40,6 +40,10 @@ def test_la_poutre_bi_appuyee_de_l_exemple_2_2_8() -> None:
     en_b = charge.moment_a_l_origine() / 2
     assert en_b == 45
     assert charge.charge_totale() - en_b == 15
+    # 20 kN/m en N/m : les reactions valent 45 000 N et 15 000 N, pas 45 N et 15 N.
+    en_newtons = ChargeRepartie(sp.Integer(20_000), X, 0, 3)
+    assert en_newtons.moment_a_l_origine() / 2 == 45_000
+    assert en_newtons.charge_totale() - en_newtons.moment_a_l_origine() / 2 == 15_000
 
 
 def test_le_torseur_d_une_charge_vers_le_bas() -> None:

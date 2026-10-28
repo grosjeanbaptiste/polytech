@@ -11,6 +11,7 @@ import math
 import pytest
 import sympy as sp
 
+from polytech.electronique.application import chaine_1_2_lab_03 as chaine_1_2
 from polytech.electronique.domain.acquisition import (
     bits_necessaires,
     cadence_du_multiplexeur,
@@ -208,8 +209,14 @@ def test_la_cadence_agregee_vaut_320_et_non_360_kilo_echantillons() -> None:
 def test_deux_adc2_ne_tiennent_pas_la_cadence_mais_un_adc3_oui() -> None:
     """Question 9.2 : le stock limite a deux ADC2, et deux ne suffisent pas."""
     agregee = cadence_du_multiplexeur(nyquist(20e3), voies=8)
-    assert agregee > 2 * 100e3
-    assert agregee < 400e3
+    assert agregee == pytest.approx(chaine_1_2.cadence_totale())
+    deux_adc2 = chaine_1_2.cadence_disponible("ADC2")
+    assert deux_adc2 == pytest.approx(200e3)
+    assert deux_adc2 < agregee
+    assert deux_adc2 < 360e3
+    assert chaine_1_2.cadence_disponible("ADC3") == pytest.approx(400e3)
+    assert agregee < chaine_1_2.cadence_disponible("ADC3")
+    assert chaine_1_2.convertisseurs_possibles() == ("ADC3",)
 
 
 def test_le_pire_multiplexeur_reste_sous_le_budget_de_bruit() -> None:

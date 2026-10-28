@@ -74,16 +74,31 @@ def test_les_radiosites_tiennent_le_schema() -> None:
     enceinte = enceinte_du_four()
     j1, j2 = enceinte.radiosites()
     assert j1 - j2 == pytest.approx(enceinte.flux() / enceinte.echange_noir())
+    assert enceinte.flux() == pytest.approx(101632.0, abs=1.0)
+    assert enceinte.echange_noir() == pytest.approx(2.338, abs=5e-4)
+    assert j1 - j2 == pytest.approx(43466.0, abs=1.0)
+    assert j1 == pytest.approx(86232.0, abs=1.0)
+    assert j2 == pytest.approx(42766.0, abs=1.0)
 
 
 def test_la_radiosite_de_l_officiel_contredit_son_propre_flux() -> None:
     """Avec `J2 = 4,19e4`, le schema donnerait 103 700 W/m et non 101 625."""
     enceinte = enceinte_du_four()
-    j1, _ = enceinte.radiosites()
-    flux_implique = (j1 - 4.19e4) * enceinte.echange_noir()
+    assert enceinte.radiosites()[0] - 4.19e4 == pytest.approx(44332.0, abs=1.0)
+    flux_implique = enceinte.flux_pour_la_radiosite_2(4.19e4)
     assert flux_implique > 1.015 * 101625
+    assert flux_implique == pytest.approx(103656.0, abs=1.0)
+    assert flux_implique / enceinte.flux() - 1 == pytest.approx(0.02, abs=2e-3)
 
 
 def test_les_parois_sont_a_802_degres() -> None:
     temperature = enceinte_du_four().temperature_de_la_paroi() - KELVIN
     assert temperature == pytest.approx(802.1, abs=0.05)
+
+
+def test_seule_l_emissivite_de_la_tole_est_un_parametre_du_four() -> None:
+    """La paroi adiabatique n'a aucune emissivite : le schema n'en porte pas."""
+    enceinte = enceinte_du_four()
+    assert enceinte.emissivite_2 == 0.5
+    champs = {c for c in enceinte.__dataclass_fields__ if c.startswith("emissivite")}
+    assert champs == {"emissivite_1", "emissivite_2"}

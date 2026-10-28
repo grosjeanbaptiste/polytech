@@ -18,6 +18,10 @@ from typing import ClassVar
 
 import sympy as sp
 
+from polytech.maths.domain.differentielles.lineaire import EquationLineaire
+from polytech.maths.domain.differentielles.premier_ordre import VARIABLE
+from polytech.maths.domain.symboles import TEMPS
+
 
 @dataclass(frozen=True, slots=True)
 class PredateurProie:
@@ -37,6 +41,21 @@ class PredateurProie:
         return (
             self.croissance * x - self.predation * x * y,
             -self.mortalite * y + self.conversion * x * y,
+        )
+
+    def evolution_isolee(self) -> tuple[sp.Expr, sp.Expr]:
+        """`(x(t), y(t))` quand l'autre population est absente.
+
+        Proies seules : `x' - a x = 0` ; predateurs seuls : `y' + c y = 0`.
+        Les deux sont lineaires du premier ordre, et la variable est le temps.
+        """
+        x, y = self.POPULATIONS
+        proies, predateurs = self.champ()
+        taux_x = sp.simplify(proies.subs(y, 0) / x)
+        taux_y = sp.simplify(predateurs.subs(x, 0) / y)
+        return (
+            EquationLineaire(-taux_x, 0).solution_generale().subs(VARIABLE, TEMPS),
+            EquationLineaire(-taux_y, 0).solution_generale().subs(VARIABLE, TEMPS),
         )
 
     def points_critiques(self) -> tuple[tuple[sp.Expr, sp.Expr], ...]:

@@ -15,6 +15,7 @@ import math
 import pytest
 from scipy.integrate import solve_ivp
 
+from polytech.thermique.domain.condenseur import surface_des_tubes
 from polytech.thermique.domain.continuite_du_flux import temperature_superficielle
 from polytech.thermique.domain.echangeur_a_coefficient_variable import (
     coefficient_moyen,
@@ -44,6 +45,7 @@ from polytech.thermique.domain.rendement_d_echangeur import (
     rendement,
     sortie_du_fluide_chaud,
     sortie_du_fluide_froid,
+    unites_de_transfert,
 )
 from polytech.thermique.domain.tables.eau_saturee import temperature_de_saturation
 
@@ -225,12 +227,15 @@ def test_l_exercice_3_l_huile_rechauffee_par_de_la_vapeur() -> None:
     saturation a 1,2 bar est a 104,8 degres, arrondie a 105.
     """
     assert temperature_de_saturation(1.2e5) == pytest.approx(104.8, abs=0.05)
-    surface = 24 * math.pi * 0.014 * 2.0
+    surface = surface_des_tubes(24, 2.0, 0.014)
     assert surface == pytest.approx(2.111, abs=0.0005)
-    unites = 160.1 * surface / (0.23 * 1990.0)
+    capacite = 0.23 * 1990.0
+    unites = unites_de_transfert(160.1 * surface, capacite)
     eta = rendement(Sens.CONTRECOURANT, unites, 0.0)
-    assert (105.0 - 45.0) * (1 - eta) == pytest.approx(28.7, abs=0.05)
-    sortie = 45.0 + eta * (105.0 - 45.0)
+    assert unites == pytest.approx(0.738, abs=5e-4)
+    assert eta == pytest.approx(0.522, abs=5e-4)
+    sortie = sortie_du_fluide_froid(105.0, 45.0, eta)
+    assert 105.0 - sortie == pytest.approx(28.7, abs=0.05)
     assert sortie == pytest.approx(76.3, abs=0.05)
     assert flux_du_bilan(0.23, 1990.0, 76.3 - 45.0) == pytest.approx(14326.0, abs=1)
     assert (45.0 + sortie) / 2 == pytest.approx(60.7, abs=0.05)

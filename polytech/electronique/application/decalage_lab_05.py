@@ -62,3 +62,22 @@ def decalages(
         *aop(5, 6, 7),
     ]
     return float(sortie_ideale(circuit, 7, 4)), float(sortie_ideale(circuit, 7, 7))
+
+
+def decalages_par_les_formules(
+    *,
+    vers_la_masse: float = dm.R_MASSE,
+    contre_reaction: float = dm.R_RETOUR,
+    courants: bool = True,
+) -> tuple[float, float]:
+    """Le second chemin : les formules du cours, sans analyse nodale.
+
+    Non-inverseur : `(1 + R_f / R_m)(e_0 - R_s I_+) + R_f I_-` ; inverseur :
+    `-(R_p / R_e) V_1 + (1 + R_p / R_e) e_0 + R_p I_-`.
+    """
+    i_plus, i_moins = (I_PLUS, I_MOINS) if courants else (0.0, 0.0)
+    gain = 1 + contre_reaction / vers_la_masse
+    premier = gain * (DECALAGE - GENERATEUR * i_plus) + contre_reaction * i_moins
+    rapport = dm.POTENTIOMETRE / dm.R_ENTREE
+    second = -rapport * premier + (1 + rapport) * DECALAGE
+    return premier, second + dm.POTENTIOMETRE * i_moins

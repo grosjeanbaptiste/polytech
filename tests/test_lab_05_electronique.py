@@ -56,7 +56,7 @@ def test_les_gains_realises() -> None:
     """Section 2.2.3 : 40, puis 4,54 avec 22 kohm ; 181 au lieu de 160."""
     premier, second = dm.gains_realises()
     assert premier == pytest.approx(40.0)
-    assert second == pytest.approx(100 / 22)
+    assert second == pytest.approx(4.5455, abs=5e-5)
     assert premier * second == pytest.approx(181.8, abs=0.05)
     assert dm.bandes_des_etages() == pytest.approx((75e3, 3e6 / (1 + 100 / 22)))
     assert all(bande >= 20e3 for bande in dm.bandes_des_etages())
@@ -75,8 +75,9 @@ def test_q6_le_decalage_avec_les_resistances_du_schema() -> None:
     premier, second = dc.decalages()
     assert premier * 1e3 == pytest.approx(20.0, abs=1e-3)
     assert second * 1e3 == pytest.approx(-88.14, abs=5e-3)
-    attendu = -premier * 100 / 22 + 0.5e-3 * (1 + 100 / 22) + 100e3 * 0.5e-12
-    assert second == pytest.approx(attendu, rel=1e-9, abs=0)
+    assert (premier, second) == pytest.approx(
+        dc.decalages_par_les_formules(), rel=1e-9, abs=0
+    )
 
 
 def test_q6_les_nombres_de_l_officiel_supposent_un_gain_de_onze() -> None:
@@ -92,14 +93,10 @@ def test_q7_les_courants_d_entree_ne_pesent_rien() -> None:
     assert abs(avec[0] - sans[0]) < 1e-7
     assert abs(avec[1] - sans[1]) < 1e-6
     assert abs(avec[1] - sans[1]) > 0
-    assert sans[0] == pytest.approx(40 * 0.5e-3, rel=1e-9, abs=0)
-    du_premier = -600 * 1.5e-12 * 40 + 39e3 * 0.5e-12
-    assert avec[0] - sans[0] == pytest.approx(du_premier, rel=1e-6, abs=0)
-    du_second = -du_premier * 100 / 22 + 100e3 * 0.5e-12
-    assert avec[1] - sans[1] == pytest.approx(du_second, rel=1e-6, abs=0)
-
-
-# --- Questions 8 a 12 : l'etage de sortie -----------------------------
+    assert avec == pytest.approx(dc.decalages_par_les_formules(), rel=1e-6, abs=0)
+    assert sans == pytest.approx(
+        dc.decalages_par_les_formules(courants=False), rel=1e-9, abs=0
+    )
 
 
 def test_q8_a_q10_l_etage_a_alimentation_unique() -> None:
@@ -220,7 +217,7 @@ def test_basses_et_aigus_au_maximum_la_somme_est_plate() -> None:
 
 def test_q18_le_sommateur() -> None:
     """Gain de 0 a -4,54 par voie ; l'enonce annonce « entre -4 et 0 »."""
-    assert ch.gain_du_sommateur() == pytest.approx(-100 / 22)
+    assert ch.gain_du_sommateur() == pytest.approx(-4.5455, abs=5e-5)
     assert ch.gain_du_sommateur(potentiometre=0.0) == 0.0
     assert ch.bande_du_sommateur() == pytest.approx(3e6 / (1 + 100 / 11))
 

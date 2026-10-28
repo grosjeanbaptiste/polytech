@@ -9,6 +9,9 @@ manuscrit -- condition pour qu'ils puissent le contredire.
 import pytest
 import sympy as sp
 
+from polytech.electronique.domain.boucle_fermee import (
+    impedance_de_sortie_en_boucle_fermee as impedance_ouverte_divisee_par_la_boucle,
+)
 from polytech.electronique.domain.bruit import densite_spectrale_unilaterale
 from polytech.electronique.domain.friis import (
     facteur_du_premier_etage,
@@ -133,8 +136,12 @@ def test_la_formule_du_cours_annonce_trois_milliohms_et_non_six() -> None:
     Le corrige ecrit « 200 * 3/10^5 » et conclut a 3 mOhm. Le produit est
     6 mOhm ; c'est le facteur qui est faux, pas le resultat.
     """
-    assert pytest.approx(3 * MILLIOHM) == 100.0 * 3 / 1e5
-    assert pytest.approx(6 * MILLIOHM) == 200.0 * 3 / 1e5
+    assert pytest.approx(3 * MILLIOHM, rel=1e-3) == (
+        impedance_ouverte_divisee_par_la_boucle(100.0, 1e5, 1 / 3)
+    )
+    assert pytest.approx(6 * MILLIOHM, rel=1e-3) == (
+        impedance_ouverte_divisee_par_la_boucle(200.0, 1e5, 1 / 3)
+    )
 
 
 def test_la_retroaction_degrade_l_impedance_de_sortie() -> None:
@@ -145,7 +152,7 @@ def test_la_retroaction_degrade_l_impedance_de_sortie() -> None:
         1e5,
     ) + parametres_h_reseau_resistif(100 * MEGOHM, 200 * MEGOHM)
     mesuree = float(impedance_de_sortie_en_boucle_fermee(globale))
-    assert mesuree > 100.0 * 3 / 1e5
+    assert mesuree > impedance_ouverte_divisee_par_la_boucle(100.0, 1e5, 1 / 3)
 
 
 # --- Question 2 : le derivateur et son bruit ------------------------------

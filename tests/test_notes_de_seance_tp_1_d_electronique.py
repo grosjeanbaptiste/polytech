@@ -81,7 +81,8 @@ def test_l_inductance_de_rosa_et_les_deux_croisements(texte: str) -> None:
     """
     inductance = inductance_de_rosa(0.05, 0.65e-3)
     assert round(inductance * 1e9, 2) == pytest.approx(153.27)
-    arrondi = 1e-7 * 8 * 0.05 * (round(math.log(0.05 / 0.65e-3), 3) + 0.013 - 0.524)
+    arrondi = inductance_de_rosa(0.05, 0.65e-3, decimales_du_logarithme=3)
+    assert arrondi * 1e9 == pytest.approx(153.28, abs=0.005)
     assert round(arrondi * 1e9, 2) == pytest.approx(153.28)
     assert round(frequence_de_croisement(10.0, inductance) / 1e6, 2) == 10.38
     assert round(frequence_de_croisement(10e6, inductance) / 1e12, 2) == 10.38

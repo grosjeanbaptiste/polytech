@@ -23,8 +23,13 @@ from typing import TYPE_CHECKING
 
 import sympy as sp
 
+from polytech.signaux.domain.lecture_d_expressions import module_de
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+
+_W = sp.Symbol("omega", positive=True)
 
 
 def distance_logarithmique(depart: float, arrivee: float) -> float:
@@ -76,6 +81,17 @@ class Factorisation:
             else:
                 expression /= variable / cassure
         return sp.simplify(expression)
+
+    def module_exact(self, pulsation: float) -> float:
+        """`|H(j w)|` de la fonction elle-meme, en un point."""
+        return module_de(self.exacte(sp.I * _W), {_W: pulsation})
+
+    def gain_du_palier(self, ordre: Sequence[sp.Expr], rang: int) -> sp.Expr:
+        """Le niveau constant de l'intervalle ; leve si la pente n'y est pas nulle."""
+        if self.pente(ordre, rang) != 0:
+            msg = f"l'intervalle de rang {rang} n'est pas un palier"
+            raise ValueError(msg)
+        return self.approchee(ordre, rang, sp.I * _W)
 
     def pente(self, ordre: Sequence[sp.Expr], rang: int) -> int:
         """`n` de `k (j w)^n` : zeros franchis moins poles franchis."""

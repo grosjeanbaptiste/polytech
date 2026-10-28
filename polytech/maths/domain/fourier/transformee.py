@@ -65,9 +65,15 @@ def transformee_de_fourier(fonction: sp.Expr) -> sp.Expr:
     return _generique(sp.simplify(integrale_sur_la_droite(fonction * noyau, VARIABLE)))
 
 
-def transformee_inverse(image: sp.Expr) -> sp.Expr:
-    """`f(x) = (1 / 2 pi) int F(w) e^(+j w x) dw`."""
-    noyau = sp.exp(sp.I * PULSATION * VARIABLE)
+def transformee_inverse(image: sp.Expr, signe: int = 1) -> sp.Expr:
+    """`f(x) = (1 / 2 pi) int F(w) e^(signe j w x) dw`, `signe = +1` pour le cours.
+
+    `signe = -1` rend ce qu'imprime (10.8)-(10.9) : `f(-x)`, pas `f(x)`.
+    """
+    if signe not in (1, -1):
+        msg = f"signe de l'exponentielle : +1 ou -1 attendu, pas {signe}"
+        raise ValueError(msg)
+    noyau = sp.exp(signe * sp.I * PULSATION * VARIABLE)
     integrale = integrale_sur_la_droite(image * noyau, PULSATION)
     return sp.simplify(integrale / (2 * sp.pi))
 

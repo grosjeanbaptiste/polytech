@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import math
 
+import pytest
 import sympy as sp
 
 from polytech.electronique.application import circuits_tp_04 as ct
@@ -207,6 +208,15 @@ def test_source_commune_approchee_comme_le_corrige() -> None:
 def test_l_approximation_du_pole_tient_sous_le_pour_cent() -> None:
     nombres = nb.source_commune_numerique()
     assert abs(nombres.pole_approche / nombres.pole - 1) < 0.01
+
+
+def test_le_pole_est_a_gauche_et_le_zero_a_droite() -> None:
+    """Pole exact -7,034e10 rad/s, approche -7,059e10 (0,35 %) ; zero > 0."""
+    nombres = nb.source_commune_numerique()
+    assert nombres.pole == pytest.approx(-7.034e10, rel=5e-4)
+    assert nombres.pole_approche == pytest.approx(-7.059e10, rel=5e-4)
+    assert nombres.pole_approche / nombres.pole - 1 == pytest.approx(0.0035, abs=5e-5)
+    assert nombres.zero > 0
 
 
 def test_cascode_a_la_matrice_de_l_enonce() -> None:

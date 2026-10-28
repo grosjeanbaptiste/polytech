@@ -42,6 +42,11 @@ def rendement(sens: Sens, unites: float, rapport: float) -> float:
     return (1 - exponentielle) / (1 - rapport * exponentielle)
 
 
+def unites_de_transfert(conductance: float, capacite: float) -> float:
+    """`N = K S / (q c)`, le nombre d'unites de transfert d'un fluide."""
+    return conductance / capacite
+
+
 def efficacite(sens: Sens, conductance: float, capacites: tuple[float, float]) -> float:
     """Remarque 3 : le plus eleve des deux rendements, `N` et `Z` sur `(q c)_min`."""
     minimale, maximale = min(capacites), max(capacites)

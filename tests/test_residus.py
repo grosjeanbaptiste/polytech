@@ -16,6 +16,11 @@ from polytech.maths.domain.analyse_complexe.residus import (
     residu_d_un_pole,
     residu_d_un_pole_simple,
 )
+from polytech.maths.domain.analyse_complexe.integrales_reelles import (
+    integrale_de_1_sur_a_plus_cosinus,
+    poles_de_1_sur_a_plus_cosinus,
+    quadrature_de_1_sur_a_plus_cosinus,
+)
 from polytech.maths.domain.analyse_complexe.singularites import ordre_du_pole
 
 Z = sp.Symbol("z")
@@ -104,11 +109,19 @@ def test_l_integrale_de_l_exemple_de_la_page_26_vaut_deux_pi_sur_racine() -> Non
     quadrature de l'integrale reelle.
     """
     a = 2
-    alpha, beta = -a + sp.sqrt(a**2 - 1), -a - sp.sqrt(a**2 - 1)
-    fonction = -sp.I / (Z**2 / 2 + a * Z + sp.Rational(1, 2))
+    alpha, beta = poles_de_1_sur_a_plus_cosinus(a)
     assert sp.Abs(alpha) < 1 < sp.Abs(beta)
-    integrale = integrale_par_les_residus(fonction, Z, (alpha,))
-    assert sp.simplify(integrale - 2 * sp.pi / sp.sqrt(3)) == 0
-    theta = sp.Symbol("theta", real=True)
-    directe = sp.Integral(1 / (a + sp.cos(theta)), (theta, 0, 2 * sp.pi)).evalf()
-    assert float(integrale) == pytest.approx(float(directe), rel=1e-12)
+    integrale = integrale_de_1_sur_a_plus_cosinus(a)
+    facteurs = -2 * sp.I / ((Z - alpha) * (Z - beta))
+    factorisee = integrale_par_les_residus(facteurs, Z, (alpha,))
+    assert sp.simplify(integrale - factorisee) == 0
+    imprimee = integrale_par_les_residus(
+        -sp.I / ((Z - alpha) * (Z - beta)), Z, (alpha,)
+    )
+    assert sp.simplify(integrale - 2 * imprimee) == 0
+    assert sp.simplify(integrale - imprimee) != 0
+    assert float(integrale) == pytest.approx(
+        quadrature_de_1_sur_a_plus_cosinus(a), rel=1e-12
+    )
+    with pytest.raises(ValueError, match="a > 1"):
+        integrale_de_1_sur_a_plus_cosinus(1)

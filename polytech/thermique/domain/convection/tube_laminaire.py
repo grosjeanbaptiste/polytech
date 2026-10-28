@@ -48,9 +48,15 @@ def nusselt_de_hausen(groupe: float, *, viscosites: float = 1.0) -> float:
     return float((NUSSELT_ETABLI + entree) * viscosites**0.14)
 
 
-def nusselt_de_sieder_et_tate(groupe: float, *, viscosites: float = 1.0) -> float:
-    """`1,86 (Re_d Pr d / L)^1/3 (mu_m / mu_p)^0,14`."""
-    if groupe < GROUPE_MINIMAL:
+def nusselt_de_sieder_et_tate(
+    groupe: float, *, viscosites: float = 1.0, hors_validite: bool = False
+) -> float:
+    """`1,86 (Re_d Pr d / L)^1/3 (mu_m / mu_p)^0,14`.
+
+    `hors_validite` leve la garde `Re Pr d / L >= 10` pour montrer ce que la
+    relation donnerait au-dela de son domaine (courrier a l'enseignant).
+    """
+    if groupe < GROUPE_MINIMAL and not hors_validite:
         msg = f"tube trop long pour cette relation : Re Pr d / L = {groupe:.3g}"
         raise ValueError(msg)
     return float(1.86 * groupe**_TIERS * viscosites**0.14)

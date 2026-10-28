@@ -61,10 +61,19 @@ def nusselt_de_transition(
 
 
 def facteur_j(
-    nusselt: float, reynolds: float, prandtl: float, *, viscosites: float = 1.0
+    nusselt: float,
+    reynolds: float,
+    prandtl: float,
+    *,
+    viscosites: float = 1.0,
+    exposant: float = -0.14,
 ) -> float:
-    """`j_H = Nu Pr^-1/3 (mu_m / mu_p)^-0,14 / Re`."""
-    return float(nusselt * prandtl**-_TIERS * viscosites**-0.14 / reynolds)
+    """`j_H = Nu Pr^-1/3 (mu_m / mu_p)^-0,14 / Re`.
+
+    `exposant` vaut `-0,14` ; `+0,14` est l'exposant imprime au syllabus,
+    pour montrer qu'avec lui `j_H` dependrait encore de la viscosite.
+    """
+    return float(nusselt * prandtl**-_TIERS * viscosites**exposant / reynolds)
 
 
 def diametre_hydraulique_de_la_section(aire: float, perimetre: float) -> float:

@@ -32,6 +32,9 @@ from polytech.algorithmique.domain.enregistrements import (
 )
 from polytech.algorithmique.domain.fichiers import Disque, tours_de_la_boucle_eof
 from polytech.algorithmique.domain.flux_de_sortie import Ecran
+from polytech.algorithmique.domain.planches_fautives import (
+    doublon_de_la_planche_37,
+)
 from polytech.algorithmique.domain.tableaux import TableauStatique
 
 PROF = (
@@ -41,22 +44,6 @@ PROF = (
 ARTICLES = (Article("vis", "B"), Article("clou", "A"), Article("ecrou", "C"))
 PERMUTER = 2
 """Le choix 2 du menu du TP 3."""
-
-
-def _doublon_de_la_planche_37(elements: list[Article]) -> list[Article]:
-    """La fonction de la planche, recopiee instruction pour instruction."""
-    t, n = list(elements), len(elements)
-    i = 0
-    while i < n:
-        j = i + 1
-        while j < n:
-            if t[i] == t[j]:
-                for k in range(j, n - 1):
-                    t[k] = t[k + 1]
-                n -= 1
-            j += 1
-        i += 1
-    return t[:n]
 
 
 def test_ecrire_puis_relire_le_fichier_de_la_planche_138() -> None:
@@ -230,7 +217,7 @@ def test_la_fonction_doublon_de_la_planche_37_en_laisse_passer() -> None:
     """Sur `Ax Ax Ax By By Ax`, elle rend `Ax Ax By` : trois elements, non deux."""
     a, b = Article("A", "x"), Article("B", "y")
     entree = [a, a, a, b, b, a]
-    assert _doublon_de_la_planche_37(entree) == [a, a, b]
+    assert doublon_de_la_planche_37(entree) == [a, a, b]
     assert list(sans_doublons(entree)) == [a, b]
 
 

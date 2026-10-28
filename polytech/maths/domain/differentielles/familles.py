@@ -25,6 +25,37 @@ def pente_de_la_famille(famille: sp.Expr, parametre: sp.Symbol) -> sp.Expr:
     return sp.simplify(pente.subs(parametre, valeur))
 
 
+def pentes_de_la_famille(famille: sp.Expr, parametre: sp.Symbol) -> tuple[sp.Expr, ...]:
+    """Toutes les pentes `y'` de la famille, une par racine du parametre.
+
+    Quand `Phi = 0` donne plusieurs valeurs du parametre (`K = +- (racine y -
+    racine x)` pour `y = (racine x + K)^2`), chacune a sa pente : aucune n'est
+    ecartee en silence, contrairement a `pente_de_la_famille` qui exige une
+    racine unique.
+    """
+    pente = sp.idiff(famille, INCONNUE, VARIABLE)
+    valeurs = sp.solve(sp.Eq(famille, 0), parametre)
+    if not valeurs:
+        msg = f"le parametre {parametre} ne se tire pas de {famille} = 0"
+        raise ValueError(msg)
+    return tuple(sp.simplify(pente.subs(parametre, valeur)) for valeur in valeurs)
+
+
+def valeurs_de_la_constante(
+    relation: sp.Expr, fonction: sp.Expr, constante: sp.Symbol
+) -> tuple[sp.Expr, ...]:
+    """Les valeurs de `constante` annulant `relation(x, y, c)` sur `y = fonction`.
+
+    Une racine qui depend de `x` n'est pas une constante : elle est ecartee.
+    C'est ce qui relie la constante d'une integrale complete a celle de la
+    famille de solutions (`c = K^2` pour `y = (racine x + K)^2`).
+    """
+    residu = sp.expand(relation.subs(INCONNUE, fonction))
+    valeurs = sp.solve(sp.Eq(residu, 0), constante)
+    constantes = (sp.simplify(v) for v in valeurs)
+    return tuple(v for v in constantes if not v.has(VARIABLE))
+
+
 def pente_orthogonale(pente: object) -> sp.Expr:
     """`-1 / y'`."""
     return -1 / sp.sympify(pente)

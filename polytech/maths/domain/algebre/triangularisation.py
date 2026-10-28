@@ -27,6 +27,28 @@ def semblable_par(matrice: sp.Matrix, passage: sp.Matrix) -> sp.Matrix:
     return sp.simplify(passage.inv() * matrice * passage)
 
 
+def produit_de_passage(passage: sp.Matrix, inverse_donnee: sp.Matrix) -> sp.Matrix:
+    """`P Q` : l'identite si `Q` est bien l'inverse de `P`, sinon l'ecart."""
+    return sp.simplify(passage * inverse_donnee)
+
+
+def reconstruit_par(
+    passage: sp.Matrix, forme: sp.Matrix, inverse_donnee: sp.Matrix
+) -> sp.Matrix:
+    """`P J Q` avec un `Q` donne : redonne `A` si `Q = P^-1`, sinon pas."""
+    return sp.simplify(passage * forme * inverse_donnee)
+
+
+def semblable_par_inverse_donnee(
+    matrice: sp.Matrix, passage: sp.Matrix, inverse_donnee: sp.Matrix
+) -> sp.Matrix:
+    """`Q A P` avec le `Q` imprime ; leve si `Q` n'est pas l'inverse de `P`."""
+    if produit_de_passage(passage, inverse_donnee) != sp.eye(passage.rows):
+        msg = "la matrice donnee n'est pas l'inverse du passage : P Q differe de I"
+        raise ValueError(msg)
+    return sp.simplify(inverse_donnee * matrice * passage)
+
+
 def est_triangulaire_superieure(matrice: sp.Matrix) -> bool:
     """Vrai si la matrice est carree et nulle sous sa diagonale (II.6)."""
     return bool(matrice.is_square and matrice.is_upper)

@@ -44,6 +44,8 @@ DEMEURES: Final = {
     "273.15": "thermique/domain/grandeurs.py",
     "6.02214076e23": "chemistry/domain/matiere.py",
     "8.31446261815324": "chemistry/domain/gaz.py",
+    "6.6743e-11": "mecanique/domain/gravitation.py",
+    "5.29177210903e-11": "chemistry/domain/atomes.py",
 }
 """Le litteral, et le seul fichier qui a le droit de l'affecter."""
 

@@ -79,11 +79,9 @@ def test_la_correction_quantique_rend_la_puissance_finie() -> None:
     assert a_un_megahertz == pytest.approx(classique, rel=1e-6, abs=0)
     assert densite_thermique_quantique(1e3, AMBIANTE, 0.0) == classique
     a_un_terahertz = densite_thermique_quantique(1e3, AMBIANTE, 1e12) / classique
-    assert a_un_terahertz == pytest.approx(0.92, rel=1e-9, abs=0.005)
+    assert a_un_terahertz == pytest.approx(0.922, abs=5e-4)
     froid = densite_thermique_quantique(1e3, 50.0, 5e11)
-    assert froid / densite_thermique(1e3, 50.0) == pytest.approx(
-        0.78, rel=1e-9, abs=0.005
-    )
+    assert froid / densite_thermique(1e3, 50.0) == pytest.approx(0.779, abs=5e-4)
     x, rang = sp.Symbol("x", positive=True), sp.Symbol("n", positive=True, integer=True)
     terme = sp.integrate(x * sp.exp(-rang * x), (x, 0, sp.oo))
     assert terme == 1 / rang**2
@@ -104,7 +102,7 @@ def test_la_correction_quantique_rend_la_puissance_finie() -> None:
 def test_le_bruit_thermique_compte_des_microvolts() -> None:
     """Planche 10 : `V_RMS = racine(4 k_B T R B)` ; 1 Mohm sur 10 kHz."""
     efficace = tension_efficace_thermique(1e6, AMBIANTE, 1e4)
-    assert efficace == pytest.approx(12.9e-6, rel=5e-3, abs=0)
+    assert efficace == pytest.approx(12.9e-6, abs=5e-8)
     assert efficace**2 == pytest.approx(
         densite_thermique(1e6, AMBIANTE) * 1e4, rel=1e-9, abs=0
     )

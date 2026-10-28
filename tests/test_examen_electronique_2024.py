@@ -63,10 +63,11 @@ def test_la_tension_mesuree_est_celle_du_cadre_encadre() -> None:
 
 def test_le_logarithme_en_b_de_l_avant_derniere_ligne_est_un_lapsus() -> None:
     """Question 1.1 : `log((a+b)/b)` ne peut pas sortir de cette integrale."""
-    a, b, x = sp.symbols("a b x", positive=True)
-    integrale = sp.integrate(1 / x, (x, a, a + b))
-    assert sp.simplify(integrale - sp.log((a + b) / a)) == 0
-    assert sp.simplify(integrale - sp.log((a + b) / b)) != 0
+    mu0, i0, omega, t, ell, a, b = sp.symbols("mu_0 I_0 omega t ell a b", positive=True)
+    flux = BoucleDeMesure(hauteur=ell, distance=a, largeur=b).flux(mu0, i0, omega, t)
+    prefacteur = ell * mu0 * i0 * sp.sin(omega * t) / (2 * sp.pi)
+    assert sp.simplify(flux - prefacteur * sp.log((a + b) / a)) == 0
+    assert sp.simplify(flux - prefacteur * sp.log((a + b) / b)) != 0
 
 
 # --- Question 2 : filtre en echelle LC de Butterworth ----------------------

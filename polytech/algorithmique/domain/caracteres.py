@@ -19,6 +19,7 @@ from typing import Final
 
 from polytech.algorithmique.domain.types_cpp import affecter
 
+DERNIER_CODE_ASCII: Final = 0x7F
 _BLANCS: Final = " \t"
 _ESPACES: Final = " \t\n\v\f\r"
 
@@ -89,6 +90,15 @@ def _masque(caractere: str) -> str:
 def masquer(texte: str) -> str:
     """Les lettres en majuscules, les espaces en blancs, le reste en etoiles."""
     return "".join(_masque(caractere) for caractere in texte)
+
+
+def code_ascii(caractere: str) -> int:
+    """Le code de la table ASCII d'un caractere ; leve hors de la table."""
+    code = ord(_code(caractere))
+    if code > DERNIER_CODE_ASCII:
+        msg = f"caractere {caractere!r} hors de la table ASCII"
+        raise ValueError(msg)
+    return code
 
 
 def caractere_de_code(valeur: float) -> str:

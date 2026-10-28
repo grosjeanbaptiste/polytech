@@ -72,6 +72,16 @@ def courant_de_maille(
     return numerateur / somme
 
 
+def tension_aux_bornes_de_la_seconde(
+    tension: float,
+    resistance: float,
+    courant_de_la_maille: float,
+    courant_injecte: float,
+) -> float:
+    """`E + R (I_1 + I)` : la source de la branche plus la chute dans sa resistance."""
+    return tension + resistance * (courant_de_la_maille + courant_injecte)
+
+
 def thevenin_de_la_maille(
     premiere_tension: float,
     seconde_tension: float,
@@ -96,8 +106,9 @@ def thevenin_de_la_maille(
         courant_injecte,
     )
     return Thevenin(
-        tension_a_vide=seconde_tension
-        + seconde_resistance * (maille + courant_injecte),
+        tension_a_vide=tension_aux_bornes_de_la_seconde(
+            seconde_tension, seconde_resistance, maille, courant_injecte
+        ),
         resistance=resistance_en_parallele(premiere_resistance, seconde_resistance),
     )
 

@@ -13,6 +13,10 @@ paragraphe 1.3, page 1-4.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Final
+
+RAYON_DE_BOHR: Final = 5.29177210903e-11
+"""`a_0`, rayon de l'atome d'hydrogene, en metres (CODATA 2018)."""
 
 
 @dataclass(frozen=True, slots=True)

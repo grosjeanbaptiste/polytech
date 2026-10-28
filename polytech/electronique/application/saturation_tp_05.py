@@ -28,6 +28,18 @@ def _sinus(t: float) -> float:
     return math.sin(2 * math.pi * 1000 * t)
 
 
+def entree_differentielle_du_cas_c(instant: float) -> float:
+    """`V+ - V-` du cas c : `0 - sin(2 pi 1000 t)`."""
+    return 0.0 - _sinus(instant)
+
+
+def sortie_du_cas_c(instant: float) -> float:
+    """La sortie du cas c a cet instant : carre entre les deux rails."""
+    return saturer(
+        _BOUCLE_OUVERTE * entree_differentielle_du_cas_c(instant), ALIMENTATION
+    )
+
+
 def boucle_ouverte() -> dict[str, float]:
     """Les six cas, lus a la crete du sinus (`t = 0.25 ms`).
 

@@ -26,6 +26,7 @@ import mpmath
 import pytest
 import sympy as sp
 
+from polytech.chemistry.domain.atomes import RAYON_DE_BOHR
 from polytech.electromagnetisme.domain.charges import PARTICULES
 from polytech.electromagnetisme.domain.constantes import (
     CHARGE_ELEMENTAIRE,
@@ -67,10 +68,9 @@ from polytech.electromagnetisme.domain.energie_et_forces import (
     densite_d_energie_electrique,
 )
 from polytech.electromagnetisme.domain.symboles import CARTESIENNES
+from polytech.mecanique.domain.gravitation import force_gravitationnelle
 
 X, Y, Z = CARTESIENNES
-RAYON_DE_BOHR = 52.9e-12
-GRAVITATION = 6.67e-11
 K = 1 / (4 * math.pi * PERMITTIVITE_DU_VIDE)
 
 
@@ -202,12 +202,14 @@ def test_la_force_electrique_dans_l_atome_d_hydrogene() -> None:
 
 def test_la_force_gravitationnelle_dans_l_atome_d_hydrogene() -> None:
     """Exemple 2.20.1 : 35 . 10^-48 N, avec 1 836 m_e^2 et m_e = 0,9 . 10^-30 kg."""
-    imprime = GRAVITATION * 1836 * (0.9e-30) ** 2 / RAYON_DE_BOHR**2
-    assert math.isclose(imprime, 35e-48, rel_tol=0.02)
-    tel_qu_ecrit = GRAVITATION * 1846 * (0.9e-19) ** 2 / RAYON_DE_BOHR**2
+    imprime = force_gravitationnelle(0.9e-30, 1836 * 0.9e-30, RAYON_DE_BOHR)
+    assert round(imprime * 1e48, 1) == 35.4
+    tel_qu_ecrit = force_gravitationnelle(0.9e-19, 1846 * 0.9e-19, RAYON_DE_BOHR)
     assert tel_qu_ecrit > 1e20 * 35e-48
-    masses = PARTICULES["electron"].masse * PARTICULES["proton"].masse
-    assert math.isclose(GRAVITATION * masses / RAYON_DE_BOHR**2, 36e-48, rel_tol=0.02)
+    reelle = force_gravitationnelle(
+        PARTICULES["electron"].masse, PARTICULES["proton"].masse, RAYON_DE_BOHR
+    )
+    assert round(reelle * 1e48, 1) == 36.3
 
 
 def test_la_force_electrique_ecrase_la_gravitation() -> None:
@@ -215,8 +217,9 @@ def test_la_force_electrique_ecrase_la_gravitation() -> None:
     electrique = CHARGE_ELEMENTAIRE * champ_de_coulomb(
         CHARGE_ELEMENTAIRE, RAYON_DE_BOHR
     )
-    masses = PARTICULES["electron"].masse * PARTICULES["proton"].masse
-    rapport = electrique / (GRAVITATION * masses / RAYON_DE_BOHR**2)
+    rapport = electrique / force_gravitationnelle(
+        PARTICULES["electron"].masse, PARTICULES["proton"].masse, RAYON_DE_BOHR
+    )
     assert 1e39 < rapport < 1e40
 
 
@@ -394,8 +397,8 @@ def test_l_energie_du_noyau_d_uranium() -> None:
     )
     assert math.isclose(joules, 1.3e-10, rel_tol=0.01)
     mega_electronvolts = joules / CHARGE_ELEMENTAIRE / 1e6
-    assert math.isclose(mega_electronvolts, 812.5, rel_tol=1e-3)
-    assert math.isclose(mega_electronvolts, 813.5, rel_tol=2e-3)
+    assert abs(mega_electronvolts - 812.5) < 0.05
+    assert abs(mega_electronvolts - 813.5) > 0.9  # la valeur imprimee est exclue
 
 
 def test_un_systeme_a_charges_confondues_n_a_pas_d_energie_finie() -> None:

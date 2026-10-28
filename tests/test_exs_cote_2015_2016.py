@@ -90,6 +90,8 @@ def test_q2_l_inductance_donnee_ne_decrit_pas_cet_etat() -> None:
     apparente = ma.inductance_apparente()
     assert apparente == pytest.approx(100 * 2e-4 / 0.325, rel=1e-12, abs=0)
     assert apparente < en.INDUCTANCE_PROPRE / 10
+    assert apparente == pytest.approx(61.5e-3, rel=1e-3, abs=0)
+    assert 16 < en.INDUCTANCE_PROPRE / apparente < 17
 
 
 # --- Question 3 : deux circuits couples ------------------------------------

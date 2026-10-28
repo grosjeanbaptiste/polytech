@@ -44,6 +44,10 @@ from polytech.electronique.application.symboles_tp_02 import (
     S,
     Z,
 )
+from polytech.electronique.domain.laplace import (
+    impedances_en_parallele,
+    impedances_en_serie,
+)
 
 
 def _resoudre(
@@ -127,6 +131,22 @@ def test_5_3_la_source_de_courant_tire_vers_la_masse() -> None:
         [v * jw * C / (1 + jw * C * R1) + v / R2 + v / (R3 + jw * L) + IS], [v]
     )
     assert _nul(contributions_du_5_3()["courant"] - sol[v])
+
+
+def test_5_3_la_version_plus_z_prime_i_s_est_en_opposition_de_phase() -> None:
+    """`V_out = -Z' I_s` ; la version `+Z' I_s` du corrige en est l'oppose.
+
+    Le phaseur de la bibliotheque divise par celui de la version imprimee
+    vaut `-1` : un demi-tour de phase dans la reponse temporelle.
+    """
+    jw = sp.I * sp.Symbol("omega", positive=True)
+    branche = impedances_en_serie(R1, 1 / (jw * C))
+    charge = impedances_en_parallele(R2, R3 + jw * L)
+    imprime = IS * impedances_en_parallele(branche, charge)
+    rapport = sp.simplify(contributions_du_5_3()["courant"] / imprime)
+    assert rapport == -1
+    assert sp.arg(rapport) == sp.pi
+    assert sp.simplify(contributions_du_5_3()["courant"] + imprime) == 0
 
 
 def test_5_3_la_source_alternative_par_les_noeuds() -> None:

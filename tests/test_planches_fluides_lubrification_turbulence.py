@@ -112,10 +112,11 @@ def test_la_formule_de_la_planche_12_oublie_h_carre() -> None:
     de la planche 14 : il manque `h^2` au denominateur.
     """
     sommet = PATIN.epaisseur_du_maximum()
-    imprimee = 6 * 0.1 * 10.0 * 0.1 * (0.1e-3 - sommet) * (sommet - 0.05e-3)
-    imprimee /= 0.1e-3**2 - 0.05e-3**2
-    assert imprimee == pytest.approx(PATIN.surpression(sommet) * sommet**2)
+    assert sommet == pytest.approx(0.0667e-3, abs=5e-8)
+    imprimee = PATIN.surpression_imprimee_planche_12(sommet)
+    assert imprimee == pytest.approx(PATIN.pression_maximale() * sommet**2)
     assert imprimee < 1.0
+    assert imprimee == pytest.approx(0.0444, abs=5e-5)
 
 
 def test_la_surpression_integre_le_debit_constant_du_film() -> None:

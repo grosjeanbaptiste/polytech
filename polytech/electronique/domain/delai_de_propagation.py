@@ -25,3 +25,22 @@ def amplitude_de_l_ecart(longueur: float, longueur_d_onde: float) -> float:
         msg = f"longueur de ligne negative : {longueur} m"
         raise ValueError(msg)
     return 2 * abs(math.sin(math.pi * longueur / longueur_d_onde))
+
+
+def retard_de_phase_en_degres(longueur: float, longueur_d_onde: float) -> float:
+    """`pi l / lambda` en degres : le dephasage de `cos(w t - pi l / lambda)`."""
+    amplitude_de_l_ecart(longueur, longueur_d_onde)  # memes gardes d'entree
+    return 180.0 * longueur / longueur_d_onde
+
+
+def pire_ecart_sur_une_periode(
+    longueur: float, longueur_d_onde: float, points: int = 360
+) -> float:
+    """Le plus grand `|sin(t - 2 pi l / lambda) - sin t|` releve sur une periode."""
+    if points <= 0:
+        msg = f"nombre de points non positif : {points}"
+        raise ValueError(msg)
+    retard = 2 * math.pi * longueur / longueur_d_onde
+    amplitude_de_l_ecart(longueur, longueur_d_onde)  # memes gardes d'entree
+    instants = (2 * math.pi * k / points for k in range(points))
+    return max(abs(math.sin(t - retard) - math.sin(t)) for t in instants)

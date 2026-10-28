@@ -25,6 +25,7 @@ from polytech.electronique.domain.aop import saturer
 from polytech.electronique.domain.aop_reel import (
     ecart_differentiel_maximal,
     impedance_d_entree_chargee,
+    impedance_d_entree_chargee_selon_la_planche_50,
     impedance_de_sortie_du_non_inverseur,
 )
 from polytech.electronique.domain.boucle_fermee import (
@@ -121,12 +122,16 @@ def test_l_impedance_de_sortie_du_non_inverseur() -> None:
     )
     assert nodale == pytest.approx(exacte, rel=1e-7)
     assert exacte == pytest.approx(RO * 100.0 / AV, rel=0.02)
-    assert exacte == pytest.approx(1.0, abs=0.02)
-    parallele = RIN * 1e3 / (RIN + 1e3)
-    retour = parallele / (parallele + 99e3)
-    imprimee = 1 / (1 / (99e3 + parallele) + 1 / RO - AV * retour / RO)
+    assert exacte == pytest.approx(0.991, abs=5e-4)
+    imprimee = impedance_de_sortie_du_non_inverseur(
+        RO,
+        -AV,
+        vers_la_masse=1e3,
+        contre_reaction=99e3,
+        entree=RIN,
+    )
     assert imprimee < 0
-    assert imprimee == pytest.approx(-exacte, rel=0.03)
+    assert imprimee == pytest.approx(-1.011, abs=5e-4)
 
 
 def _inverseur(r_1: float, r_2: float, tension: float) -> tuple[Element, ...]:
@@ -226,6 +231,7 @@ def test_les_grandeurs_en_boucle_fermee_se_lisent_sur_la_matrice_g() -> None:
     assert float(inverse[1, 0]) == pytest.approx(100.0, rel=0.011)
     entree = impedance_d_entree_en_boucle_fermee(float(globale[0, 0]), ouvert, 0.01)
     assert 1 / float(inverse[0, 0]) == pytest.approx(entree)
+    assert entree / float(globale[0, 0]) == pytest.approx(101.0, rel=3e-3)
     sortie = impedance_de_sortie_en_boucle_fermee(
         1 / float(globale[1, 1]), ouvert, 0.01
     )
@@ -279,14 +285,15 @@ def test_la_charge_ramene_a_l_entree_ce_qu_elle_retire_a_la_boucle() -> None:
         assert chargee == pytest.approx(exacte, rel=0.02)
 
     def de_la_planche(charge: float) -> float:
-        terme = (ouverte / charge) / (1 + fermee / charge) / 100.0
-        return a_vide / (1 + terme)
+        return impedance_d_entree_chargee_selon_la_planche_50(
+            a_vide, ouverte, fermee, charge, 100.0
+        )
 
     assert 1 - de_la_planche(1e3) / a_vide == pytest.approx(1e-3, rel=0.02)
-    assert de_la_planche(1.0) == pytest.approx(a_vide / 1.5, rel=0.01)
+    assert de_la_planche(1.0) / a_vide == pytest.approx(0.666, abs=5e-4)
     assert de_la_planche(1.0) < a_vide / 1.01
     sur_un_kilohm = float(impedance_d_entree_chargee(inverse, 1e3))
-    assert 1 - sur_un_kilohm / a_vide == pytest.approx(0.09, abs=0.005)
+    assert 1 - sur_un_kilohm / a_vide == pytest.approx(0.0899, abs=5e-5)
     en_court_circuit = float(impedance_d_entree_chargee(inverse, 1e-6))
     assert en_court_circuit == pytest.approx(float(globale[0, 0]), rel=1e-3)
     assert en_court_circuit < a_vide / 90

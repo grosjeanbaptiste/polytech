@@ -21,6 +21,8 @@ from polytech.maths.domain.differentielles.familles import (
     pente_de_la_famille,
     pente_isogonale,
     pente_orthogonale,
+    pentes_de_la_famille,
+    valeurs_de_la_constante,
 )
 from polytech.maths.domain.differentielles.lagrange import (
     EquationDeLagrange,
@@ -224,3 +226,25 @@ def test_les_droites_d_une_equation_de_lagrange_portent_psi_en_pente() -> None:
     for droite in equation.solutions_lineaires():
         pente = sp.diff(droite, X)
         assert sp.expand(droite - X * pente**2 - pente - 1) == 0
+
+
+def test_une_famille_a_deux_racines_donne_deux_pentes() -> None:
+    """`y = (racine x + K)^2` : deux valeurs de `K`, pentes `+- racine(y/x)`."""
+    k = sp.Symbol("K", real=True)
+    pentes = pentes_de_la_famille(Y - (sp.sqrt(X) + k) ** 2, k)
+    assert len(pentes) == 2
+    assert {sp.simplify(p**2 - Y / X) for p in pentes} == {0}
+    assert sp.simplify(pentes[0] + pentes[1]) == 0
+
+
+def test_un_parametre_absent_de_la_famille_leve() -> None:
+    with pytest.raises(ValueError, match="ne se tire pas"):
+        pentes_de_la_famille(Y - X, sp.Symbol("K", real=True))
+
+
+def test_la_constante_de_l_integrale_complete_est_k_carre() -> None:
+    k, c = sp.Symbol("K", real=True), sp.Symbol("c", real=True)
+    y = (sp.sqrt(X) + k) ** 2
+    relation = (X - Y) ** 2 - 2 * c * (X + Y) + c**2
+    assert valeurs_de_la_constante(relation, y, c) == (k**2,)
+    assert valeurs_de_la_constante(Y - c, sp.Integer(3), c) == (3,)

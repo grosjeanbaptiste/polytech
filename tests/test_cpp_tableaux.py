@@ -19,6 +19,7 @@ import math
 
 import pytest
 
+from polytech.algorithmique.domain.planches_fautives import insertion_de_la_planche_62
 from polytech.algorithmique.domain.recherches import (
     recherche_dichotomique,
     recherche_lineaire,
@@ -105,8 +106,7 @@ def test_la_boucle_de_la_planche_62_recopie_une_case_de_trop() -> None:
     """`for (i = N; i > P; i--) Tab[i+1] = Tab[i];` avec `N = 6`, `P = 2`."""
     memoire = [*PLANCHE, -1, -1, -1, -1, -1]
     n, p = 6, 2
-    for i in range(n, p, -1):
-        memoire[i + 1] = memoire[i]
+    memoire = insertion_de_la_planche_62(memoire, n, p)
     assert memoire[:8] == [1, 9, 5, 2, 2, 3, 7, -1]
     correcte = _tableau(PLANCHE)
     correcte.inserer(p, 0)
@@ -321,3 +321,8 @@ def test_le_programme_de_la_planche_82_soustrait_deux_matrices() -> None:
     programme = tuple(tuple(a[i][j] - b[i][j] for j in range(3)) for i in range(3))
     assert programme == ((-8, -6, -4), (-2, 0, 2), (4, 6, 8))
     assert addition(a, multiplication_par_un_scalaire(-1, b)) == programme
+
+
+def test_la_boucle_de_la_planche_62_sans_place_ecrirait_hors_du_tableau() -> None:
+    with pytest.raises(IndexError, match="hors de la memoire"):
+        insertion_de_la_planche_62(list(PLANCHE), 6, 2)
