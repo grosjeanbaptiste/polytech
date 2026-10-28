@@ -23,7 +23,6 @@ from polytech.thermique.domain.conduction.plaque_variable import (
     PlaqueEnEchelon,
     produit_des_plaques,
 )
-from polytech.thermique.domain.conduction.terme_de_la_serie import TermeDeLaSerie
 from polytech.thermique.domain.conduction.semi_infini import (
     amortissement_en_profondeur,
     attenuation_a_la_surface,
@@ -36,6 +35,7 @@ from polytech.thermique.domain.conduction.superposition import (
     integrale_de_duhamel,
     trempe_etagee,
 )
+from polytech.thermique.domain.conduction.terme_de_la_serie import TermeDeLaSerie
 from polytech.thermique.domain.inertie import SolideIsotherme
 from polytech.thermique.domain.transitoire import CorpsTransitoire
 

@@ -12,14 +12,14 @@ import pytest
 import sympy as sp
 
 from polytech.electronique.domain.acquisition import (
-    densite_de_bruit_maximale,
-    tension_de_bruit_en_courant,
     bits_necessaires,
     cadence_du_multiplexeur,
     courant_de_bruit_integre,
+    densite_de_bruit_maximale,
     gain_de_chaine,
     nyquist,
     puissance_de_bruit_en_courant,
+    tension_de_bruit_en_courant,
 )
 from polytech.electronique.domain.amplification import nombre_d_etages
 from polytech.electronique.domain.chebyshev import elements_de_chebyshev

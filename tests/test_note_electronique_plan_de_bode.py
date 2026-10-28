@@ -35,13 +35,13 @@ from polytech.electronique.domain.laplace import (
     impedance_de_resistance,
 )
 from polytech.electronique.domain.second_ordre import PasseBasCanonique
-from polytech.signaux.domain.lecture_d_expressions import exposant_de, module_de
 from polytech.signaux.domain.bode_par_intervalles import (
     Factorisation,
     distance_logarithmique,
     intervalles,
     parametres_du_rlc,
 )
+from polytech.signaux.domain.lecture_d_expressions import exposant_de, module_de
 
 P = sp.Symbol("p")
 W = sp.Symbol("omega", positive=True)

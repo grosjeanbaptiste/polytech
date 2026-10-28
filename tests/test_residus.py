@@ -9,17 +9,17 @@ from __future__ import annotations
 import pytest
 import sympy as sp
 
+from polytech.maths.domain.analyse_complexe.integrales_reelles import (
+    integrale_de_1_sur_a_plus_cosinus,
+    poles_de_1_sur_a_plus_cosinus,
+    quadrature_de_1_sur_a_plus_cosinus,
+)
 from polytech.maths.domain.analyse_complexe.residus import (
     integrale_par_les_residus,
     limite_du_produit,
     residu,
     residu_d_un_pole,
     residu_d_un_pole_simple,
-)
-from polytech.maths.domain.analyse_complexe.integrales_reelles import (
-    integrale_de_1_sur_a_plus_cosinus,
-    poles_de_1_sur_a_plus_cosinus,
-    quadrature_de_1_sur_a_plus_cosinus,
 )
 from polytech.maths.domain.analyse_complexe.singularites import ordre_du_pole
 
