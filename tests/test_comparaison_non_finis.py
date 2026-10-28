@@ -46,8 +46,8 @@ CAS: dict[str, Callable[[float], object]] = {
     "rapport/facteur": lambda a: rapport_au_dessus(1.0, 1.0, a),
     "arrondies/valeur": lambda a: egales_arrondies(a, 1.0, 2),
     "arrondies/attendue": lambda a: egales_arrondies(1.0, a, 2),
-    "positive": lambda a: est_positive(a),
-    "negative": lambda a: est_negative(a),
+    "positive": est_positive,
+    "negative": est_negative,
 }
 
 
@@ -71,3 +71,11 @@ def test_les_valeurs_finies_passent_toujours() -> None:
     assert eloignees(1, 2, 0.1)
     assert est_positive(1)
     assert est_negative(-1)
+
+
+def test_un_nan_apres_un_terme_faux_leve_quand_meme() -> None:
+    """`all` court-circuiterait sur le premier terme faux et taurait le nan."""
+    with pytest.raises(ValueError, match="non fini"):
+        suite_nulle([5.0, NAN], 0.1)
+    with pytest.raises(ValueError, match="non fini"):
+        suites_proches([9.0, NAN], [1.0, 1.0], 0.1)

@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING
 import sympy as sp
 
 from polytech.maths.domain.algebre.complexes import argument
+from polytech.maths.domain.finitude import exiger_fini
 from polytech.noyau import core
 
 if TYPE_CHECKING:
@@ -44,6 +45,7 @@ def _ecart_nul_en_echantillons(ecart: sp.Expr) -> bool:
     for rang in range(_ECHANTILLONS):
         point = {s: _valeur(s, rang + i) for i, s in enumerate(libres)}
         valeur = complex(sp.N(ecart.subs(point), PRECISION))
+        exiger_fini(ecart=valeur)
         if abs(valeur) > TOLERANCE_DE_L_ECART:
             return False
     return True
@@ -82,16 +84,19 @@ def egales(obtenue: object, attendue: object) -> bool:
 
 def proches(valeur: complex, reference: complex, tolerance: float) -> bool:
     """`|valeur - reference| <= tolerance`."""
+    exiger_fini(valeur=valeur, reference=reference, tolerance=tolerance)
     return core.proches(valeur, reference, tolerance)
 
 
 def eloignees(valeur: complex, reference: complex, d_au_moins: float) -> bool:
     """`|valeur - reference| > d_au_moins` : la valeur citee est bien exclue."""
+    exiger_fini(valeur=valeur, reference=reference, tolerance=d_au_moins)
     return core.eloignees(valeur, reference, d_au_moins)
 
 
 def proches_relativement(valeur: complex, reference: complex, tolerance: float) -> bool:
     """`|valeur - reference| <= tolerance |reference|` ; en zero, l'egalite exacte."""
+    exiger_fini(valeur=valeur, reference=reference, tolerance=tolerance)
     return core.proches_relativement(valeur, reference, tolerance)
 
 
@@ -108,28 +113,40 @@ def suites_proches(
         msg = f"longueurs differentes : {len(valeurs)} et {len(references)}"
         raise ValueError(msg)
     proche = proches_relativement if relativement else proches
-    return all(
+    # tous les termes sont evalues : `all` court-circuiterait avant un nan plus loin
+    resultats = [
         proche(v, r, tolerance) for v, r in zip(valeurs, references, strict=True)
-    )
+    ]
+    return all(resultats)
 
 
 def suite_nulle(valeurs: Iterable[float], tolerance: float) -> bool:
     """Chaque terme de la suite est nul a `tolerance` pres."""
-    return all(proches(v, 0.0, tolerance) for v in valeurs)
+    resultats = [proches(v, 0.0, tolerance) for v in valeurs]  # tous evalues
+    return all(resultats)
+
+
+def _simplifiee_finie(expression: object) -> sp.Expr:
+    simplifiee = sp.simplify(sp.sympify(expression))
+    if simplifiee.is_finite is False or simplifiee is sp.nan:
+        msg = f"valeur non finie pour expression : {simplifiee}"
+        raise ValueError(msg)
+    return simplifiee
 
 
 def est_positive(expression: object) -> bool:
     """L'expression, simplifiee, est strictement positive (indetermine : non)."""
-    return sp.simplify(sp.sympify(expression)).is_positive is True
+    return _simplifiee_finie(expression).is_positive is True
 
 
 def est_negative(expression: object) -> bool:
     """L'expression, simplifiee, est strictement negative (indetermine : non)."""
-    return sp.simplify(sp.sympify(expression)).is_negative is True
+    return _simplifiee_finie(expression).is_negative is True
 
 
 def egales_arrondies(valeur: float, attendue: float, decimales: int) -> bool:
     """Les deux nombres arrondis a `decimales` chiffres apres la virgule coincident."""
+    exiger_fini(valeur=valeur, attendue=attendue)
     if decimales < 0:
         msg = f"decimales negatives : {decimales}"
         raise ValueError(msg)
@@ -138,6 +155,7 @@ def egales_arrondies(valeur: float, attendue: float, decimales: int) -> bool:
 
 def rapport_au_dessus(valeur: float, reference: float, facteur: float) -> bool:
     """`valeur / reference > facteur` ; reference nulle : `ZeroDivisionError`."""
+    exiger_fini(valeur=valeur, reference=reference, facteur=facteur)
     return valeur / reference > facteur
 
 

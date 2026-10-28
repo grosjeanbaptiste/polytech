@@ -27,7 +27,7 @@ def test_aux_petits_reynolds_la_courbe_rejoint_la_loi_de_stokes() -> None:
 
 @pytest.mark.parametrize(
     ("reynolds", "attendu"),
-    [(1e3, 0.4838), (1e4, 0.3926), (1e5, 0.4257), (4e5, 0.0930), (1e6, 0.1296)],
+    [(1e3, 0.4841), (1e4, 0.3936), (1e5, 0.4247), (4e5, 0.0874), (1e6, 0.1415)],
 )
 def test_la_courbe_redonne_la_correlation_de_morrison(
     reynolds: float, attendu: float
@@ -64,6 +64,10 @@ def test_hors_du_domaine_de_la_correlation_la_courbe_leve(reynolds: float) -> No
 def test_la_crise_est_franchie_des_le_reynolds_critique() -> None:
     assert est_apres_la_crise_de_trainee(3e5, REYNOLDS_CRITIQUE_SPHERE_LISSE)
     assert not est_apres_la_crise_de_trainee(2.999e5, REYNOLDS_CRITIQUE_SPHERE_LISSE)
+
+
+def test_la_crise_de_la_balle_de_golf_est_vers_cinquante_mille() -> None:
+    assert REYNOLDS_CRITIQUE_BALLE_DE_GOLF == 5.0e4
 
 
 def test_les_alveoles_font_franchir_la_crise_au_reynolds_du_jeu() -> None:
