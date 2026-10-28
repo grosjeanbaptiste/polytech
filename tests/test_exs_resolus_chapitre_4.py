@@ -3,8 +3,8 @@
 Source : `SignauxSystemes/EXS/Exs_01_02_04_05_Resolus.pdf`, pages 9 a 20.
 Les solutions -- manuscrites pour 0.22 et 0.23, imprimees pour les
 autres, illustrees de traces MATLAB -- sont recopiees comme oracles et
-recoupees. Une seule est contredite : la transmittance imprimee de 0.26
-ne decoule pas du schema tel qu'il est dessine.
+recoupees ; aucune n'est contredite. Pour 0.26, le professeur a confirme le
+28 octobre 2026 que Mason donne `p/(p+1)`.
 """
 
 from __future__ import annotations
@@ -108,17 +108,20 @@ def test_0_25_le_sommet_du_trace_matlab() -> None:
     assert proches(sommet, 0.0322, 5e-5)
 
 
-def test_0_26_la_transmittance_que_le_schema_donne() -> None:
-    """Le schema donne `p (p+2)/(p+1)^2` ; la solution imprime `p/(p+1)`."""
-    assert egales(gr.transmittance("0.26"), P * (P + 2) / (P + 1) ** 2)
-    ecart = gr.transmittance("0.26") / (P / (P + 1))
-    assert egales(ecart, (P + 2) / (P + 1))
+def test_0_26_la_regle_de_mason_donne_p_sur_p_plus_un() -> None:
+    """Page 18 : `p/(p+1)` ; la boucle `-1/p` enferme les deux branches."""
+    assert egales(gr.transmittance("0.26"), P / (P + 1))
+
+
+def test_0_26_les_deux_branches_en_parallele_valent_un_dans_la_boucle() -> None:
+    """Les branches se somment en `1` : `H = 1 / (1 + 1/p)`."""
+    assert egales(1 / (P + 1) + P / (P + 1), 1)
+    assert egales(gr.transmittance("0.26"), 1 / (1 + 1 / P))
 
 
 def test_0_26_la_valeur_finale_de_la_solution() -> None:
-    """Page 18 : `a(infini) = 0` -- vrai pour les deux transmittances."""
-    assert gr.limites("0.26")["a"][1] == 0
-    assert (P / (P + 1)).subs(P, 0) == 0
+    """Page 18 : `a(infini) = H(0) = 0` et `a(0+) = H(oo) = 1`."""
+    assert gr.limites("0.26")["a"] == (1, 0)
 
 
 def test_0_27_la_transmittance_et_les_limites_de_la_solution() -> None:

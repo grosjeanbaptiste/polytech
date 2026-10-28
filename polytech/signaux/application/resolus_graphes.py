@@ -11,7 +11,7 @@ from typing import Final
 
 import sympy as sp
 
-from polytech.signaux.domain.fluence import transmittance_du_graphe
+from polytech.signaux.domain.fluence import regle_de_mason, transmittance_du_graphe
 from polytech.signaux.domain.symboles import IMAGE as P
 from polytech.signaux.domain.temporel import ReponsesTemporelles
 from polytech.signaux.domain.transmittance import Transmittance
@@ -25,9 +25,16 @@ GRAPHES: Final = {
 
 
 def _schema_bloc() -> sp.Expr:
-    """0.26 : `1/(p+1)`, une boucle de retour `1/p`, et `p/(p+1)` en parallele."""
-    boucle = sp.cancel(1 / (1 + 1 / P))
-    return sp.cancel(boucle / (P + 1) + P / (P + 1))
+    """0.26 : une boucle `-1/p` autour de `1/(p+1)` et `p/(p+1)` en parallele.
+
+    Lecture deduite : le PDF n'est pas relisible ici (sources sur SUL-2) ; la
+    couche de texte donne les blocs `1/p`, `1/(p+1)`, `p/(p+1)` et leurs signes,
+    et la solution officielle (`p/(p+1)`, confirmee par le professeur le
+    2026-10-28) fixe la topologie : chaque branche ferme une boucle `-1/p`.
+    """
+    parcours = [1 / (P + 1), P / (P + 1)]
+    boucles = [-gain / P for gain in parcours]
+    return regle_de_mason(parcours, boucles)
 
 
 def transmittance(nom: str) -> sp.Expr:
