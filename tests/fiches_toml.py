@@ -35,12 +35,17 @@ def nombres(texte: str) -> list[float]:
 
 def expression(texte: str, variable: str = "x") -> sp.Expr:
     """Une expression pgfplots (`^`, `deg`, `abs`) lue comme sympy."""
-    nette = texte.replace("^", "**").replace("deg(", "(").replace("abs(", "Abs(")
+    nette = (
+        texte.replace("\\", "")
+        .replace("^", "**")
+        .replace("deg(", "(")
+        .replace("abs(", "Abs(")
+    )
     return sp.sympify(nette, locals={variable: sp.Symbol(variable, real=True)})
 
 
 def courbes(figure_tikz: str) -> list[str]:
-    """Le corps `{...}` de chaque `\\addplot[...] ... {expression};`."""
+    r"""Le corps `{...}` de chaque `\\addplot[...] ... {expression};`."""
     return re.findall(
         r"\\addplot\[[^\]]*\](?:\s*coordinates)?\s*\{([^}]*)\}", figure_tikz
     )
@@ -50,3 +55,12 @@ def couples(corps: str) -> list[tuple[float, float]]:
     """Les `(x,y)` d'un `coordinates {...}`."""
     trouves = re.findall(r"\(([^,()]+),([^,()]+)\)", corps)
     return [(float(a), float(b)) for a, b in trouves]
+
+
+def cherche(motif: str, texte: str, groupe: int = 0) -> str:
+    """Le groupe du premier `motif` ; leve si le TikZ ne le porte pas."""
+    trouve = re.search(motif, texte)
+    if trouve is None:
+        msg = f"motif absent de la figure : {motif}"
+        raise AssertionError(msg)
+    return trouve.group(groupe)

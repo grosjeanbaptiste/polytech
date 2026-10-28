@@ -31,9 +31,9 @@ COUVERTES = {SYSTEMES, FRACTIONS, EDO1, ORDRE_N}
 
 
 def _droites(tikz: str) -> list[list[sp.Matrix]]:
-    """Par `scope`, les droites `a x + b y = c` des deux `\\draw` tracants."""
+    r"""Par `scope`, les droites `a x + b y = c` des deux `\\draw` tracants."""
     resultat = []
-    for scope in re.findall(r"\\begin\{scope\}.*?\\end\{scope\}", tikz, re.S):
+    for scope in re.findall(r"\\begin\{scope\}.*?\\end\{scope\}", tikz, re.DOTALL):
         lignes = []
         for p in re.findall(
             r"\\draw\[thick[^\]]*\] \(([^)]*)\) -- \(([^)]*)\);", scope
