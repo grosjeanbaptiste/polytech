@@ -73,7 +73,8 @@ class SecondOrdre:
         """La nature des poles, que la valeur de `xi` decide."""
         if self.amortissement < 1:
             return "poles complexes conjugues"
-        confondus = self.amortissement == 1
+        # `sp.Float(1.0) == 1` est faux : on compare l'ecart a zero.
+        confondus = sp.sympify(self.amortissement) - 1 == 0
         return "poles reels confondus" if confondus else "poles reels distincts"
 
     def pulsation_propre(self) -> sp.Expr:

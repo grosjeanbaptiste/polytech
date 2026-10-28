@@ -79,3 +79,25 @@ def test_les_poles_de_la_figure_sont_sur_le_cercle_de_rayon_omega_n() -> None:
     )
     assert any(egales(sp.expand(p - pole), 0) for p in systeme.poles())
     assert all(egales(sp.Abs(p), 2) for p in systeme.poles())
+
+
+def test_les_courbes_des_trois_regimes_de_la_figure() -> None:
+    """Figure « Les trois regimes » : `zeta = 0,3`, critique, `zeta = 1,5`."""
+    for x in (0.5, 2.0, 7.0):
+        sous = 1 - sp.exp(-0.3 * x) * (
+            sp.cos(x * sp.sqrt(0.91)) + 0.3 / sp.sqrt(0.91) * sp.sin(x * sp.sqrt(0.91))
+        )
+        critique = 1 - (1 + x) * sp.exp(-x)
+        racine = sp.sqrt(1.25)
+        sur = 1 - (
+            (1.5 + racine) * sp.exp(-(1.5 - racine) * x)
+            - (1.5 - racine) * sp.exp(-(1.5 + racine) * x)
+        ) / (2 * racine)
+        for zeta, figure in (
+            (sp.Rational(3, 10), sous),
+            (sp.Integer(1), critique),
+            (sp.Rational(3, 2), sur),
+        ):
+            systeme = SecondOrdre(gain=1, constante=1, amortissement=zeta)
+            lib = sp.N(indicielle(systeme).subs(T, x))
+            assert proches(float(lib), float(figure), 1e-9)

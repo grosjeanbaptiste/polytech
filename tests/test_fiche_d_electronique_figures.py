@@ -23,7 +23,9 @@ M = sp.Symbol("m", positive=True)
 
 def test_les_asymptotes_de_la_figure_du_bode_sont_celles_de_la_transmittance() -> None:
     """Article « Bode asymptotique » : `10 (1 + s/10) / ((1 + s/100)(1 + s/1000))`."""
-    trace = trace_d_une_transmittance(10 * (1 + P / 10) / ((1 + P / 100) * (1 + P / 1000)))
+    trace = trace_d_une_transmittance(
+        10 * (1 + P / 10) / ((1 + P / 100) * (1 + P / 1000))
+    )
     assert [c for c, _ in trace.cassures] == [10.0, 100.0, 1000.0]
     for x in (1.0, 30.0, 400.0, 5e4):
         reel = 10 * max(1, x / 10) / (max(1, x / 100) * max(1, x / 1000))
@@ -34,7 +36,7 @@ def test_les_asymptotes_de_la_figure_du_bode_sont_celles_de_la_transmittance() -
 def test_la_figure_du_produit_gain_bande_garde_un_million() -> None:
     """Article « Le produit gain-bande » : `1e5` a `10 Hz`, `20` a `5e4 Hz`."""
     assert bande_en_boucle_ouverte(1e6, 1e5) == 10.0
-    assert 20 * 5e4 == 1e5 * bande_en_boucle_ouverte(1e6, 1e5)
+    assert 1e5 * bande_en_boucle_ouverte(1e6, 1e5) == 20 * 5e4
 
 
 def test_les_poles_de_la_figure_de_butterworth_sont_a_112_5_degres_et_plus() -> None:

@@ -1,0 +1,26 @@
+[workspace]
+
+[package]
+name = "polytech-core"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+
+[lib]
+name = "polytech_core"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+num-complex = "0.4"
+# abi3-py312 : un seul binaire pour Python >= 3.12 (requires-python du depot).
+# `extension-module` n'est active que par maturin (pyproject.toml), pour que
+# `cargo test` puisse lier libpython.
+pyo3 = { version = "0.30", features = ["abi3-py312", "num-complex"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }

@@ -21,8 +21,12 @@ from typing import Final
 REYNOLDS_CRITIQUE_PLAQUE: Final = 3e5
 """Le formulaire donne « 3 a 5.10^5 » : la borne basse est retenue."""
 
-REYNOLDS_CRITIQUE_TUBE: Final = 2400
-"""Valeur du formulaire pour un tube de section circulaire."""
+REYNOLDS_CRITIQUE_TUBE_FORMULAIRE_2019: Final = 2400
+"""Formulaire 2019 (tube de section circulaire), examens, fiche, tome 2 chap. 3.
+Le tome 2, section 1.3.2, dit 2320 : voir
+`couches_limites.REYNOLDS_TRANSITION_EN_TUBE_TOME_2_SECTION_1_3_2`."""
+REYNOLDS_CRITIQUE_TUBE: Final = REYNOLDS_CRITIQUE_TUBE_FORMULAIRE_2019
+"""Nom historique, meme valeur."""
 
 _TIERS = 1.0 / 3.0
 

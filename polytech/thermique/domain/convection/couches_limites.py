@@ -23,8 +23,12 @@ from typing import Final
 
 REYNOLDS_CRITIQUE_SUR_PLAQUE: Final = (3e5, 5e5)
 """La transition, selon la turbulence amont et la rugosite de la plaque."""
-REYNOLDS_CRITIQUE_EN_TUBE: Final = 2320.0
-"""Sous ce nombre, l'ecoulement etabli est celui de Hagen-Poiseuille."""
+REYNOLDS_TRANSITION_EN_TUBE_TOME_2_SECTION_1_3_2: Final = 2320.0
+"""Tome 2, section 1.3.2 : sous ce nombre, l'ecoulement etabli est celui de
+Hagen-Poiseuille. Le chapitre 3 du meme tome, le formulaire de 2019 et les
+examens disent 2400 : voir `forcee.REYNOLDS_CRITIQUE_TUBE_FORMULAIRE_2019`."""
+REYNOLDS_CRITIQUE_EN_TUBE: Final = REYNOLDS_TRANSITION_EN_TUBE_TOME_2_SECTION_1_3_2
+"""Nom historique, meme valeur ; sert aussi de garde a Colburn (cf. tube_turbulent)."""
 REYNOLDS_DE_LA_CHUTE_DE_TRAINEE: Final = 4e5
 """Au-dela, la couche limite du cylindre transite avant de decoller."""
 
