@@ -24,13 +24,14 @@ def cadence_totale() -> float:
     return cadence_du_multiplexeur(nyquist(D.BANDE), D.CAPTEURS)
 
 
-def _cadence_maximale() -> float:
+def cadence_maximale() -> float:
+    """La cadence du plus rapide des convertisseurs, en hertz."""
     return max(cadence for cadence, _ in D.CONVERTISSEURS.values())
 
 
 def nombre_de_convertisseurs() -> int:
     """Combien de convertisseurs, des plus rapides, pour tenir la cadence."""
-    return math.ceil(cadence_totale() / _cadence_maximale())
+    return math.ceil(cadence_totale() / cadence_maximale())
 
 
 def voies_par_convertisseur() -> int:
@@ -47,7 +48,7 @@ def multiplexeur(voies: int | None = None) -> str:
 
 def cadence_reelle_par_voie() -> float:
     """Ce que chaque voie recoit d'un convertisseur a sa cadence maximale."""
-    return _cadence_maximale() / voies_par_convertisseur()
+    return cadence_maximale() / voies_par_convertisseur()
 
 
 def bande_d_arret() -> float:
@@ -106,7 +107,7 @@ def convertisseurs_possibles() -> tuple[str, ...]:
     return tuple(
         nom
         for nom, (cadence, bits) in D.CONVERTISSEURS.items()
-        if bits >= bits_minimaux() and cadence >= _cadence_maximale()
+        if bits >= bits_minimaux() and cadence >= cadence_maximale()
     )
 
 

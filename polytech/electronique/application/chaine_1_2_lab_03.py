@@ -77,10 +77,14 @@ def bruit_d_un_bloc_en_tete(densite: float) -> float:
     return densite**2 * D.BANDE
 
 
+def pire_courant_de_bruit() -> float:
+    """Le plus grand bruit en courant des amplificateurs, en A/racine(Hz)."""
+    return max(courant for _, courant, _, _ in D.AMPLIFICATEURS.values())
+
+
 def pire_bruit_en_courant() -> float:
     """Le plus grand bruit en courant, converti en tension dans la source."""
-    pire = max(courant for _, courant, _, _ in D.AMPLIFICATEURS.values())
-    return puissance_de_bruit_en_courant(pire, D.SOURCE, D.BANDE)
+    return puissance_de_bruit_en_courant(pire_courant_de_bruit(), D.SOURCE, D.BANDE)
 
 
 def bruits_des_amplificateurs() -> dict[str, float]:

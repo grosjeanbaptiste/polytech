@@ -13,6 +13,7 @@ from polytech.electronique.application import chaine_1_1_lab_03 as un
 from polytech.electronique.application import chaine_1_2_lab_03 as deux
 from polytech.electronique.application import chaine_1_3_lab_03 as trois
 from polytech.electronique.application import chaine_1_4_lab_03 as quatre
+from polytech.electronique.application.donnees_lab_03 import UnDeux
 from polytech.electronique.application.formatage import nombre
 
 _MICRO_CARRE = 1e12
@@ -36,6 +37,9 @@ def _premier() -> dict[str, str]:
         "LabTroisADensite": nombre(densite * 1e6, 2),
         "LabTroisAPart": nombre(100 * un.etage_dominant()[1], 0),
         "LabTroisAEntree": nombre(un.bruit_a_l_entree() * 1e6, 2),
+        "LabTroisAGainTotal": nombre(un.gains()[0], 0),
+        "LabTroisAGainA": nombre(un.gains()[1], 0),
+        "LabTroisAGainB": nombre(un.gains()[2], 0),
     }
 
 
@@ -59,6 +63,11 @@ def _deuxieme() -> dict[str, str]:
         "LabTroisBChaineTotal": nombre(sum(chaine.values()), 2),
         "LabTroisBChaineEfficace": nombre(budget.bruit_de_la_chaine() * 1e6, 2),
         "LabTroisBCout": nombre(budget.cout(), 1),
+        "LabTroisBGain": nombre(deux.gain(), 0),
+        "LabTroisBGainSecond": nombre(deux.gain() / deux.gain_maximal_du_premier(), 0),
+        "LabTroisBSource": nombre(UnDeux.SOURCE, 0),
+        "LabTroisBPireCourant": nombre(deux.pire_courant_de_bruit() * 1e15, 0),
+        "LabTroisBBande": nombre(UnDeux.BANDE, 0),
     }
 
 
@@ -95,6 +104,10 @@ def _quatrieme() -> dict[str, str]:
             quatre.bruit_total(bande_apres_le_filtre=15e3) * 1e6, 1
         ),
         "LabTroisDComposants": str(sum(quatre.composants().values())),
+        "LabTroisDCadenceMax": nombre(quatre.cadence_maximale(), 0),
+        "LabTroisDVoies": str(quatre.voies_par_convertisseur()),
+        "LabTroisDArret": nombre(quatre.bande_d_arret(), 0),
+        "LabTroisDCadenceVoie": nombre(quatre.cadence_reelle_par_voie(), 0),
     }
 
 

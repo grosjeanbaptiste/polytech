@@ -7,10 +7,12 @@ cours, chaque resultat refait par un schema numerique.
 
 from __future__ import annotations
 
+from polytech.fluides.application import activite_2 as a2
 from polytech.fluides.application import activite_2_hypotheses as hyp
 from polytech.fluides.application import activite_2_recoupements as rec
 from polytech.fluides.application import activite_2_surface as surface
 from polytech.fluides.application.formatage import nombre
+from polytech.fluides.domain.statique.gaz import CONSTANTE_DES_GAZ
 
 _POURCENT = 100.0
 _MILLIMETRE = 1e3
@@ -69,6 +71,21 @@ def _recoupements() -> dict[str, str]:
     }
 
 
+def _constantes() -> dict[str, str]:
+    """Les donnees que le document cite : elles sortent de la bibliotheque."""
+    return {
+        "MasseVolumiqueEauDeMer": nombre(a2.EAU_DE_MER, 0),
+        "PressionAtmospherique": nombre(hyp.AIR_PRESSION, 0),
+        "ConstanteDesGaz": nombre(CONSTANTE_DES_GAZ, 3),
+    }
+
+
 def macros_complements() -> dict[str, str]:
     """Hypotheses chiffrees et recoupements, pour les trois exercices."""
-    return {**_film(), **_reservoir(), **_bateau(), **_recoupements()}
+    return {
+        **_film(),
+        **_reservoir(),
+        **_bateau(),
+        **_recoupements(),
+        **_constantes(),
+    }

@@ -220,3 +220,20 @@ def test_une_suite_nulle_a_la_tolerance_pres() -> None:
     assert suite_nulle(np.array([0.0, -1e-13, 5e-13]), 1e-12)
     assert not suite_nulle([0.0, 2e-12], 1e-12)
     assert suite_nulle([], 1e-12)
+
+
+def test_deux_rationnels_distincts_de_un_epsilon_sont_distingues_exactement() -> None:
+    """Un ecart exact de `10^-13` passerait sous 1e-12 en numerique."""
+    assert not egales(1, 1 + sp.Rational(1, 10**13))
+    x = sp.Symbol("x")
+    assert not egales(x + 1, x + 1 + sp.Rational(1, 10**13))
+
+
+def test_un_ecart_symboliquement_nul_est_egal_sans_echantillonner() -> None:
+    x = sp.Symbol("x")
+    assert egales(sp.sin(x) ** 2 + sp.cos(x) ** 2, 1)
+
+
+def test_un_ecart_flottant_negligeable_reste_egal() -> None:
+    """Dernier recours numerique : 0,1 + 0,2 et 0,3 different de 5e-17."""
+    assert egales(0.1 + 0.2, 0.3)

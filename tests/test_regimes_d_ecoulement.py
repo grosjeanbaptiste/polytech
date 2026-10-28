@@ -58,12 +58,14 @@ def test_les_deux_bornes_du_critere_sont_coherentes() -> None:
     La planche donne les deux comme si elles allaient de soi ensemble, et
     ce n'est pas evident : l'une est cinematique, l'autre
     thermodynamique. La relation isentropique les relie, et a `Ma = 0,3`
-    la variation relative de masse volumique vaut environ 4,4 % -- juste
-    sous les cinq pour cent annonces. Les deux bornes disent donc bien la
-    meme chose, et le critere n'est pas arbitraire.
+    la variation de masse volumique vaut 4,36 % de `rho_0` (definition du
+    cours, `compressibilite.variation_relative_a_l_arret`) -- juste sous
+    les cinq pour cent annonces. `variation_de_masse_volumique` la
+    rapporte a `rho` : 4,56 %, encore sous 5 %. Les deux bornes disent donc
+    bien la meme chose, et le critere n'est pas arbitraire.
     """
     variation = variation_de_masse_volumique(MACH_INCOMPRESSIBLE)
-    assert variation == pytest.approx(0.044, abs=0.004)
+    assert variation == pytest.approx(0.04560931842135374, rel=1e-12)
     assert variation < 0.05
 
 

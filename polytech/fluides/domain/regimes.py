@@ -54,18 +54,24 @@ def est_incompressible(mach: float) -> bool:
 
 
 def variation_de_masse_volumique(mach: float) -> float:
-    """La variation relative de masse volumique, en ecoulement isentropique.
+    """`(rho_0 - rho) / rho` : l'ecart d'arret rapporte a la valeur **locale**.
 
     `rho_0 / rho = (1 + (gamma-1) Ma^2 / 2)^(1/(gamma-1))`, dont on rend
-    l'ecart relatif a l'unite. C'est ce calcul qui montre que les deux
-    bornes de la planche s'accordent, et aux petits Mach il croit comme
-    le **carre** du Mach -- ce qui explique la permissivite du seuil.
+    `rho_0 / rho - 1` : 4,56 % a `Ma = 0,3`. Ce n'est PAS le « 4,4 % » du
+    cours, qui rapporte la variation a `rho_0` : voir
+    `compressibilite.variation_relative_a_l_arret` (4,36 %). Aux petits
+    Mach les deux croissent comme le **carre** du Mach -- ce qui explique
+    la permissivite du seuil. Alias plus explicite : `ecart_rapporte_a_rho`.
     """
     if mach < 0:
         msg = f"nombre de Mach negatif : {mach}"
         raise ValueError(msg)
     rapport = (1 + (GAMMA_DE_L_AIR - 1) * mach**2 / 2) ** (1 / (GAMMA_DE_L_AIR - 1))
     return float(rapport - 1)
+
+
+ecart_rapporte_a_rho = variation_de_masse_volumique
+"""Meme fonction, nom qui dit la definition : `(rho_0 - rho) / rho`."""
 
 
 def densite_spectrale_de_turbulence(nombre_d_onde: float, constante: float) -> float:

@@ -48,8 +48,24 @@ def _ecart_nul_en_echantillons(ecart: sp.Expr) -> bool:
     return True
 
 
+def _ecart_nul(ecart: sp.Expr) -> bool:
+    """Exact quand sympy conclut (zero, ou rationnel non nul), sinon numerique."""
+    simplifie = sp.simplify(ecart)
+    if simplifie == 0:
+        return True
+    if simplifie.is_Rational:
+        return False
+    return _ecart_nul_en_echantillons(ecart)
+
+
 def egales(obtenue: object, attendue: object) -> bool:
     """L'ecart des deux expressions (ou matrices, terme a terme) est nul.
+
+    Deux temps : l'ecart est d'abord simplifie (zero : egales ; rationnel
+    non nul : distinctes, exactement, quel que soit son ordre de grandeur) ;
+    sinon il est evalue **numeriquement** en 3 jeux de points avec une
+    tolerance de 1e-12. Limite connue de ce dernier recours : deux
+    expressions non simplifiables qui different de moins de 1e-12 passent.
 
     Leve `TypeError` si l'ecart ne s'evalue pas en nombre (fonction non
     definie, par exemple) : conclure serait inventer.
@@ -57,10 +73,10 @@ def egales(obtenue: object, attendue: object) -> bool:
     premiere, seconde = sp.sympify(obtenue), sp.sympify(attendue)
     if isinstance(premiere, sp.MatrixBase) or isinstance(seconde, sp.MatrixBase):
         return premiere.shape == seconde.shape and all(
-            _ecart_nul_en_echantillons(sp.sympify(a - b))
+            _ecart_nul(sp.sympify(a - b))
             for a, b in zip(premiere, seconde, strict=True)
         )
-    return _ecart_nul_en_echantillons(premiere - seconde)
+    return _ecart_nul(premiere - seconde)
 
 
 def _tolerance_valide(tolerance: float) -> float:

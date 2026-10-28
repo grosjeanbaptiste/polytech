@@ -156,18 +156,23 @@ def test_le_point_fixe_imprime_page_94_est_faux_a_la_huitieme_decimale() -> None
 
 
 @pytest.mark.parametrize(
-    ("transformation", "depart", "limite"),
-    [(_demi_cosinus, 0.0, 0.4501836112948736), (_inverse_du_cosh, 1.0, 0.7650098729)],
+    ("transformation", "depart"), [(_demi_cosinus, 0.0), (_inverse_du_cosh, 1.0)]
 )
 def test_la_borne_de_l_erreur_tient_a_chaque_rang(
-    transformation: Callable[[float], float], depart: float, limite: float
+    transformation: Callable[[float], float], depart: float
 ) -> None:
-    """Remarque 5.1 : `d(x_n, u) <= K^n d(x_0, x_1) / (1 - K)`, avec `K = 1/2`."""
+    """Remarque 5.1 : `d(x_n, u) <= K^n d(x_0, x_1) / (1 - K)`, avec `K = 1/2`.
+
+    La limite vient de la bibliotheque (200 iterees), non du syllabus dont la
+    valeur imprimee est fausse (`IMPRIME_PAGE_94`) ; la marge n'est que
+    l'arrondi flottant.
+    """
+    limite = iterer(transformation, depart, 200)[-1]
     suite = iterer(transformation, depart, 15)
     premier_pas = abs(suite[1] - suite[0])
     for rang, valeur in enumerate(suite):
         assert proches(
-            valeur, limite, borne_de_l_erreur(0.5, premier_pas, rang) + 1e-10
+            valeur, limite, borne_de_l_erreur(0.5, premier_pas, rang) + 1e-14
         )
 
 

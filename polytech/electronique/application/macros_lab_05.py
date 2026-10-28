@@ -69,6 +69,12 @@ def _chaine() -> dict[str, str]:
         "LabCinqPerteHaute": nombre(ch.perte(20e3), 2),
         "LabCinqBandeBasse": nombre(basse, 1),
         "LabCinqBandeHaute": nombre(haute / 1e3, 0),
+        "LabCinqCrete": nombre(dm.crete_maximale(), 0),
+        "LabCinqSourceVolt": nombre(dm.SOURCE, 3),
+        "LabCinqGainVise": nombre(dm.gain_maximal(), 0),
+        "LabCinqGainParEtage": nombre(dm.gain_maximal_par_etage(), 0),
+        "LabCinqProduit": nombre(dm.PRODUIT_GAIN_BANDE / 1e3, 0),
+        "LabCinqBandeAudio": nombre(dm.BANDE / 1e3, 0),
     }
 
 

@@ -65,8 +65,14 @@ def macros_de_l_enonce() -> dict[str, str]:
 
 
 def macros_des_sommes() -> dict[str, str]:
-    """Les sommes des inverses : des distances, des largeurs, et la fermee."""
+    """Les sommes des inverses : des distances, des largeurs, et la fermee.
+
+    Avec le premier terme, `1 / d_0` : la distance en metres et son inverse.
+    """
+    premiere = distances_a_l_axe()[0]
     return {
+        "ChampHuitPremiereDistanceEnMetres": nombre(float(premiere), 2),
+        "ChampHuitPremierInverse": nombre(float(1 / premiere), 0),
         "ChampHuitSommeDesDistances": nombre(
             float(somme_des_inverses(distances_a_l_axe())),
             DECIMALES_DE_LA_SOMME,

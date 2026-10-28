@@ -16,12 +16,29 @@ from __future__ import annotations
 import sympy as sp
 from sympy.calculus.util import continuous_domain
 
+from polytech.maths.domain.differentielles.poles_periodiques import poles_dans
 from polytech.maths.domain.differentielles.premier_ordre import VARIABLE
 
 
-def intervalles_de_definition(solution: sp.Expr) -> tuple[sp.Set, ...]:
-    """Les intervalles maximaux sur lesquels l'expression definit une solution."""
-    domaine = continuous_domain(sp.sympify(solution), VARIABLE, sp.S.Reals)
+def _domaine(solution: sp.Expr, etude: sp.Interval | None) -> sp.Set:
+    if solution.atoms(sp.tan, sp.cot):
+        if etude is None:
+            msg = "tan/cot : poles periodiques, intervalle d'etude requis"
+            raise ValueError(msg)
+        return etude - poles_dans(solution, etude)
+    domaine = continuous_domain(solution, VARIABLE, sp.S.Reals)
+    return domaine if etude is None else domaine.intersect(etude)
+
+
+def intervalles_de_definition(
+    solution: sp.Expr, etude: sp.Interval | None = None
+) -> tuple[sp.Set, ...]:
+    """Les intervalles maximaux sur lesquels l'expression definit une solution.
+
+    `etude` restreint le resultat ; elle est **obligatoire et bornee** si
+    l'expression contient `tan` ou `cot` (leurs poles sont une infinite).
+    """
+    domaine = _domaine(sp.sympify(solution), etude)
     morceaux = domaine.args if isinstance(domaine, sp.Union) else (domaine,)
     return tuple(sorted(morceaux, key=lambda intervalle: intervalle.inf))
 
