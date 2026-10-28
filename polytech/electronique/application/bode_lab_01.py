@@ -14,6 +14,7 @@ from typing import Final
 import sympy as sp
 
 from polytech.electronique.domain.bode_asymptotique import phase_asymptotique
+from polytech.electronique.domain.phaseurs import phase_de_la_sortie
 
 _P: Final = sp.Symbol("p")
 PREMIERE: Final = (_P + 10**3) / (_P + 10**6)
@@ -85,13 +86,16 @@ def sorties() -> list[tuple[float, float]]:
     resultats = []
     for amplitude, pulsation, phase in ENTREES:
         gain, dephasage = LECTURES[pulsation]
-        resultats.append((amplitude_de_sortie(amplitude, gain), phase + dephasage))
+        resultats.append(
+            (amplitude_de_sortie(amplitude, gain), phase_de_la_sortie(phase, dephasage))
+        )
     return resultats
 
 
 def sortie_de_l_officiel() -> tuple[float, float]:
     """La troisieme sortie telle que l'officiel l'obtient : -10 dB et 60 degres."""
-    return amplitude_de_sortie(2.0, -10.0), 60.0 - 170.0
+    soixante = math.degrees(math.pi / 3)  # pi/3 : ce que l'officiel lit pour pi/6
+    return amplitude_de_sortie(2.0, -10.0), phase_de_la_sortie(soixante, -170.0)
 
 
 def pente_entre_les_lectures() -> float:

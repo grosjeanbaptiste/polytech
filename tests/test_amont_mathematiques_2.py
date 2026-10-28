@@ -22,6 +22,16 @@ ESPACE = (X, Y, Z)
 RAYON, ANGLE = sp.symbols("r theta", nonnegative=True)
 CHAMP_DE_STOKES = (-(Y**3), X**3, -(Z**3))
 """Pages 56 a 58 (53 a 55) : l'exercice resolu du theoreme de Stokes."""
+NORMALE_UNITAIRE_DU_PLAN = (sp.sqrt(3) / 3,) * 3
+"""Pages 57-58 : `(1, 1, 1) / racine(3)` ; la planche imprime `(1/3)(1, 1, 1)`."""
+CONTOUR_DU_SECOND_CHEMIN = (
+    sp.cos(ANGLE),
+    sp.sin(ANGLE),
+    1 - sp.cos(ANGLE) - sp.sin(ANGLE),
+)
+"""Pages 57-58 : le cercle de `z = 1 - x - y` au-dessus du disque unite."""
+CIRCULATION_ATTENDUE = 3 * sp.pi / 2
+"""Pages 57-58 recalculees : la planche imprime `pi / 2` ; c'est `3 pi / 2`."""
 
 
 def test_le_rotationnel_est_celui_de_la_page_44() -> None:
@@ -60,12 +70,12 @@ def test_la_circulation_de_l_exercice_resolu_de_stokes_vaut_trois_pi_sur_deux() 
     surface = SurfaceEnGraphe(1 - X - Y, X, Y)
     assert surface.normale() == (1, 1, 1)
     assert surface.element_d_aire() == sp.sqrt(3)
-    assert surface.normale_unitaire() == tuple(c / sp.sqrt(3) for c in (1, 1, 1))
+    assert surface.normale_unitaire() == NORMALE_UNITAIRE_DU_PLAN
     par_stokes = surface.flux_du_rotationnel(CHAMP_DE_STOKES, ESPACE, rayon=1)
     contour = surface.contour_du_disque(ANGLE, rayon=1)
-    assert contour == (sp.cos(ANGLE), sp.sin(ANGLE), 1 - sp.cos(ANGLE) - sp.sin(ANGLE))
+    assert contour == CONTOUR_DU_SECOND_CHEMIN
     directe = circulation(CHAMP_DE_STOKES, ESPACE, contour, ANGLE, (0, 2 * sp.pi))
-    assert par_stokes == directe == 3 * sp.pi / 2
+    assert par_stokes == directe == CIRCULATION_ATTENDUE
     with pytest.raises(ValueError, match="rayon non positif"):
         surface.flux_du_rotationnel(CHAMP_DE_STOKES, ESPACE, rayon=0)
 

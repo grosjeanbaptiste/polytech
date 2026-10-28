@@ -17,6 +17,7 @@ from scipy.integrate import dblquad, nquad
 
 from polytech.thermique.domain.rayonnement.cordes_croisees import (
     aire_par_les_cordes,
+    corde_croisee_de_deux_tubes,
     corde_tendue,
 )
 from polytech.thermique.domain.rayonnement.ecran_de_tubes import (
@@ -211,13 +212,13 @@ def test_l_aire_d_echange_entre_deux_tubes() -> None:
     et sa propre figure 2.15 le confirme (test suivant).
     """
     diametre, pas = 0.05, 0.1
-    rayon, angle = diametre / 2, math.asin(diametre / pas)
-    croisee = math.sqrt(pas**2 - diametre**2) + 2 * rayon * angle
+    croisee = corde_croisee_de_deux_tubes(diametre, pas)
+    assert croisee == pytest.approx(0.11278, abs=5e-6)
+    assert corde_croisee_de_deux_tubes(0.0, pas) == pas  # tubes sans epaisseur
+    with pytest.raises(ValueError, match="tubes qui se chevauchent"):
+        corde_croisee_de_deux_tubes(0.05, 0.04)
     attendue = aire_par_les_cordes((croisee, croisee), (pas, pas))
     assert aire_entre_deux_tubes(diametre, pas) == pytest.approx(attendue)
-    rapport = pas / diametre
-    crochet = math.sqrt(rapport**2 - 1) - rapport + math.pi / 2 - math.acos(1 / rapport)
-    assert aire_entre_deux_tubes(diametre, pas) == pytest.approx(diametre * crochet)
     imprimee = aire_entre_deux_tubes(diametre, pas, prefacteur=2.0)
     assert aire_entre_deux_tubes(diametre, pas) != pytest.approx(imprimee)
     assert aire_entre_deux_tubes(diametre, pas) == pytest.approx(0.01278, abs=5e-6)

@@ -99,6 +99,16 @@ def test_le_residu_d_une_singularite_essentielle_passe_par_laurent() -> None:
     assert residu(sp.sin(1 / Z), Z, 0) == 1
 
 
+def f_factorisee(alpha: sp.Expr, beta: sp.Expr) -> sp.Expr:
+    """Page 26, corrigee : `f = -2i / ((z - alpha)(z - beta))`, facteur 1/2 compris."""
+    return -2 * sp.I / ((Z - alpha) * (Z - beta))
+
+
+def f_imprimee(alpha: sp.Expr, beta: sp.Expr) -> sp.Expr:
+    """Page 26, relation (112) : `-i / ((z - alpha)(z - beta))`, facteur 1/2 perdu."""
+    return -sp.I / ((Z - alpha) * (Z - beta))
+
+
 def test_l_integrale_de_l_exemple_de_la_page_26_vaut_deux_pi_sur_racine() -> None:
     """Page 26 : `I = int de 0 a 2 pi de d(theta) / (a + cos(theta))`, `a > 1`.
 
@@ -112,12 +122,10 @@ def test_l_integrale_de_l_exemple_de_la_page_26_vaut_deux_pi_sur_racine() -> Non
     alpha, beta = poles_de_1_sur_a_plus_cosinus(a)
     assert sp.Abs(alpha) < 1 < sp.Abs(beta)
     integrale = integrale_de_1_sur_a_plus_cosinus(a)
-    facteurs = -2 * sp.I / ((Z - alpha) * (Z - beta))
+    facteurs = f_factorisee(alpha, beta)
     factorisee = integrale_par_les_residus(facteurs, Z, (alpha,))
     assert sp.simplify(integrale - factorisee) == 0
-    imprimee = integrale_par_les_residus(
-        -sp.I / ((Z - alpha) * (Z - beta)), Z, (alpha,)
-    )
+    imprimee = integrale_par_les_residus(f_imprimee(alpha, beta), Z, (alpha,))
     assert sp.simplify(integrale - 2 * imprimee) == 0
     assert sp.simplify(integrale - imprimee) != 0
     assert float(integrale) == pytest.approx(

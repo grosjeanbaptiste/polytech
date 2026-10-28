@@ -61,7 +61,7 @@ def test_les_racines_de_l_exemple_9_17_sont_celles_de_l_equation_ecrite() -> Non
     Le syllabus ecrit `K(D) = D2 + 3 D + 3`, qui n'a aucune racine reelle.
     """
     assert OperateurDifferentiel(D**2 + 3 * D + 2).racines() == {-2: 1, -1: 1}
-    assert sp.discriminant(D**2 + 3 * D + 3, D) == -3
+    assert OperateurDifferentiel(D**2 + 3 * D + 3).discriminant() == -3
     imprime = OperateurDifferentiel(D**2 + 3 * D + 3).racines()
     assert all(not racine.is_real for racine in imprime)
 

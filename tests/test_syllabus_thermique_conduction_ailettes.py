@@ -183,9 +183,9 @@ def test_le_profil_parabolique_d_un_barreau_generateur() -> None:
     barreau = BarreauGenerateur(generation=Q, rayon=R, conductivite=LAMBDA)
     profil = barreau.profil(RAYON, surface=T0)
     assert isinstance(profil, sp.Expr)
-    cylindrique = sp.diff(profil, RAYON, 2) + sp.diff(profil, RAYON) / RAYON
-    assert sp.simplify(cylindrique + Q / LAMBDA) == 0
-    assert sp.simplify(cylindrique - Q / LAMBDA) != 0
+    assert barreau.residu_de_l_equation(profil, RAYON) == 0
+    assert barreau.residu_avec_le_signe_imprime(profil, RAYON) != 0
+    assert barreau.residu_avec_le_signe_imprime(profil, RAYON) == -2 * Q / LAMBDA
     assert profil.subs(RAYON, R) == T0
     assert sp.diff(profil, RAYON).subs(RAYON, 0) == 0
     assert barreau.echauffement_au_centre() == Q * R**2 / (4 * LAMBDA)

@@ -19,6 +19,9 @@ from polytech.thermique.domain.coefficient_global import (
     coefficient_de_rayonnement_exact,
     coefficient_de_rayonnement_linearise,
 )
+from polytech.thermique.domain.rayonnement.cordes_croisees import (
+    corde_croisee_de_deux_tubes,
+)
 from polytech.thermique.domain.rayonnement.corps_noir import (
     emittance,
     longueur_d_onde_du_maximum,
@@ -71,7 +74,7 @@ def test_le_facteur_entre_deux_cylindres_de_la_planche_19(
     facteur 2 ».
     """
     facteur = aire_entre_deux_tubes(1.0, rapport) / math.pi
-    ferme = (math.sqrt(rapport**2 - 1) + math.asin(1 / rapport) - rapport) / math.pi
+    ferme = (corde_croisee_de_deux_tubes(1.0, rapport) - rapport) / math.pi
     assert facteur == pytest.approx(ferme)
     assert facteur == pytest.approx(lu, abs=0.003)
 

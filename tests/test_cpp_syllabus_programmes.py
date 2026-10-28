@@ -52,6 +52,9 @@ from polytech.algorithmique.domain.surcharge import (
 from polytech.algorithmique.domain.types_cpp import TYPES_ENTIERS, diviser
 
 PI_DU_SYLLABUS = 3.141596
+"""Programmes 2.3 a 2.8, pages 15 a 19 : la constante telle que le syllabus l'ecrit."""
+PI_A_SEPT_CHIFFRES = float(ecrire_un_reel(math.pi, 7))
+"""3.141593 : pi arrondi a sept chiffres, comme `cout` le ferait (bibliotheque)."""
 FICHIER_DE_LA_PAGE_80 = "1 2 3 4 5\n6 7 8 9\n10 11 12\n13 14\n15"
 
 
@@ -75,8 +78,12 @@ def test_la_surface_et_la_circonference_du_programme_2_8() -> None:
 def test_la_constante_pi_du_syllabus_est_fautive() -> None:
     """Ecart : `3.141596` pour 3.141593 ; avec pi, la surface serait 78.5398."""
     assert ecrire_un_reel(math.pi, 7) == "3.141593"
+    assert pytest.approx(3.141593, abs=1e-9) == PI_A_SEPT_CHIFFRES
     assert ecrire_un_reel(disque_du_syllabus(math.pi, 5).surface) == "78.5398"
     assert ecrire_un_reel(disque_du_syllabus(math.pi, 5).circonference) == "31.4159"
+    assert (
+        ecrire_un_reel(disque_du_syllabus(PI_A_SEPT_CHIFFRES, 5).surface) == "78.5398"
+    )
     with pytest.raises(ValueError, match="rayon negatif"):
         disque_du_syllabus(math.pi, -1)
 

@@ -22,6 +22,8 @@ from polytech.fluides.domain.statique.manometre import Manometre, Sens, Troncon
 from polytech.fluides.domain.statique.pressions import (
     ATMOSPHERE,
     BAR,
+    en_atmospheres,
+    en_bars,
     force_de_la_presse,
     hauteur_barometrique,
     pression_absolue,
@@ -42,6 +44,14 @@ def test_les_unites_de_pression_de_la_planche_4() -> None:
     """`1 bar = 10^5 Pa`, `1 atm = 101 325 Pa`."""
     assert BAR == 1e5
     assert ATMOSPHERE == 101_325.0
+
+
+def test_les_conversions_en_bars_et_en_atmospheres() -> None:
+    """Planche 4 : une atmosphere vaut 1,01325 bar ; un bar, 0,98692 atm."""
+    assert en_bars(ATMOSPHERE) == pytest.approx(1.01325, rel=1e-12)
+    assert en_atmospheres(BAR) == pytest.approx(0.986923, abs=5e-7)
+    assert en_bars(0.0) == 0.0
+    assert en_atmospheres(en_bars(ATMOSPHERE) * BAR) == pytest.approx(1.0, rel=1e-12)
 
 
 def test_pression_relative_et_vide_se_mesurent_depuis_l_atmosphere() -> None:
@@ -78,8 +88,8 @@ def test_la_fosse_des_mariannes() -> None:
     assert pression.pascals == pytest.approx(110e6)
     assert pression.pascals * 4 == pytest.approx(440e6)
     assert pression.pascals * 1e-4 == pytest.approx(11e3)
-    assert pression.pascals / BAR == pytest.approx(1100.0)
-    assert pression.pascals / ATMOSPHERE == pytest.approx(1086.0, abs=1.0)
+    assert en_bars(pression.pascals) == pytest.approx(1100.0)
+    assert round(en_atmospheres(pression.pascals)) == 1086
 
 
 def test_la_presse_hydraulique_multiplie_la_force_par_le_rapport_des_aires() -> None:

@@ -69,3 +69,13 @@ def sortie_du_fluide_froid(chaude: float, froide: float, rendement_2: float) -> 
     """`t_2S = t_2E + eta_2 (t_1E - t_2E)`, avec `eta_2 = R_1 eta_1`."""
     _exiger_un_rendement(rendement_2)
     return froide + rendement_2 * (chaude - froide)
+
+
+def echauffement(entree: float, sortie: float) -> float:
+    """`t_S - t_E` : positif si le fluide s'echauffe, negatif s'il se refroidit."""
+    return sortie - entree
+
+
+def temperature_moyenne_du_fluide(entree: float, sortie: float) -> float:
+    """`(t_E + t_S) / 2` : la moyenne arithmetique des temperatures d'un fluide."""
+    return (entree + sortie) / 2

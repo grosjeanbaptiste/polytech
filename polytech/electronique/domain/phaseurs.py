@@ -16,6 +16,7 @@ arg H(j w))`. L'analyse ne dit rien du transitoire.
 
 from __future__ import annotations
 
+import cmath
 import math
 
 import sympy as sp
@@ -33,6 +34,12 @@ def signal_du_phaseur(complexe: sp.Expr, pulsation: sp.Expr, temps: sp.Expr) -> 
     """`Re[P e^(j w t)]` : le signal que le phaseur represente."""
     tournant = sp.expand_complex(complexe * sp.exp(sp.I * pulsation * temps))
     return sp.simplify(sp.re(tournant))
+
+
+def phase_de_la_sortie(phase_entree: float, dephasage: float) -> float:
+    """`phi + arg H`, en degres, ramenee dans `]-180, 180]`."""
+    produit = cmath.rect(1.0, math.radians(phase_entree + dephasage))
+    return math.degrees(cmath.phase(produit))
 
 
 def somme_de_sinus(

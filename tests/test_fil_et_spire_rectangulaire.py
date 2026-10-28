@@ -33,6 +33,7 @@ from polytech.electromagnetisme.domain.magnetostatique.fil_et_spire import (
     induction_du_fil,
     resultante,
 )
+from polytech.maths.domain.comparaison import egales, est_negative, est_positive
 
 PERMEABILITE = sp.Symbol("mu_0", positive=True)
 COURANT_DU_FIL = sp.Symbol("I_1", positive=True)
@@ -59,7 +60,7 @@ def test_l_induction_du_fil_entre_dans_la_page_du_cote_de_la_spire() -> None:
     abscisse = sp.Symbol("x", positive=True)
     induction = induction_du_fil(COURANT_DU_FIL, abscisse, PERMEABILITE)
     attendue = -PERMEABILITE * COURANT_DU_FIL / (2 * sp.pi * abscisse)
-    assert sp.simplify(induction - attendue) == 0
+    assert egales(induction, attendue)
 
 
 def test_le_flux_est_celui_du_manuscrit() -> None:
@@ -72,7 +73,7 @@ def test_le_flux_est_celui_du_manuscrit() -> None:
         * sp.log(DISTANCE / (LARGEUR + DISTANCE))
     )
     obtenu = SPIRE.flux(COURANT_DU_FIL, PERMEABILITE)
-    assert sp.simplify(sp.expand_log(obtenu - attendu, force=True)) == 0
+    assert egales(sp.expand_log(obtenu - attendu, force=True), 0)
 
 
 def test_l_inductance_mutuelle_est_celle_qu_encadre_le_manuscrit() -> None:
@@ -81,7 +82,7 @@ def test_l_inductance_mutuelle_est_celle_qu_encadre_le_manuscrit() -> None:
         PERMEABILITE * HAUTEUR / (2 * sp.pi) * sp.log(DISTANCE / (LARGEUR + DISTANCE))
     )
     obtenue = SPIRE.inductance_mutuelle(PERMEABILITE)
-    assert sp.simplify(sp.expand_log(obtenue - attendue, force=True)) == 0
+    assert egales(sp.expand_log(obtenue - attendue, force=True), 0)
 
 
 def test_l_inductance_mutuelle_est_negative_avec_cette_normale() -> None:
@@ -94,7 +95,7 @@ def test_l_inductance_mutuelle_est_negative_avec_cette_normale() -> None:
     oppose = -SPIRE.inductance_mutuelle(PERMEABILITE)
     reference = PERMEABILITE * HAUTEUR / (2 * sp.pi) * sp.log(1 + LARGEUR / DISTANCE)
     echelle = 2 * sp.pi / (PERMEABILITE * HAUTEUR)
-    assert sp.simplify(sp.exp(oppose * echelle) - sp.exp(reference * echelle)) == 0
+    assert egales(sp.exp(oppose * echelle), sp.exp(reference * echelle))
     assert reference.is_positive
 
 
@@ -107,14 +108,14 @@ def test_l_inductance_mutuelle_s_eteint_quand_la_spire_s_eloigne() -> None:
 def test_la_force_sur_le_cote_gauche_repousse_la_spire() -> None:
     """Courants antiparalleles : `+ mu_0 I_1 I_2 b / (2 pi d)` selon `u_x`."""
     force_x, force_y = _forces()["gauche"]
-    assert sp.simplify(force_x - FACTEUR / DISTANCE) == 0
+    assert egales(force_x, FACTEUR / DISTANCE)
     assert force_y == 0
 
 
 def test_la_force_sur_le_cote_droit_attire_la_spire() -> None:
     """Courants paralleles : `- mu_0 I_1 I_2 b / (2 pi (a + d))` selon `u_x`."""
     force_x, force_y = _forces()["droit"]
-    assert sp.simplify(force_x + FACTEUR / (LARGEUR + DISTANCE)) == 0
+    assert egales(force_x, -(FACTEUR / (LARGEUR + DISTANCE)))
     assert force_y == 0
 
 
@@ -128,8 +129,8 @@ def test_les_cotes_haut_et_bas_portent_chacun_une_force_non_nulle() -> None:
     bas = _forces()["bas"]
     assert haut[0] == 0
     assert bas[0] == 0
-    assert sp.simplify(haut[1]) != 0
-    assert sp.simplify(haut[1] + bas[1]) == 0
+    assert not egales(haut[1], 0)
+    assert egales(haut[1] + bas[1], 0)
 
 
 def test_les_quatre_forces_poussent_vers_l_interieur_de_la_spire() -> None:
@@ -149,18 +150,18 @@ def test_les_quatre_forces_poussent_vers_l_interieur_de_la_spire() -> None:
         cote: (f[0].subs(a_egal_d), f[1].subs(a_egal_d))
         for cote, f in _forces().items()
     }
-    assert sp.simplify(forces["haut"][1]).is_negative
-    assert sp.simplify(forces["bas"][1]).is_positive
-    assert sp.simplify(forces["gauche"][0]).is_positive
-    assert sp.simplify(forces["droit"][0]).is_negative
+    assert est_negative(forces["haut"][1])
+    assert est_positive(forces["bas"][1])
+    assert est_positive(forces["gauche"][0])
+    assert est_negative(forces["droit"][0])
 
 
 def test_la_resultante_est_celle_qu_encadre_le_manuscrit() -> None:
     """`F = (mu_0 I_1 I_2 b / 2 pi) a / (d (a + d))` selon `u_x`."""
     force_x, force_y = resultante(_forces())
     attendue = FACTEUR * LARGEUR / (DISTANCE * (LARGEUR + DISTANCE))
-    assert sp.simplify(force_x - attendue) == 0
-    assert sp.simplify(force_y) == 0
+    assert egales(force_x, attendue)
+    assert egales(force_y, 0)
 
 
 def test_les_travaux_virtuels_redonnent_la_meme_force() -> None:
@@ -176,14 +177,14 @@ def test_les_travaux_virtuels_redonnent_la_meme_force() -> None:
         COURANT_DE_LA_SPIRE,
         PERMEABILITE,
     )
-    assert sp.simplify(directe[0] - virtuelle[0]) == 0
+    assert egales(directe[0], virtuelle[0])
     assert virtuelle[1] == 0
 
 
 def test_la_force_repousse_la_spire_parce_que_le_cote_proche_l_emporte() -> None:
     """La resultante est positive : le cote gauche est plus pres du fil."""
     force_x, _ = resultante(_forces())
-    assert sp.simplify(force_x).is_positive
+    assert est_positive(force_x)
 
 
 def test_au_loin_la_force_est_le_moment_fois_le_gradient() -> None:

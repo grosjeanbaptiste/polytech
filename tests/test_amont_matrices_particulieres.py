@@ -110,4 +110,5 @@ def test_la_rotation_de_la_page_5_et_ses_deux_coquilles() -> None:
     assert serie[0, 0] == sum(c * THETA**i for i, c in enumerate(cosinus))
     rotation = rotation_plane.rotation(THETA)
     obtenue = exponentielle.par_jordan(generatrice)
-    assert sp.simplify((obtenue - rotation).rewrite(sp.exp)).is_zero_matrix
+    assert rotation_plane.est_la_rotation(obtenue, THETA)
+    assert not rotation_plane.est_la_rotation(rotation.T, THETA)  # sens inverse

@@ -15,6 +15,7 @@ from __future__ import annotations
 import pytest
 import sympy as sp
 
+from polytech.maths.domain.comparaison import egales
 from polytech.maths.domain.differentielles.formes_sinusoidales import (
     en_cosinus,
     en_sinus,
@@ -36,11 +37,11 @@ exp, cos, sin, sqrt = sp.exp, sp.cos, sp.sin, sp.sqrt
 
 
 def _annule(operateur: OperateurDifferentiel, fonction: sp.Expr) -> bool:
-    return bool(sp.simplify(operateur.appliquer(fonction)) == 0)
+    return egales(operateur.appliquer(fonction), 0)
 
 
 def _rend(operateur: OperateurDifferentiel, fonction: sp.Expr, second: sp.Expr) -> bool:
-    return bool(sp.simplify(operateur.appliquer(fonction) - second) == 0)
+    return egales(operateur.appliquer(fonction), second)
 
 
 def test_la_composition_des_operateurs_est_le_produit_des_polynomes() -> None:
@@ -54,7 +55,7 @@ def test_composer_deux_operateurs_c_est_les_appliquer_l_un_apres_l_autre() -> No
     a, b = OperateurDifferentiel(D + 1), OperateurDifferentiel(D**2 + D + 1)
     fonction = T**3 * exp(2 * T)
     l_un_apres_l_autre = a.appliquer(b.appliquer(fonction))
-    assert sp.simplify(l_un_apres_l_autre - a.composer(b).appliquer(fonction)) == 0
+    assert egales(l_un_apres_l_autre, a.composer(b).appliquer(fonction))
 
 
 def test_un_operateur_differentiel_est_lineaire() -> None:
@@ -63,7 +64,7 @@ def test_un_operateur_differentiel_est_lineaire() -> None:
     y1, y2 = sin(T), T**2
     ensemble = operateur.appliquer(5 * y1 - 7 * y2)
     separes = 5 * operateur.appliquer(y1) - 7 * operateur.appliquer(y2)
-    assert sp.simplify(ensemble - separes) == 0
+    assert egales(ensemble, separes)
 
 
 @pytest.mark.parametrize(
@@ -156,7 +157,7 @@ def test_la_solution_particuliere_de_l_exemple_1_14() -> None:
     operateur = OperateurDifferentiel(D**2 + 1)
     assert operateur.decaler(-1) == OperateurDifferentiel(D**2 - 2 * D + 2)
     particuliere = pour_un_polynome_module(operateur, T, -1)
-    assert sp.simplify(particuliere - exp(-T) * (T + 1) / 2) == 0
+    assert egales(particuliere, exp(-T) * (T + 1) / 2)
     assert _rend(operateur, particuliere, T * exp(-T))
 
 
@@ -178,7 +179,7 @@ def test_une_exponentielle_racine_se_traite_par_le_polynome_module() -> None:
     """`y'' - y = e^t` : `y = e^t z`, `K(D + 1) z = 1`, `z = t/2`."""
     operateur = OperateurDifferentiel(D**2 - 1)
     particuliere = pour_un_polynome_module(operateur, sp.Integer(1), 1)
-    assert sp.simplify(particuliere - T * exp(T) / 2) == 0
+    assert egales(particuliere, T * exp(T) / 2)
     assert _rend(operateur, particuliere, exp(T))
 
 
@@ -187,7 +188,7 @@ def test_la_premiere_sollicitation_de_l_exemple_1_17() -> None:
     operateur = OperateurDifferentiel(D**2 + 3 * D + 2)
     assert operateur.racines() == {-1: 1, -2: 1}
     particuliere = pour_une_sinusoide(operateur, cos, 1)
-    assert sp.simplify(particuliere - (cos(T) + 3 * sin(T)) / 10) == 0
+    assert egales(particuliere, (cos(T) + 3 * sin(T)) / 10)
     assert _rend(operateur, particuliere, cos(T))
 
 
@@ -201,9 +202,7 @@ def test_la_solution_imprimee_page_30_porte_un_signe_faux() -> None:
     operateur = OperateurDifferentiel(D**2 + 3 * D + 2)
     imprimee = (cos(T) - 3 * sin(T)) / 10
     assert not _rend(operateur, imprimee, cos(T))
-    assert (
-        sp.simplify(operateur.appliquer(imprimee) + (4 * cos(T) + 3 * sin(T)) / 5) == 0
-    )
+    assert egales(operateur.appliquer(imprimee), -(4 * cos(T) + 3 * sin(T)) / 5)
     assert OperateurDifferentiel(D**2 + 3 * D + 3).racines() != {-1: 1, -2: 1}
 
 
@@ -212,7 +211,7 @@ def test_le_principe_de_superposition_de_l_exemple_1_17() -> None:
     operateur = OperateurDifferentiel(D**2 + 3 * D + 2)
     deuxieme = pour_un_polynome_module(operateur, T, -1)
     troisieme = pour_un_polynome(operateur, T**2)
-    assert sp.simplify(deuxieme - (T**2 / 2 - T) * exp(-T)) == 0
+    assert egales(deuxieme, (T**2 / 2 - T) * exp(-T))
     assert sp.expand(troisieme - (T**2 / 2 - R(3, 2) * T + R(7, 4))) == 0
     somme = pour_une_sinusoide(operateur, cos, 1) + deuxieme + troisieme
     assert _rend(operateur, somme, cos(T) + T * exp(-T) + T**2)
@@ -234,7 +233,7 @@ def test_une_sinusoide_a_la_pulsation_propre_donne_une_reponse_qui_croit() -> No
     """`y'' + y = cos t` : `K(j) = 0`, c'est la resonance -- `y = (t/2) sin t`."""
     operateur = OperateurDifferentiel(D**2 + 1)
     particuliere = pour_une_sinusoide(operateur, cos, 1)
-    assert sp.simplify(particuliere - T / 2 * sin(T)) == 0
+    assert egales(particuliere, T / 2 * sin(T))
     assert _rend(operateur, particuliere, cos(T))
 
 
@@ -253,8 +252,8 @@ def test_les_formes_dephasees_redonnent_la_forme_en_cosinus_et_sinus(
     amplitude, phi = en_sinus(a, b)
     autre_amplitude, psi = en_cosinus(a, b)
     assert amplitude == autre_amplitude == sqrt(a**2 + b**2)
-    assert sp.simplify(sp.expand_trig(amplitude * sin(T + phi)) - reference) == 0
-    assert sp.simplify(sp.expand_trig(amplitude * cos(T + psi)) - reference) == 0
+    assert egales(sp.expand_trig(amplitude * sin(T + phi)), reference)
+    assert egales(sp.expand_trig(amplitude * cos(T + psi)), reference)
 
 
 def test_les_deux_dephasages_different_de_pi_sur_deux() -> None:
@@ -267,8 +266,8 @@ def test_les_deux_dephasages_different_de_pi_sur_deux() -> None:
         _, phi = en_sinus(a, b)
         _, psi = en_cosinus(a, b)
         ecart = phi - psi
-        assert sp.simplify(sp.expand_trig(sin(ecart))) == 1
-        assert sp.simplify(sp.expand_trig(cos(ecart))) == 0
+        assert egales(sin(ecart), 1)
+        assert egales(cos(ecart), 0)
 
 
 def test_une_amplitude_nulle_n_a_pas_de_dephasage() -> None:

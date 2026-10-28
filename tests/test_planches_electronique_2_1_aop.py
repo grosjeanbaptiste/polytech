@@ -121,7 +121,7 @@ def test_l_impedance_de_sortie_du_non_inverseur() -> None:
         RO, AV, vers_la_masse=1e3, contre_reaction=99e3, entree=RIN
     )
     assert nodale == pytest.approx(exacte, rel=1e-7)
-    assert exacte == pytest.approx(RO * 100.0 / AV, rel=0.02)
+    assert exacte == pytest.approx(RO * gain_non_inverseur(1e3, 99e3) / AV, rel=0.02)
     assert exacte == pytest.approx(0.991, abs=5e-4)
     imprimee = impedance_de_sortie_du_non_inverseur(
         RO,
@@ -281,7 +281,10 @@ def test_la_charge_ramene_a_l_entree_ce_qu_elle_retire_a_la_boucle() -> None:
         assert chargee == pytest.approx(
             _entree_du_non_inverseur_charge(charge), rel=1e-6
         )
-        exacte = a_vide / (1 + (ouverte / charge) / (1 + fermee / charge))
+        # gains = 1 : le rapport A_ol / A_cl que la planche 50 divise est ote
+        exacte = impedance_d_entree_chargee_selon_la_planche_50(
+            a_vide, ouverte, fermee, charge, 1.0
+        )
         assert chargee == pytest.approx(exacte, rel=0.02)
 
     def de_la_planche(charge: float) -> float:

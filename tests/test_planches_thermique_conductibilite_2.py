@@ -30,6 +30,7 @@ from polytech.thermique.domain.conduction.generation import (
     chute_dans_une_gaine,
     chute_de_convection,
     flux_lineique,
+    temperatures_du_crayon,
 )
 
 X = sp.Symbol("x", nonnegative=True)
@@ -144,23 +145,27 @@ def test_les_resultats_du_crayon_de_la_planche_24() -> None:
     assert gaine == pytest.approx(61.34, abs=0.005)  # la planche imprime 61,2
     ebullition = chute_de_convection(800e6, 0.0077, 0.0089, echange=25000.0)
     assert ebullition == pytest.approx(53.29, abs=0.005)  # la planche imprime 53,2
-    face_externe = 335.0 + ebullition
+    face_externe, _, centre = temperatures_du_crayon(
+        CRAYON, 0.00445, conductivite_de_gaine=14.0, echange=25000.0, fluide=335.0
+    )
     assert face_externe == pytest.approx(388.0, abs=0.5)
-    assert face_externe + gaine + au_centre == pytest.approx(2148.5, abs=0.1)
-    assert face_externe + gaine + au_centre == pytest.approx(2145.0, abs=3.6)
+    assert centre == pytest.approx(2148.5, abs=0.1)
+    assert centre == pytest.approx(2145.0, abs=3.6)
 
 
 def test_la_planche_24_imprime_459_pour_449() -> None:
     """`t_1 = t_2 + 61,2 = 449 degres`. La planche ecrit 459 ; son `t_c` suppose 449."""
-    ebullition = chute_de_convection(800e6, 0.0077, 0.0089, echange=25000.0)
-    gaine = chute_dans_une_gaine(800e6, 0.0077, 0.0089, conductivite=14.0)
-    premiere = 335.0 + ebullition + gaine
+    _, premiere, centre = temperatures_du_crayon(
+        CRAYON, 0.00445, conductivite_de_gaine=14.0, echange=25000.0, fluide=335.0
+    )
     assert premiere == pytest.approx(449.63, abs=0.01)
-    centre = float(CRAYON.echauffement_au_centre())
-    assert premiere + centre == pytest.approx(2148.5, abs=0.1)
-    assert premiere + centre - 2145.0 == pytest.approx(3.5, abs=0.1)
-    assert 459.0 + centre == pytest.approx(2157.9, abs=0.1)
-    assert 459.0 + centre - 2145.0 == pytest.approx(12.9, abs=0.1)
+    assert centre == pytest.approx(2148.5, abs=0.1)
+    assert centre - 2145.0 == pytest.approx(3.5, abs=0.1)
+    # La planche imprime 459 pour t_1 : le centre qu'elle en tire.
+    assert float(CRAYON.temperature_au_centre(459.0)) == pytest.approx(2157.9, abs=0.1)
+    assert float(CRAYON.temperature_au_centre(459.0)) - 2145.0 == pytest.approx(
+        12.9, abs=0.1
+    )
 
 
 def test_la_dissipation_est_de_quelques_centaines_de_megawatts() -> None:

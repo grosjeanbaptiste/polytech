@@ -16,6 +16,7 @@ import sympy as sp
 
 from polytech.electromagnetisme.domain.circuits.enclenchement import enclenchement
 from polytech.electromagnetisme.domain.symboles import TEMPS as TEMPS_DES_CIRCUITS
+from polytech.maths.domain.comparaison import egales
 from polytech.maths.domain.laplace.heaviside import (
     fractions_simples,
     par_fractions_simples,
@@ -37,12 +38,10 @@ def test_la_reponse_indicielle_du_circuit_rc() -> None:
     """`R i + (1/C) int i = H(t)` : `I = (1/R) / (p + 1/(CR))`, `i = e^(-t/CR) / R`."""
     resistance, capacite = sp.symbols("R C", positive=True)
     image = (1 / P) / (resistance + 1 / (capacite * P))
-    assert (
-        sp.simplify(image - (1 / resistance) / (P + 1 / (capacite * resistance))) == 0
-    )
+    assert egales(image, (1 / resistance) / (P + 1 / (capacite * resistance)))
     courant = par_fractions_simples(image)
     attendu = sp.exp(-T / (capacite * resistance)) / resistance
-    assert sp.simplify(courant - attendu) == 0
+    assert egales(courant, attendu)
 
 
 def test_la_valeur_initiale_du_courant_sans_inverser() -> None:
@@ -59,7 +58,7 @@ def test_le_condensateur_se_charge_comme_le_dit_l_enclenchement_des_circuits() -
     tension = enclenchement(sp.Integer(1), sp.Integer(0), resistance * capacite)
     courant = capacite * sp.diff(tension, TEMPS_DES_CIRCUITS)
     attendu = sp.exp(-TEMPS_DES_CIRCUITS / (capacite * resistance)) / resistance
-    assert sp.simplify(courant - attendu) == 0
+    assert egales(courant, attendu)
 
 
 def test_la_stabilite_se_lit_sur_les_poles_de_p_f() -> None:
@@ -88,9 +87,9 @@ def test_les_residus_ecrits_page_105_sont_faux() -> None:
     assert set(fractions_simples(TRANSFERT / P)) == justes
     reponse = par_fractions_simples(TRANSFERT / P)
     attendue = R(1, 6) - sp.exp(-2 * T) / 2 + sp.exp(-3 * T) / 3
-    assert sp.simplify(reponse - attendue) == 0
+    assert egales(reponse, attendue)
     assert reponse.subs(T, 0) == 0
     ecrite = R(1, 6) + sp.exp(-2 * T) - sp.exp(-3 * T)
     assert ecrite.subs(T, 0) == R(1, 6)
     imprimee = R(1, 6) / P + 1 / (P + 2) - 1 / (P + 3)
-    assert sp.simplify(imprimee - TRANSFERT / P) != 0
+    assert not egales(imprimee, TRANSFERT / P)

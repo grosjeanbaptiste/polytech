@@ -15,6 +15,7 @@ from __future__ import annotations
 import pytest
 import sympy as sp
 
+from polytech.maths.domain.comparaison import egales
 from polytech.maths.domain.edp.classification import (
     Condition,
     Type,
@@ -57,20 +58,20 @@ def test_les_solutions_generales_de_la_page_156() -> None:
     primitive = sp.Integral(F(Y), Y)
     assert sp.diff(primitive + G(X), Y).doit() == F(Y)
     produit = Y * F(X)
-    assert sp.simplify(produit - Y * sp.diff(produit, Y)) == 0
+    assert egales(produit, Y * sp.diff(produit, Y))
 
 
 def test_la_solution_generale_de_l_equation_des_ondes_normalisee() -> None:
     """`u_xx = u_yy` : `u = f(x + y) + g(x - y)`."""
     u = F(X + Y) + G(X - Y)
-    assert sp.simplify(sp.diff(u, X, 2).doit() - sp.diff(u, Y, 2).doit()) == 0
+    assert egales(sp.diff(u, X, 2).doit(), sp.diff(u, Y, 2).doit())
 
 
 def test_la_forme_imprimee_page_156_n_est_pas_solution() -> None:
     """Le syllabus ecrit `f(x, y) + g(x - y)` : une `f` de deux variables echoue."""
     quelconque = X**2 * Y + G(X - Y)
     ecart = sp.diff(quelconque, X, 2).doit() - sp.diff(quelconque, Y, 2).doit()
-    assert sp.simplify(ecart) == 2 * Y
+    assert egales(ecart, 2 * Y)
 
 
 def test_le_laplacien_et_les_fonctions_harmoniques() -> None:
@@ -84,7 +85,7 @@ def test_le_laplacien_et_les_fonctions_harmoniques() -> None:
 def test_le_dalembertien_annule_les_ondes_progressives() -> None:
     """`Delta u - u_tt / c^2 = 0` pour `F(x - ct) + G(x + ct)`."""
     onde = F(X - C * T) + G(X + C * T)
-    assert sp.simplify(dalembertien(onde, (X,), T, C).doit()) == 0
+    assert egales(dalembertien(onde, (X,), T, C).doit(), 0)
     assert dalembertien(X**2 * T**2, (X,), T, C) == 2 * T**2 - 2 * X**2 / C**2
 
 
@@ -92,9 +93,9 @@ def test_les_equations_de_la_chaleur_et_de_helmholtz() -> None:
     """`Delta u = u_t / k` et `Delta u + lambda u = 0`, sur une solution de chacune."""
     k, lam = sp.symbols("k lambda", positive=True)
     chaleur = sp.exp(-k * T) * sp.sin(X)
-    assert sp.simplify(laplacien(chaleur, (X,)) - sp.diff(chaleur, T) / k) == 0
+    assert egales(laplacien(chaleur, (X,)), sp.diff(chaleur, T) / k)
     stationnaire = sp.sin(sp.sqrt(lam) * X)
-    assert sp.simplify(laplacien(stationnaire, (X,)) + lam * stationnaire) == 0
+    assert egales(laplacien(stationnaire, (X,)), -(lam * stationnaire))
 
 
 def test_la_constante_de_separation_de_la_barre() -> None:
@@ -103,7 +104,7 @@ def test_la_constante_de_separation_de_la_barre() -> None:
         valeur = constante_de_separation(rang, 2)
         assert valeur == -(rang**2) * sp.pi**2 / 4
         mode = sp.sin(rang * sp.pi * X / 2)
-        assert sp.simplify(sp.diff(mode, X, 2) - valeur * mode) == 0
+        assert egales(sp.diff(mode, X, 2), valeur * mode)
         assert mode.subs(X, 0) == mode.subs(X, 2) == 0
 
 
@@ -114,8 +115,8 @@ def test_un_mode_de_la_barre_de_la_page_159() -> None:
         attendu = sp.sin(rang * sp.pi * X / 2) * sp.exp(
             -R(3, 4) * rang**2 * sp.pi**2 * T
         )
-        assert sp.simplify(mode - attendu) == 0
-        assert sp.simplify(sp.diff(mode, T) - 3 * sp.diff(mode, X, 2)) == 0
+        assert egales(mode, attendu)
+        assert egales(sp.diff(mode, T), 3 * sp.diff(mode, X, 2))
         assert mode.subs(X, 0) == 0
         assert mode.subs(X, 2) == 0
 
@@ -130,17 +131,17 @@ def test_la_solution_de_la_barre_refroidie() -> None:
         * mode_de_diffusion(k, longueur=2, diffusivite=3)
         for k in (1, 2, 3)
     )
-    assert sp.simplify(solution - attendue) == 0
-    assert sp.simplify(sp.diff(solution, T) - 3 * sp.diff(solution, X, 2)) == 0
+    assert egales(solution, attendue)
+    assert egales(sp.diff(solution, T), 3 * sp.diff(solution, X, 2))
     assert solution.subs(X, 0) == 0
-    assert sp.simplify(solution.subs(X, 2)) == 0
+    assert egales(solution.subs(X, 2), 0)
 
 
 def test_la_condition_initiale_de_la_barre_est_une_serie_de_fourier() -> None:
     """Lien avec l'exemple 8.6 : en `t = 0`, la serie de sinus de `x` sur `[0, 2]`."""
     solution = diffusion_dans_une_barre(X, longueur=2, diffusivite=3, ordre=4)
     serie = prolongement_impair(X, 2)
-    assert sp.simplify(solution.subs(T, 0) - serie.somme_partielle(4)) == 0
+    assert egales(solution.subs(T, 0), serie.somme_partielle(4))
 
 
 def test_la_barre_refroidit_vers_zero() -> None:
@@ -218,7 +219,7 @@ def test_le_changement_de_variables_de_l_equation_d_euler() -> None:
         + c2 * sp.diff(quelconque, xi, eta)
         + c3 * sp.diff(quelconque, eta, 2)
     ).subs({xi: p * X + q * Y, eta: r * X + s * Y}, simultaneous=True)
-    assert sp.simplify(direct - transforme) == 0
+    assert egales(direct, transforme)
 
 
 def test_le_coefficient_croise_devient_deux_ab_moins_h2_sur_b() -> None:
@@ -230,9 +231,9 @@ def test_le_coefficient_croise_devient_deux_ab_moins_h2_sur_b() -> None:
     equation = EquationDEuler(1, 3, 2)
     premiere, seconde = equation.pentes()
     c1, c2, c3 = equation.coefficients_transformes(1, premiere, 1, seconde)
-    assert sp.simplify(c1) == 0
-    assert sp.simplify(c3) == 0
-    assert sp.simplify(c2 - 4 * discriminant(1, 3, 2) / 2) == 0
+    assert egales(c1, 0)
+    assert egales(c3, 0)
+    assert egales(c2, 4 * discriminant(1, 3, 2) / 2)
 
 
 def test_l_equation_des_ondes_par_l_equation_d_euler() -> None:
@@ -241,7 +242,7 @@ def test_l_equation_des_ondes_par_l_equation_d_euler() -> None:
     assert set(equation.pentes()) == {C, -C}
     assert equation.type() is Type.HYPERBOLIQUE
     generale = equation.solution_generale(F, G)
-    assert sp.simplify(equation.membre(generale).doit()) == 0
+    assert egales(equation.membre(generale).doit(), 0)
     assert generale.atoms(sp.Function) == {F(X + C * Y), G(X - C * Y)} or (
         generale.atoms(sp.Function) == {F(X - C * Y), G(X + C * Y)}
     )
@@ -252,7 +253,7 @@ def test_l_equation_de_laplace_par_l_equation_d_euler() -> None:
     equation = EquationDEuler(1, 0, 1)
     assert set(equation.pentes()) == {sp.I, -sp.I}
     assert equation.type() is Type.ELLIPTIQUE
-    assert sp.simplify(equation.membre(equation.solution_generale(F, G)).doit()) == 0
+    assert egales(equation.membre(equation.solution_generale(F, G)).doit(), 0)
     assert est_harmonique(sp.re(sp.expand((X + sp.I * Y) ** 3)), (X, Y))
 
 
@@ -263,7 +264,7 @@ def test_le_cas_parabolique_de_la_page_164() -> None:
     assert equation.type() is Type.PARABOLIQUE
     generale = equation.solution_generale(F, G)
     assert generale == F(X - Y / 2) + Y * G(X - Y / 2)
-    assert sp.simplify(equation.membre(generale).doit()) == 0
+    assert egales(equation.membre(generale).doit(), 0)
 
 
 def test_le_principe_du_maximum() -> None:
@@ -302,8 +303,8 @@ def test_un_mode_de_la_corde_vibrante() -> None:
     forme = sp.sin(sp.pi * X / longueur)
     corde = corde_vibrante(forme, sp.Integer(0), longueur=longueur, celerite=C, ordre=3)
     attendue = sp.cos(sp.pi * C * T / longueur) * forme
-    assert sp.simplify(corde - attendue) == 0
-    assert sp.simplify(dalembertien(corde, (X,), T, C)) == 0
+    assert egales(corde, attendue)
+    assert egales(dalembertien(corde, (X,), T, C), 0)
 
 
 def test_une_corde_lancee_sans_deplacement_initial() -> None:
@@ -316,8 +317,8 @@ def test_une_corde_lancee_sans_deplacement_initial() -> None:
     attendue = (
         longueur / (2 * sp.pi * C) * sp.sin(2 * sp.pi * C * T / longueur) * vitesse
     )
-    assert sp.simplify(corde - attendue) == 0
-    assert sp.simplify(sp.diff(corde, T).subs(T, 0) - vitesse) == 0
+    assert egales(corde, attendue)
+    assert egales(sp.diff(corde, T).subs(T, 0), vitesse)
     assert corde.subs(T, 0) == 0
 
 
@@ -335,9 +336,9 @@ def test_la_corde_pincee_en_son_milieu() -> None:
             - sp.cos(3 * sp.pi * T / 2) * sp.sin(3 * sp.pi * X / 2) / 9
         )
     )
-    assert sp.simplify(corde - attendue) == 0
+    assert egales(corde, attendue)
     assert corde.subs(X, 0) == 0
-    assert sp.simplify(corde.subs(X, 2)) == 0
+    assert egales(corde.subs(X, 2), 0)
 
 
 def test_un_mode_borne_de_la_demi_bande() -> None:
@@ -354,7 +355,7 @@ def test_la_transformee_en_cosinus_de_la_fenetre() -> None:
     """Page 169 : `int_0^1 cos(lambda t) dt = sin(lambda) / lambda`."""
     lam = sp.Symbol("lambda", positive=True)
     fenetre = sp.Piecewise((1, X <= 1), (0, True))
-    assert sp.simplify(transformee_en_cosinus(fenetre, lam) - sp.sin(lam) / lam) == 0
+    assert egales(transformee_en_cosinus(fenetre, lam), sp.sin(lam) / lam)
 
 
 def test_l_amplitude_de_la_demi_bande() -> None:
@@ -362,7 +363,7 @@ def test_l_amplitude_de_la_demi_bande() -> None:
     lam = sp.Symbol("lambda", positive=True)
     fenetre = sp.Piecewise((1, X <= 1), (0, True))
     amplitude = amplitude_de_la_demi_bande(fenetre, lam)
-    assert sp.simplify(amplitude - 2 * sp.sin(lam) / (sp.pi * lam * sp.cosh(lam))) == 0
+    assert egales(amplitude, 2 * sp.sin(lam) / (sp.pi * lam * sp.cosh(lam)))
 
 
 def test_la_solution_de_la_demi_bande_retrouve_la_fenetre_en_y_egal_un() -> None:
@@ -381,7 +382,7 @@ def test_la_solution_de_la_demi_bande_retrouve_la_fenetre_en_y_egal_un() -> None
     assert au_bord(sp.Integer(2)) == 0
     produit = sp.cos(lam * X) * sp.sin(lam)
     somme = (sp.sin((1 + X) * lam) + sp.sin((1 - X) * lam)) / 2
-    assert sp.simplify(sp.expand_trig(produit - somme)) == 0
+    assert egales(sp.expand_trig(produit - somme), 0)
 
 
 def test_une_equation_d_euler_sans_terme_en_u_yy_est_refusee() -> None:

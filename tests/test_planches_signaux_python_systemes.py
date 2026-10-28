@@ -13,10 +13,16 @@ from __future__ import annotations
 import math
 
 import numpy as np
-import pytest
 import sympy as sp
 
 from polytech.electronique.domain.montages import somme_ponderee
+from polytech.maths.domain.comparaison import (
+    egales,
+    exponentielle,
+    proches,
+    suite_nulle,
+    suites_proches,
+)
 from polytech.signaux.domain.composantes import nature_de_la_composante
 from polytech.signaux.domain.fluence import regle_de_mason
 from polytech.signaux.domain.forme_generale import mode_d_une_paire_conjuguee
@@ -55,14 +61,14 @@ def test_le_rappel_de_la_planche_4_une_transmittance_par_entree() -> None:
     sortie = sortie_par_superposition(
         {de_la_commande: commande, de_la_perturbation: perturbation}
     )
-    assert sp.simplify(sortie - (2 * commande - perturbation) / (P + 1)) == 0
+    assert egales(sortie, (2 * commande - perturbation) / (P + 1))
 
 
 def test_la_transmittance_est_la_transformee_de_la_reponse_impulsionnelle() -> None:
     """Planche 11 : « H(p) est aussi la transformee de Laplace de h(t) »."""
     transmittance = Transmittance(expression=(P + 3) / ((P + 1) * (P + 2)))
     reponse = ReponsesTemporelles(transmittance).impulsionnelle()
-    assert sp.simplify(transformee_de_laplace(reponse) - transmittance.expression) == 0
+    assert egales(transformee_de_laplace(reponse), transmittance.expression)
 
 
 def test_les_formes_generales_de_la_planche_14() -> None:
@@ -72,7 +78,7 @@ def test_les_formes_generales_de_la_planche_14() -> None:
     paire = mode_d_une_paire_conjuguee(residu(transmittance, pole), pole)
     reel = residu(transmittance, -1) * sp.exp(-T)
     ecart = sp.lambdify(T, paire + reel - original(transmittance), "numpy")
-    assert np.allclose(ecart(np.array([0.0, 0.4, 1.7])), 0, atol=1e-12)
+    assert suite_nulle(ecart(np.array([0.0, 0.4, 1.7])), 1e-12)
 
 
 def test_les_deux_ponderations_de_la_planche_17_ont_une_aire_unite() -> None:
@@ -86,11 +92,11 @@ def test_la_planche_19_signale_elle_meme_le_signe_de_la_regle_de_mason() -> None
     """« Erreur ! » sur le moins de `-K G / (1 + k G H)` ; le `k` minuscule reste."""
     gain, directe, retour = sp.symbols("K G H")
     fermee = regle_de_mason([gain * directe], [-gain * directe * retour])
-    assert sp.simplify(fermee - gain * directe / (1 + gain * directe * retour)) == 0
+    assert egales(fermee, gain * directe / (1 + gain * directe * retour))
     minuscule = sp.Symbol("k")
     imprimee = gain * directe / (1 + minuscule * directe * retour)
-    assert sp.simplify(fermee - imprimee) != 0
-    assert sp.simplify(fermee - imprimee.subs(minuscule, gain)) == 0
+    assert not egales(fermee, imprimee)
+    assert egales(fermee, imprimee.subs(minuscule, gain))
 
 
 def test_l_additionneur_de_la_planche_24_est_imprime_a_l_envers() -> None:
@@ -101,20 +107,20 @@ def test_l_additionneur_de_la_planche_24_est_imprime_a_l_envers() -> None:
     """
     contre_reaction, voies = 10e3, (2e3, 5e3)
     poids = somme_ponderee(contre_reaction, voies)
-    assert poids == pytest.approx((-5.0, -2.0))
+    assert suites_proches(poids, (-5.0, -2.0), 1e-6, relativement=True)
     imprimes = tuple(-voie / contre_reaction for voie in voies)
-    assert imprimes == pytest.approx((-0.2, -0.5))
+    assert suites_proches(imprimes, (-0.2, -0.5), 1e-6, relativement=True)
 
 
 def test_les_sorties_de_residue_des_planches_3_a_6() -> None:
     """`r = [-1, 1]`, `r = [0.5 - 0.25j, 0.5 + 0.25j]`, `p = [-2, -1]`."""
     valeurs, poles = residus([1.0], [1.0, 3.0, 2.0])
-    assert sorted(poles.real) == pytest.approx([-2.0, -1.0])
-    assert sorted(valeurs.real) == pytest.approx([-1.0, 1.0])
+    assert suites_proches(sorted(poles.real), [-2.0, -1.0], 1e-6, relativement=True)
+    assert suites_proches(sorted(valeurs.real), [-1.0, 1.0], 1e-6, relativement=True)
     valeurs, poles = residus([1.0, 1.0], [1.0, 0.0, 4.0])
-    assert sorted(poles.imag) == pytest.approx([-2.0, 2.0])
-    assert sorted(valeurs.imag) == pytest.approx([-0.25, 0.25])
-    assert valeurs.real == pytest.approx([0.5, 0.5])
+    assert suites_proches(sorted(poles.imag), [-2.0, 2.0], 1e-6, relativement=True)
+    assert suites_proches(sorted(valeurs.imag), [-0.25, 0.25], 1e-6, relativement=True)
+    assert suites_proches(valeurs.real, [0.5, 0.5], 1e-6, relativement=True)
 
 
 def test_la_decomposition_de_la_reponse_a_la_rampe() -> None:
@@ -122,9 +128,9 @@ def test_la_decomposition_de_la_reponse_a_la_rampe() -> None:
     systeme = PremierOrdre(gain=K, constante=TAU)
     image = systeme.de_bode().expression / P**2
     decomposee = K / P**2 - K * TAU / P + K * TAU / (P + 1 / TAU)
-    assert sp.simplify(image - decomposee) == 0
+    assert egales(image, decomposee)
     reponse = K * T - K * TAU + K * TAU * sp.exp(-T / TAU)
-    assert sp.simplify(reponse - systeme.reponse_a_la_rampe()) == 0
+    assert egales(reponse, systeme.reponse_a_la_rampe())
 
 
 def test_le_residu_harmonique_de_la_planche_15() -> None:
@@ -137,11 +143,11 @@ def test_le_residu_harmonique_de_la_planche_15() -> None:
     transmittance = PremierOrdre(gain, constante).de_bode().expression
     excitation = pulsation * sp.I
     exact = residu(transmittance / (P - excitation), excitation)
-    assert sp.simplify(exact - gain / (excitation * constante + 1)) == 0
+    assert egales(exact, gain / (excitation * constante + 1))
     bonne = sp.Rational(gain, constante) / (excitation + sp.Rational(1, constante))
-    assert sp.simplify(exact - bonne) == 0
+    assert egales(exact, bonne)
     fautive = sp.Rational(gain, constante) / (excitation * constante + 1)
-    assert sp.simplify(exact - constante * fautive) == 0
+    assert egales(exact, constante * fautive)
 
 
 def test_la_reponse_au_cosinus_de_la_planche_15() -> None:
@@ -150,7 +156,7 @@ def test_la_reponse_au_cosinus_de_la_planche_15() -> None:
     phase = -sp.atan(2 * 3)
     amplitude = 5 / sp.sqrt(2**2 * 3**2 + 1)
     imprimee = amplitude * (sp.cos(2 * T + phase) - sp.exp(-T / 3) * sp.cos(phase))
-    assert sp.simplify(imprimee - systeme.reponse_au_cosinus(2)) == 0
+    assert egales(imprimee, systeme.reponse_au_cosinus(2))
 
 
 def test_la_geometrie_des_poles_de_la_planche_16() -> None:
@@ -169,13 +175,13 @@ def test_le_circuit_rlc_serie_sous_un_echelon_de_la_planche_17() -> None:
     resistance, inductance, capacite = sp.symbols("R L C", positive=True)
     courant = (1 / P) / (P * inductance + resistance + 1 / (P * capacite))
     denominateur = P**2 * inductance * capacite + P * resistance * capacite + 1
-    assert sp.simplify(courant - capacite / denominateur) == 0
+    assert egales(courant, capacite / denominateur)
     systeme = SecondOrdre(capacite, sp.sqrt(inductance * capacite), sp.S.One)
     amortissement = resistance * capacite / (2 * sp.sqrt(inductance * capacite))
     reconstruit = SecondOrdre(capacite, systeme.constante, amortissement)
-    assert sp.simplify(reconstruit.de_bode().expression - capacite / denominateur) == 0
+    assert egales(reconstruit.de_bode().expression, capacite / denominateur)
     critique = resistance_critique(inductance, capacite)
-    assert sp.simplify(amortissement.subs(resistance, critique)) == 1
+    assert egales(amortissement.subs(resistance, critique), 1)
 
 
 def test_les_paires_de_poles_des_planches_19_et_20() -> None:
@@ -192,7 +198,7 @@ def test_les_paires_de_poles_des_planches_19_et_20() -> None:
     assert grave.d_evans()[1] == aigu.d_evans()[1] == 1
     assert aigu.pulsation_propre() == 3
     proche, loin = depuis(-1 + 2j), depuis(-3 + 6j)
-    assert sp.simplify(proche.amortissement - loin.amortissement) == 0
+    assert egales(proche.amortissement, loin.amortissement)
 
 
 def test_la_planche_22_a_perdu_le_carre_de_p() -> None:
@@ -207,14 +213,14 @@ def test_la_planche_22_a_perdu_le_carre_de_p() -> None:
         for xi in (0.1, 0.25, 0.5, 1.0)
     ]
     lus = [0.86, 0.71, 0.55, 0.37]
-    assert sommets == pytest.approx(lus, abs=0.005)
+    assert suites_proches(sommets, lus, 0.005)
     for xi, sommet in zip((0.1, 0.25, 0.5), sommets, strict=False):
         racine = math.sqrt(1 - xi**2)
-        assert sommet == pytest.approx(math.exp(-xi * math.acos(xi) / racine), abs=1e-6)
-    assert sommets[3] == pytest.approx(math.exp(-1), abs=1e-6)
+        assert proches(sommet, exponentielle(-xi * math.acos(xi) / racine), 1e-6)
+    assert proches(sommets[3], exponentielle(-1), 1e-6)
     demi = SecondOrdre(1, 1, sp.Rational(1, 2))
     symbolique = sp.lambdify(T, impulsionnelle(demi), "numpy")
-    assert float(np.max(symbolique(instants))) == pytest.approx(sommets[2], abs=1e-5)
+    assert proches(float(np.max(symbolique(instants))), sommets[2], 1e-5)
     sans_carre = 1 / (P + 2 * sp.Rational(1, 2) * P + 1)
     assert sp.degree(sp.fraction(sans_carre)[1], P) == 1
 
@@ -223,7 +229,7 @@ def test_la_periode_propre_de_la_planche_26() -> None:
     """`T_0 = 2 pi T / racine(1 - xi^2)`, soit `2 pi T` sans amortissement."""
     assert periode_propre(SecondOrdre(5, 1, 0)) == 2 * sp.pi
     amortie = periode_propre(SecondOrdre(5, 1, sp.Rational(1, 2)))
-    assert sp.simplify(amortie - 2 * sp.pi / sp.sqrt(sp.Rational(3, 4))) == 0
+    assert egales(amortie, 2 * sp.pi / sp.sqrt(sp.Rational(3, 4)))
 
 
 def test_la_planche_28_place_les_poles_du_mauvais_cote() -> None:
@@ -237,9 +243,9 @@ def test_la_planche_28_place_les_poles_du_mauvais_cote() -> None:
     premiere, seconde = 2, sp.Rational(1, 2)
     lente = premiere / (premiere - seconde) * sp.exp(-T / premiere)
     rapide = seconde / (seconde - premiere) * sp.exp(-T / seconde)
-    assert sp.simplify(indicielle(systeme) - 5 * (1 - lente - rapide)) == 0
+    assert egales(indicielle(systeme), 5 * (1 - lente - rapide))
     juste = 5 / ((P + 1 / sp.S(premiere)) * (P + 1 / seconde))
-    assert sp.simplify(systeme.de_bode().expression - juste) == 0
+    assert egales(systeme.de_bode().expression, juste)
     de_la_planche = 5 / ((P - 1 / sp.S(premiere)) * (P - 1 / seconde))
     assert nature_de_la_stabilite(juste) == "strictement stable"
     assert nature_de_la_stabilite(de_la_planche) == "instable"
@@ -253,7 +259,7 @@ def test_le_regime_harmonique_du_second_ordre_de_la_planche_32() -> None:
     module, phase = analyse.module(pulsation), analyse.argument(pulsation)
     regime = module * sp.cos(pulsation * T + phase)
     equation = 4 * sp.diff(regime, T, 2) + 2 * sp.diff(regime, T) + regime
-    assert sp.simplify(equation - 5 * sp.cos(pulsation * T)) == 0
+    assert egales(equation, 5 * sp.cos(pulsation * T))
 
 
 def test_un_systeme_d_ordre_trois_est_une_somme_d_ordres_un_et_deux() -> None:

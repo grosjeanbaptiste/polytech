@@ -41,10 +41,12 @@ from polytech.thermique.domain.integration_d_echangeur import (
 )
 from polytech.thermique.domain.rayonnement_equivalent import coefficient_du_gaz
 from polytech.thermique.domain.rendement_d_echangeur import (
+    echauffement,
     efficacite,
     rendement,
     sortie_du_fluide_chaud,
     sortie_du_fluide_froid,
+    temperature_moyenne_du_fluide,
     unites_de_transfert,
 )
 from polytech.thermique.domain.tables.eau_saturee import temperature_de_saturation
@@ -220,6 +222,14 @@ def test_l_exercice_2_l_huile_refroidie_a_contrecourant() -> None:
     assert sortie_du_fluide_chaud(110.0, 37.8, exact) == pytest.approx(68.2, abs=0.05)
 
 
+def test_echauffement_et_temperature_moyenne_d_un_fluide() -> None:
+    """`t_S - t_E`, signe conserve ; la moyenne arithmetique de `t_E` et `t_S`."""
+    assert echauffement(45.0, 76.3) == pytest.approx(31.3)
+    assert echauffement(76.3, 45.0) == pytest.approx(-31.3)
+    assert temperature_moyenne_du_fluide(20.0, 20.0) == 20.0
+    assert temperature_moyenne_du_fluide(-10.0, 30.0) == 10.0
+
+
 def test_l_exercice_3_l_huile_rechauffee_par_de_la_vapeur() -> None:
     """Page 134 : `S_i = 2,111 m^2`, `105 - t_2S = 28,7`, 76,3 degres, 14 326 W.
 
@@ -235,10 +245,12 @@ def test_l_exercice_3_l_huile_rechauffee_par_de_la_vapeur() -> None:
     assert unites == pytest.approx(0.738, abs=5e-4)
     assert eta == pytest.approx(0.522, abs=5e-4)
     sortie = sortie_du_fluide_froid(105.0, 45.0, eta)
-    assert 105.0 - sortie == pytest.approx(28.7, abs=0.05)
+    assert echauffement(sortie, 105.0) == pytest.approx(28.7, abs=0.05)
     assert sortie == pytest.approx(76.3, abs=0.05)
-    assert flux_du_bilan(0.23, 1990.0, 76.3 - 45.0) == pytest.approx(14326.0, abs=1)
-    assert (45.0 + sortie) / 2 == pytest.approx(60.7, abs=0.05)
+    assert flux_du_bilan(0.23, 1990.0, echauffement(45.0, 76.3)) == pytest.approx(
+        14326.0, abs=1
+    )
+    assert temperature_moyenne_du_fluide(45.0, sortie) == pytest.approx(60.7, abs=0.05)
 
 
 def test_la_caracteristique_de_fonctionnement_est_lineaire() -> None:

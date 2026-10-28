@@ -48,6 +48,11 @@ from polytech.electronique.domain.laplace import (
     impedances_en_parallele,
     impedances_en_serie,
 )
+from polytech.electronique.domain.netliste import (
+    Admittance,
+    SourceDeCourant,
+    resoudre,
+)
 
 
 def _resoudre(
@@ -124,13 +129,20 @@ def test_5_2_par_les_noeuds() -> None:
 
 
 def test_5_3_la_source_de_courant_tire_vers_la_masse() -> None:
-    """Fleche vers le bas : le courant quitte le noeud de sortie."""
-    v = sp.Symbol("v")
+    """Fleche vers le bas : le courant quitte le noeud de sortie.
+
+    Le noeud 1 est la sortie ; l'analyse nodale de la bibliotheque (netliste)
+    recoit la source de `1` vers la masse (`0`) : elle tire `I_s` du noeud.
+    """
     jw = sp.I * sp.Symbol("omega", positive=True)
-    sol = _resoudre(
-        [v * jw * C / (1 + jw * C * R1) + v / R2 + v / (R3 + jw * L) + IS], [v]
-    )
-    assert _nul(contributions_du_5_3()["courant"] - sol[v])
+    elements = [
+        Admittance(1, 0, 1 / impedances_en_serie(R1, 1 / (jw * C))),
+        Admittance(1, 0, 1 / R2),
+        Admittance(1, 0, 1 / (R3 + jw * L)),
+        SourceDeCourant(1, 0, IS),
+    ]
+    (sortie,) = resoudre(elements, 1)
+    assert _nul(contributions_du_5_3()["courant"] - sortie)
 
 
 def test_5_3_la_version_plus_z_prime_i_s_est_en_opposition_de_phase() -> None:

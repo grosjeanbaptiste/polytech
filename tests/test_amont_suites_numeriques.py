@@ -53,7 +53,7 @@ def test_le_cinquieme_itere_n_est_pas_la_fraction_imprimee() -> None:
     cinquieme = iterer(_moyenne_de_heron, Fraction(2), 5)[-1]
     assert cinquieme == Fraction(886731088897, 627013566048)
     assert cinquieme != CINQUIEME_IMPRIME
-    assert float(CINQUIEME_IMPRIME) == pytest.approx(1.414213562373095, abs=1e-15)
+    assert float(CINQUIEME_IMPRIME) == pytest.approx(float(cinquieme), abs=1e-15)
 
 
 def test_les_approximations_successives_convergent_vers_racine_de_deux() -> None:

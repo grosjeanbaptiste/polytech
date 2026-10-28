@@ -15,6 +15,7 @@ import sympy as sp
 
 from polytech.electronique.application.dimensionnement_lab_05 import HAUT_PARLEUR
 from polytech.electronique.domain.aop_ideal import tensions_a_aop_ideaux
+from polytech.electronique.domain.liaison_rc import capacite_de_liaison
 from polytech.electronique.domain.netliste import Admittance
 
 R4: Final = 22e3
@@ -56,7 +57,7 @@ def frequence_de_coupure() -> float:
 
 def condensateur_de_liaison(resistance: float = HAUT_PARLEUR) -> float:
     """`1 / (2 pi R f)` : ce qu'il faudrait en serie avec la charge, a 20 Hz."""
-    return 1 / (2 * math.pi * resistance * BASSE_FREQUENCE)
+    return capacite_de_liaison(resistance, BASSE_FREQUENCE)
 
 
 def _pont(p: sp.Expr) -> tuple[sp.Expr, sp.Expr]:

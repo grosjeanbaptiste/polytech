@@ -32,6 +32,7 @@ from polytech.maths.domain.algebre.series_de_matrices import (
     somme_geometrique,
     somme_partielle_geometrique,
 )
+from polytech.maths.domain.comparaison import egales, proches
 from polytech.maths.domain.differentielles.systemes import SystemeDifferentiel
 from polytech.maths.domain.symboles import TEMPS as T
 
@@ -45,7 +46,7 @@ BLOCS = sp.Matrix([[-2, 0, 0], [0, 1, 1], [0, 0, 1]])
 
 
 def _nulle(matrice: sp.Matrix) -> bool:
-    return bool(sp.simplify(matrice) == sp.zeros(*matrice.shape))
+    return egales(matrice, sp.zeros(*matrice.shape))
 
 
 def test_le_produit_des_matrices_n_est_pas_commutatif() -> None:
@@ -244,13 +245,13 @@ def test_l_exponentielle_avec_l_inverse_imprime_porte_5_e_moins_2_sur_9() -> Non
     juste = PASSAGE * par_jordan(BLOCS) * PASSAGE.inv()
     fausse = PASSAGE * par_jordan(BLOCS) * imprimee
     assert juste[1, 1] == E**-2
-    assert sp.simplify(fausse[1, 1] - R(5, 9) * E**-2) == 0
+    assert egales(fausse[1, 1], R(5, 9) * E**-2)
     ecart = fausse - juste
-    assert sp.simplify(ecart[1, 1] - R(-4, 9) * E**-2) == 0
+    assert egales(ecart[1, 1], R(-4, 9) * E**-2)
     for i in range(3):
         for j in range(3):
             if (i, j) != (1, 1):
-                assert sp.simplify(ecart[i, j]) == 0
+                assert egales(ecart[i, j], 0)
 
 
 def test_l_exponentielle_d_un_bloc_de_jordan() -> None:
@@ -290,7 +291,7 @@ def test_l_exponentielle_de_l_exemple_de_jordan() -> None:
 def test_l_exponentielle_par_jordan_s_accorde_avec_la_serie() -> None:
     """Troisieme chemin : quarante termes de la serie, a `10^-20` pres."""
     ecart = par_jordan(JORDAN) - par_la_serie(JORDAN, 40)
-    assert all(abs(sp.N(e, 30)) < R(1, 10**20) for e in ecart)
+    assert all(proches(sp.N(e, 30), 0, R(1, 10**20)) for e in ecart)
 
 
 def test_une_matrice_non_diagonalisable_est_refusee_par_la_diagonalisation() -> None:

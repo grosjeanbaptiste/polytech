@@ -22,6 +22,7 @@ from __future__ import annotations
 import pytest
 import sympy as sp
 
+from polytech.maths.domain.comparaison import egales
 from polytech.maths.domain.differentielles.operateurs import D, OperateurDifferentiel
 from polytech.maths.domain.differentielles.ordre_n import (
     constantes,
@@ -49,19 +50,19 @@ def test_l_exemple_1_17_terme_a_terme() -> None:
         + R(7, 4)
     )
     obtenue = particuliere_par_superposition(K, sollicitation)
-    assert sp.simplify(obtenue - attendue) == 0
-    assert sp.simplify(K.appliquer(obtenue) - sollicitation) == 0
+    assert egales(obtenue, attendue)
+    assert egales(K.appliquer(obtenue), sollicitation)
 
 
 def test_le_signe_imprime_dans_l_exemple_1_17_ne_resout_pas() -> None:
     imprimee = (sp.cos(T) - 3 * sp.sin(T)) / 10
-    assert sp.simplify(K.appliquer(imprimee) - sp.cos(T)) != 0
+    assert not egales(K.appliquer(imprimee), sp.cos(T))
 
 
 def test_une_sollicitation_amortie_et_oscillante() -> None:
     sollicitation = sp.exp(-3 * T) * sp.sin(2 * T)
     obtenue = particuliere_par_superposition(K, sollicitation)
-    assert sp.simplify(K.appliquer(obtenue) - sollicitation) == 0
+    assert egales(K.appliquer(obtenue), sollicitation)
     assert sp.im(obtenue) == 0
 
 
@@ -86,7 +87,7 @@ def test_l_exemple_1_13_a_quatre_constantes() -> None:
         - T**4 / 12
     )
     generale = solution_generale(operateur, 1 + T + T**2)
-    assert sp.simplify(operateur.appliquer(generale) - (1 + T + T**2)) == 0
+    assert egales(operateur.appliquer(generale), 1 + T + T**2)
     assert set(generale.free_symbols) == {T, c1, c2, c3, c4}
     assert sp.expand(generale - attendue) == 0
 
@@ -103,9 +104,9 @@ def test_le_3_6_exemple_1_les_constantes_par_le_systeme_lineaire() -> None:
 def test_le_3_6_exemple_2_par_la_voie_classique_et_par_laplace() -> None:
     attendue = -R(1, 2) + sp.exp(T) / 6 + sp.exp(-T) / 2 - sp.exp(-2 * T) / 6
     classique = solution_de_cauchy(CUBIQUE, sp.exp(T), [0, 0, 0])
-    assert sp.simplify(classique - attendue) == 0
+    assert egales(classique, attendue)
     par_laplace = ProblemeLineaire((1, 3, 2, 0), sp.exp(T), (0, 0, 0)).solution()
-    assert sp.simplify(classique - par_laplace) == 0
+    assert egales(classique, par_laplace)
 
 
 def test_il_faut_autant_de_conditions_que_l_ordre() -> None:

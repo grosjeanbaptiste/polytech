@@ -56,6 +56,9 @@ ZEROS, POLES = (1e2, 1e8), (1e4, 1e6, 1e10)
 EXEMPLE = Factorisation(sp.Integer(1), zeros=ZEROS, poles=POLES)
 """Page 5 : l'exemple trace."""
 
+CINQUIEME_IMPRIMEE = A0 * P0 * P1 * P2 / (-(W**2) * Z0 * Z1)
+"""Page 5, 5e expression : « pour z_1 << w << p_2 », telle que la note l'imprime."""
+
 MILIEUX = (1e1, 1e3, 1e5, 1e7, 1e9, 1e11)
 
 
@@ -114,7 +117,7 @@ def test_la_cinquieme_expression_de_la_page_5_est_un_palier() -> None:
     assert LITTERALE.pente(ORDRE, 4) == 0
     palier = LITTERALE.gain_du_palier(ORDRE, 4)
     assert palier.free_symbols == {A0, Z0, Z1, P0, P1}
-    imprimee = A0 * P0 * P1 * P2 / (-(W**2) * Z0 * Z1)
+    imprimee = CINQUIEME_IMPRIMEE
     assert exposant_de(imprimee, W) == -2
     valeurs = {A0: 1, Z0: 1e2, Z1: 1e8, P0: 1e4, P1: 1e6, P2: 1e10, W: 1e9}
     assert module_de(palier, valeurs) == pytest.approx(1.0)

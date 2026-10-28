@@ -30,6 +30,9 @@ from polytech.algorithmique.domain.flux_d_entree import Clavier
 from polytech.algorithmique.domain.iterateurs import plage
 
 PHRASE = "abracadabra magie\n"
+PLUS_GRANDE_VALEUR_DE_SIZE_T = 18446744073709551615
+"""Page 45 : ce que `cout << s.find(...)` affiche pour un motif absent
+(2^64 - 1, rejoue par le compilateur dans `test_cpp_preuves_par_le_compilateur.py`)."""
 
 
 def test_la_recherche_du_programme_4_4() -> None:
@@ -40,7 +43,7 @@ def test_la_recherche_du_programme_4_4() -> None:
 
 def test_find_rend_npos_quand_le_motif_est_absent() -> None:
     """Ecart de la page 45 : non « une valeur quelconque », mais `string::npos`."""
-    assert find("ABCDEF", "XYZ") == NPOS == 18446744073709551615
+    assert find("ABCDEF", "XYZ") == NPOS == PLUS_GRANDE_VALEUR_DE_SIZE_T
 
 
 def test_les_affectations_partielles_du_programme_4_4() -> None:

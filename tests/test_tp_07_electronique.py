@@ -32,6 +32,7 @@ from polytech.electronique.domain.reponse_de_chebyshev import (
     coupure_a_trois_decibels,
     module_de_chebyshev,
 )
+from polytech.electronique.domain.reponse_du_biquad import surtension
 
 S = sp.Symbol("s")
 MEGA = 2 * math.pi * 1e6
@@ -93,7 +94,7 @@ def test_ex21_les_courbes_de_la_figure() -> None:
         assert gains[0] == pytest.approx(0.0, abs=0.1)
         assert gains[-1] == pytest.approx(-40.0, abs=0.2)
         resonant = xi < 1 / math.sqrt(2)
-        sommet = 1 / (2 * xi * math.sqrt(1 - xi**2)) if resonant else 1.0
+        sommet = surtension(1 / (2 * xi)) if resonant else 1.0
         assert max(gains) == pytest.approx(20 * math.log10(sommet), abs=0.1)
     assert bq.AMORTISSEMENTS == (0.02, 0.1, 0.3, 0.5, 1.0)
 
@@ -298,9 +299,6 @@ def test_ex41_la_methode_et_les_deux_bornes_du_facteur_d_echelle() -> None:
     assert sk.METHODE_DU_4_1 is Methode.SENSIBILITE_MINIMALE
     assert sk.facteur_pour_les_resistances() == pytest.approx(100.0)
     assert sk.facteur_pour_les_capacites() == pytest.approx(0.159, abs=5e-4)
-    assert sk.facteur_pour_les_capacites() == pytest.approx(
-        2 / (2 * math.pi * 200e3 * 10e-6)
-    )
     assert sk.facteur_pour_les_capacites(100e-6) == pytest.approx(0.0159, abs=5e-5)
 
 

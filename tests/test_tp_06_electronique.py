@@ -19,13 +19,21 @@ from polytech.electronique.application import decalage_tp_06 as dc
 from polytech.electronique.application import dimensionnement_tp_06 as dm
 from polytech.electronique.application import polarisation_tp_06 as po
 from polytech.electronique.domain.aop import aop
+from polytech.electronique.domain.decalages_en_sortie import (
+    Defauts,
+    decalage_de_l_inverseur,
+    decalage_du_non_inverseur,
+)
 from polytech.electronique.domain.netliste import Admittance, SourceDeTension
 
 
 def _sortie_decalee(e0: float, i_plus: float, i_moins: float) -> float:
     """`(1 + R2/R1) e0 - (1 + R2/R1) Rs I+ + R2 I-`, page 5 de l'officiel."""
     rs, r1, r2 = 10e3, 1e3, 9e3
-    return (1 + r2 / r1) * e0 - (1 + r2 / r1) * rs * i_plus + r2 * i_moins
+    defauts = Defauts(e0, i_plus, i_moins)
+    return decalage_du_non_inverseur(
+        defauts, vers_la_masse=r1, contre_reaction=r2, source=rs
+    )
 
 
 def test_ex4_un_etage_de_gain_quinze_garde_cent_kilohertz() -> None:
@@ -95,7 +103,10 @@ def test_ex7_la_bande_de_l_inverseur_selon_le_gain_de_bruit() -> None:
 
 
 def test_ex7_le_decalage_avec_un_millivolt() -> None:
-    assert math.isclose(dc.decalage_de_l_exercice_7(), 6 * 1e-3 + 50e3 * 70e-9)
+    attendu = decalage_de_l_inverseur(
+        0.0, Defauts(1e-3, 0.0, 70e-9), resistance_entree=10e3, contre_reaction=50e3
+    )
+    assert math.isclose(dc.decalage_de_l_exercice_7(), attendu)
 
 
 def test_ex7_le_chiffre_de_l_officiel_suppose_cinq_millivolts() -> None:

@@ -28,6 +28,7 @@ from polytech.maths.domain.algebre.triangularisation import (
     semblable_par_inverse_donnee,
     triangulariser,
 )
+from polytech.maths.domain.comparaison import egales
 
 R = sp.Rational
 T = sp.Symbol("t")
@@ -149,14 +150,14 @@ def test_la_solution_hors_des_valeurs_singulieres() -> None:
     )
     d = A**2 - 7 * A + 12
     attendue = sp.Matrix([(5 * A**2 - 80 * A + 195) / d, (-7 * A**2 + 19 * A + 6) / d])
-    assert sp.simplify(par_cramer(systeme) - attendue) == sp.zeros(2, 1)
+    assert egales(par_cramer(systeme), attendue)
 
 
 def test_pour_a_egal_trois_le_systeme_est_indetermine() -> None:
     """`3x - 6y = 12` et `2x - 4y = 8` : `x = 2y + 4`, avec `y` pour parametre."""
     systeme = SystemeLineaire(sp.Matrix([[3, -6], [2, -4]]), sp.Matrix([12, 8]))
     x, y = solution_generale(systeme)
-    assert sp.simplify(x - (2 * y + 4)) == 0
+    assert egales(x, 2 * y + 4)
 
 
 def test_la_solution_ecrite_page_33_a_perdu_un_facteur() -> None:
@@ -169,12 +170,12 @@ def test_la_solution_ecrite_page_33_a_perdu_un_facteur() -> None:
     """
     premiere = SystemeLineaire(sp.Matrix([[A, -6]]), sp.Matrix([5 * A - 3]))
     x_general, libre = solution_generale(premiere)
-    assert sp.simplify(x_general - (6 * libre / A + (5 * A - 3) / A)) == 0
-    assert sp.simplify(x_general - (6 * libre / A + A - 3 / A)) != 0
+    assert egales(x_general, 6 * libre / A + (5 * A - 3) / A)
+    assert not egales(x_general, 6 * libre / A + A - 3 / A)
 
     systeme = SystemeLineaire(sp.Matrix([[3, -6], [2, -4]]), sp.Matrix([12, 8]))
     x_lib, y_lib = solution_generale(systeme)
-    assert sp.simplify(x_general.subs(A, 3) - x_lib.subs(y_lib, libre)) == 0
+    assert egales(x_general.subs(A, 3), x_lib.subs(y_lib, libre))
     assert sp.expand(x_lib - (2 * y_lib + 4)) == 0
 
     def residu(x: sp.Expr, y: sp.Expr) -> sp.Matrix:

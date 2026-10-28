@@ -18,6 +18,12 @@ import math
 import pytest
 import sympy as sp
 
+from polytech.maths.domain.comparaison import (
+    egales,
+    en_degres,
+    proches,
+    proches_relativement,
+)
 from polytech.signaux.domain.bode import (
     TraceAsymptotique,
     classe_du_systeme,
@@ -59,17 +65,17 @@ def _nombres(couple: tuple[sp.Expr, sp.Expr]) -> tuple[float, float]:
 def test_les_points_de_bode_du_premier_ordre_de_la_planche_58() -> None:
     """« Frequency 0.956, Magnitude 6.22 » et « Frequency 0.2, Phase -45 »."""
     gain, _ = _nombres(PREMIER.point_de_bode(sp.Float(0.956)))
-    assert gain == pytest.approx(6.22, abs=0.01)
+    assert proches(gain, 6.22, 0.01)
     gain, phase = _nombres(PREMIER.point_de_bode(sp.Rational(1, 5)))
-    assert phase == pytest.approx(-45.0)
-    assert gain == pytest.approx(20 - 3.01, abs=0.01)
+    assert proches_relativement(phase, -45.0, 1e-6)
+    assert proches(gain, 20 - 3.01, 0.01)
 
 
 def test_le_point_de_black_du_premier_ordre_de_la_planche_58() -> None:
     """« Gain 13.5, Phase -61.9, Frequency 0.374 »."""
     phase, gain = _nombres(PREMIER.point_de_black(sp.Float(0.374)))
-    assert gain == pytest.approx(13.5, abs=0.05)
-    assert phase == pytest.approx(-61.9, abs=0.05)
+    assert proches(gain, 13.5, 0.05)
+    assert proches(phase, -61.9, 0.05)
 
 
 def test_le_demi_cercle_de_nyquist_du_premier_ordre() -> None:
@@ -84,9 +90,9 @@ def test_le_demi_cercle_de_nyquist_du_premier_ordre() -> None:
 def test_le_trace_asymptotique_du_premier_ordre() -> None:
     """Planche 60 : `20 log K`, puis -20 dB par decade a partir de `w = 1 / T`."""
     trace = TraceAsymptotique(gain=10, classe=0, cassures=((0.2, -1),))
-    assert trace.gain_en_decibels(0.02) == pytest.approx(20.0)
-    assert trace.gain_en_decibels(2.0) == pytest.approx(0.0)
-    assert trace.gain_en_decibels(20.0) == pytest.approx(-20.0)
+    assert proches_relativement(trace.gain_en_decibels(0.02), 20.0, 1e-6)
+    assert proches_relativement(trace.gain_en_decibels(2.0), 0.0, 1e-6)
+    assert proches_relativement(trace.gain_en_decibels(20.0), -20.0, 1e-6)
     assert trace.pentes() == (0, -20)
 
 
@@ -102,7 +108,11 @@ def test_le_nyquist_du_second_ordre_coupe_l_axe_imaginaire_en_un_sur_t(
         sp.Rational(1, 2)
     )
     assert reelle == 0
-    assert float(imaginaire) == pytest.approx(ordonnee, abs=0.05)
+    assert proches(float(imaginaire), ordonnee, 0.05)
+
+
+# Planche 68 : w_r = racine(1 - 2 xi^2) / T, avec xi = 0,3 et T = 2 s.
+PULSATION_DE_RESONANCE_PLANCHE_68 = 0.45276925690687087
 
 
 def test_la_resonance_du_second_ordre() -> None:
@@ -113,10 +123,12 @@ def test_la_resonance_du_second_ordre() -> None:
     """
     systeme = SecondOrdre(10, 2, sp.Rational(3, 10))
     resonance = pulsation_de_resonance(2.0, 0.3)
-    assert resonance == pytest.approx(math.sqrt(1 - 2 * 0.09) / 2)
+    assert proches_relativement(resonance, PULSATION_DE_RESONANCE_PLANCHE_68, 1e-6)
     analyse = AnalyseHarmonique(systeme.de_bode())
     sommet = float(analyse.module(sp.Float(resonance)))
-    assert sommet == pytest.approx(10 * pic_de_resonance_du_second_ordre(0.3))
+    assert proches_relativement(
+        sommet, 10 * pic_de_resonance_du_second_ordre(0.3), 1e-6
+    )
     assert sommet > float(analyse.module(sp.Float(1.02 * resonance)))
     assert sommet > float(analyse.module(sp.Float(0.98 * resonance)))
     with pytest.raises(ValueError, match="pas de resonance"):
@@ -128,8 +140,8 @@ def test_la_pulsation_de_coupure_du_second_ordre() -> None:
     coupure = pulsation_de_coupure_du_second_ordre(2.0, 0.3)
     systeme = SecondOrdre(10, 2, sp.Rational(3, 10))
     module = float(AnalyseHarmonique(systeme.de_bode()).module(sp.Float(coupure)))
-    assert module == pytest.approx(10 / math.sqrt(2))
-    assert coupure == pytest.approx(bande_passante_du_second_ordre(0.5, 0.3))
+    assert proches_relativement(module, 10 / math.sqrt(2), 1e-6)
+    assert proches_relativement(coupure, bande_passante_du_second_ordre(0.5, 0.3), 1e-6)
 
 
 def test_l_integrateur_et_le_derivateur_sont_inverses() -> None:
@@ -147,12 +159,12 @@ def test_les_zeros_ont_les_courbes_opposees_de_celles_des_poles() -> None:
     """Planches 92 a 95 : +20 et +40 dB par decade, +90 et +180 degres."""
     pole = courbe_elementaire_de_premier_ordre(sp.Integer(1))
     zero = courbe_inverse(pole)
-    assert float(en_decibels(zero[0]).subs(W, 100)) == pytest.approx(40.0, abs=0.01)
+    assert proches(float(en_decibels(zero[0]).subs(W, 100)), 40.0, 0.01)
     assert zero[1].subs(W, 1) == sp.pi / 4
     double = courbe_inverse(
         courbe_elementaire_de_second_ordre(sp.Integer(1), sp.Integer(1))
     )
-    assert float(en_decibels(double[0]).subs(W, 100)) == pytest.approx(80.0, abs=0.01)
+    assert proches(float(en_decibels(double[0]).subs(W, 100)), 80.0, 0.01)
     assert double[1].subs(W, 1) == sp.pi / 2
 
 
@@ -164,9 +176,9 @@ def test_le_delai_ne_change_que_l_argument() -> None:
     cercle = {1: (0.54, -0.84), 2: (-0.42, -0.91), 3: (-0.99, -0.14)}
     for pulsation, (reelle, imaginaire) in cercle.items():
         angle = float(phase.subs(W, pulsation))
-        assert math.cos(angle) == pytest.approx(reelle, abs=0.005)
-        assert math.sin(angle) == pytest.approx(imaginaire, abs=0.005)
-    assert math.degrees(float(phase.subs(W, 3))) == pytest.approx(-171.9, abs=0.05)
+        assert proches(math.cos(angle), reelle, 0.005)
+        assert proches(math.sin(angle), imaginaire, 0.005)
+    assert proches(en_degres(float(phase.subs(W, 3))), -171.9, 0.05)
 
 
 EXEMPLE = Transmittance(expression=10 * (1 + P) / (P * (1 + P / 5)))
@@ -184,12 +196,12 @@ def test_le_trace_asymptotique_de_l_exemple_de_la_planche_96() -> None:
     """Un palier a 20 dB entre les cassures 1 et 5 rad/s."""
     trace = TraceAsymptotique(gain=10, classe=1, cassures=((1.0, 1), (5.0, -1)))
     assert trace.pentes() == (-20, 0, -20)
-    assert trace.gain_en_decibels(0.01) == pytest.approx(60.0)
-    assert trace.gain_en_decibels(1.0) == pytest.approx(20.0)
-    assert trace.gain_en_decibels(3.0) == pytest.approx(20.0)
-    assert trace.gain_en_decibels(1000.0) == pytest.approx(-26.0, abs=0.05)
+    assert proches_relativement(trace.gain_en_decibels(0.01), 60.0, 1e-6)
+    assert proches_relativement(trace.gain_en_decibels(1.0), 20.0, 1e-6)
+    assert proches_relativement(trace.gain_en_decibels(3.0), 20.0, 1e-6)
+    assert proches(trace.gain_en_decibels(1000.0), -26.0, 0.05)
     reel = float(AnalyseHarmonique(EXEMPLE).point_de_bode(sp.Integer(1000))[0])
-    assert reel == pytest.approx(trace.gain_en_decibels(1000.0), abs=0.01)
+    assert proches(reel, trace.gain_en_decibels(1000.0), 0.01)
     with pytest.raises(ValueError, match="pulsation nulle ou negative"):
         trace.gain_en_decibels(0.0)
 
@@ -205,9 +217,9 @@ def test_les_courbes_de_bode_s_obtiennent_par_sommation() -> None:
     module, phase = somme_des_courbes(courbes)
     analyse = AnalyseHarmonique(EXEMPLE)
     for pulsation in (sp.Rational(1, 2), 3, 20):
-        assert sp.simplify(module.subs(W, pulsation) - analyse.module(pulsation)) == 0
+        assert egales(module.subs(W, pulsation), analyse.module(pulsation))
         attendu = float(analyse.argument(pulsation))
-        assert float(phase.subs(W, pulsation)) == pytest.approx(attendu)
+        assert proches_relativement(float(phase.subs(W, pulsation)), attendu, 1e-6)
     with pytest.raises(ValueError, match="aucune courbe"):
         somme_des_courbes(())
 
@@ -216,8 +228,8 @@ def test_l_exemple_1_de_nyquist() -> None:
     """Planche 100 : `Re = -1 / (1 + w^2)`, `Im = -1 / (w (1 + w^2))`."""
     spectre = Transmittance(expression=1 / (P * (1 + P))).reponse_frequentielle()
     reelle, imaginaire = parties_reelle_et_imaginaire(spectre)
-    assert sp.simplify(reelle + 1 / (1 + W**2)) == 0
-    assert sp.simplify(imaginaire + 1 / (W * (1 + W**2))) == 0
+    assert egales(reelle, -(1 / (1 + W**2)))
+    assert egales(imaginaire, -(1 / (W * (1 + W**2))))
     assert sp.limit(reelle, W, 0) == -1
 
 
@@ -225,8 +237,8 @@ def test_l_exemple_2_de_nyquist() -> None:
     """Planche 102 : `Re = 8 / (1 + 0,04 w^2)`, `Im = -10 (1 + 0,2 w^2) / (w (...))`."""
     reelle, imaginaire = parties_reelle_et_imaginaire(EXEMPLE.reponse_frequentielle())
     reduit = 1 + W**2 / 25
-    assert sp.simplify(reelle - 8 / reduit) == 0
-    assert sp.simplify(imaginaire + 10 * (1 + W**2 / 5) / (W * reduit)) == 0
+    assert egales(reelle, 8 / reduit)
+    assert egales(imaginaire, -(10 * (1 + W**2 / 5) / (W * reduit)))
     assert sp.limit(reelle, W, 0) == 8
 
 
@@ -246,8 +258,8 @@ def test_un_gain_translate_la_courbe_d_amplitude() -> None:
     for pulsation in (sp.Rational(1, 2), 3):
         gain, phase = _nombres(base.point_de_bode(pulsation))
         gain_double, phase_double = _nombres(double.point_de_bode(pulsation))
-        assert gain_double - gain == pytest.approx(20 * math.log10(2))
-        assert phase_double == pytest.approx(phase)
+        assert proches_relativement(gain_double - gain, 20 * math.log10(2), 1e-6)
+        assert proches_relativement(phase_double, phase, 1e-6)
 
 
 def test_un_delai_ajoute_moins_omega_tau_a_l_argument() -> None:
@@ -255,5 +267,5 @@ def test_un_delai_ajoute_moins_omega_tau_a_l_argument() -> None:
     sans = (1 / (W * sp.sqrt(1 + W**2)), -sp.pi / 2 - sp.atan(W))
     module, phase = somme_des_courbes((sans, courbe_du_delai(sp.Rational(1, 2))))
     assert module == sans[0]
-    ecart = math.degrees(float((phase - sans[1]).subs(W, 2)))
-    assert ecart == pytest.approx(-57.3, abs=0.05)
+    ecart = en_degres(float((phase - sans[1]).subs(W, 2)))
+    assert proches(ecart, -57.3, 0.05)

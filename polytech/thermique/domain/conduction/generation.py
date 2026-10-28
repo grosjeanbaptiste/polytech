@@ -42,6 +42,22 @@ class BarreauGenerateur:
         ecart = self.rayon**2 - rayon**2
         return surface + self.generation * ecart / (4 * self.conductivite)
 
+    def temperature_au_centre(self, surface: Grandeur) -> Grandeur:
+        """`t_c = t_0 + q R^2 / (4 lambda)`, `t_0` etant la temperature de surface."""
+        return surface + self.echauffement_au_centre()
+
+    def residu_de_l_equation(self, profil: sp.Expr, rayon: sp.Symbol) -> sp.Expr:
+        """`t'' + t' / r + q / lambda` : nul si `profil` resout (2.20)."""
+        radial = sp.diff(profil, rayon, 2) + sp.diff(profil, rayon) / rayon
+        return sp.simplify(radial + self.generation / self.conductivite)
+
+    def residu_avec_le_signe_imprime(
+        self, profil: sp.Expr, rayon: sp.Symbol
+    ) -> sp.Expr:
+        """`t'' + t' / r - q / lambda` : la ligne que le syllabus imprime."""
+        radial = sp.diff(profil, rayon, 2) + sp.diff(profil, rayon) / rayon
+        return sp.simplify(radial - self.generation / self.conductivite)
+
     def densite_a_la_surface(self) -> Grandeur:
         """`phi_R = R q / 2`."""
         return self.rayon * self.generation / 2
@@ -80,3 +96,24 @@ def chute_de_convection(
 ) -> float:
     """`t_2 - t_f = d_1^2 q / (4 K d_2)`."""
     return _flux_lineique(generation, pastille) / (echange * math.pi * gaine)
+
+
+def temperatures_du_crayon(
+    pastille: BarreauGenerateur,
+    rayon_de_gaine: float,
+    *,
+    conductivite_de_gaine: float,
+    echange: float,
+    fluide: float,
+) -> tuple[float, float, float]:
+    """Face externe de la gaine, face de la pastille, axe : `(t_2, t_1, t_c)`."""
+    diametre = 2 * float(pastille.rayon)
+    q = float(pastille.generation)
+    face_externe = fluide + chute_de_convection(
+        q, diametre, 2 * rayon_de_gaine, echange=echange
+    )
+    face_de_la_pastille = face_externe + chute_dans_une_gaine(
+        q, diametre, 2 * rayon_de_gaine, conductivite=conductivite_de_gaine
+    )
+    centre = float(pastille.temperature_au_centre(face_de_la_pastille))
+    return face_externe, face_de_la_pastille, centre

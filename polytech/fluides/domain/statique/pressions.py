@@ -26,6 +26,16 @@ ATMOSPHERE: Final = 101_325.0
 """Une atmosphere normale, en pascals."""
 
 
+def en_bars(pascals: float) -> float:
+    """Une pression en pascals, lue en bars."""
+    return pascals / BAR
+
+
+def en_atmospheres(pascals: float) -> float:
+    """Une pression en pascals, lue en atmospheres normales."""
+    return pascals / ATMOSPHERE
+
+
 def _exiger_l_absolue(absolue: float) -> float:
     if absolue < 0:
         msg = f"pression absolue negative : {absolue} Pa"

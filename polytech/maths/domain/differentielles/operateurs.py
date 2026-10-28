@@ -64,6 +64,10 @@ class OperateurDifferentiel:
         """`K(valeur)`, `D` etant pris pour un nombre."""
         return sp.simplify(self.polynome.subs(D, sp.sympify(valeur)))
 
+    def discriminant(self) -> sp.Expr:
+        """Le discriminant de `K(D)` : son signe dit si les racines sont reelles."""
+        return sp.discriminant(self.polynome, D)
+
     def racines(self) -> dict[sp.Expr, int]:
         """Les racines de l'equation caracteristique, avec leur multiplicite."""
         return dict(sp.roots(self.polynome, D))

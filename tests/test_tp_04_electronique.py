@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import math
 
-import pytest
 import sympy as sp
 
 from polytech.electronique.application import circuits_tp_04 as ct
@@ -45,6 +44,7 @@ from polytech.electronique.application.symboles_tp_04 import (
     R,
     S,
 )
+from polytech.maths.domain.comparaison import proches
 
 
 def _nul(expression: sp.Basic) -> bool:
@@ -211,11 +211,15 @@ def test_l_approximation_du_pole_tient_sous_le_pour_cent() -> None:
 
 
 def test_le_pole_est_a_gauche_et_le_zero_a_droite() -> None:
-    """Pole exact -7,034e10 rad/s, approche -7,059e10 (0,35 %) ; zero > 0."""
+    """Pole exact -7,034e10 rad/s, approche -7,059e10 (0,35 %) ; zero > 0.
+
+    Le courrier cite quatre chiffres (deux pour l'ecart) : la tolerance est
+    la demi-unite du dernier chiffre cite.
+    """
     nombres = nb.source_commune_numerique()
-    assert nombres.pole == pytest.approx(-7.034e10, rel=5e-4)
-    assert nombres.pole_approche == pytest.approx(-7.059e10, rel=5e-4)
-    assert nombres.pole_approche / nombres.pole - 1 == pytest.approx(0.0035, abs=5e-5)
+    assert proches(nombres.pole, -7.034e10, 0.0005e10)
+    assert proches(nombres.pole_approche, -7.059e10, 0.0005e10)
+    assert proches(nombres.pole_approche / nombres.pole - 1, 0.0035, 0.00005)
     assert nombres.zero > 0
 
 

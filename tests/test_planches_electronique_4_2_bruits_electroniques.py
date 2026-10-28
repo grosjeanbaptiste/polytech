@@ -59,7 +59,9 @@ AMBIANTE = 300.0
 def test_la_densite_du_bruit_thermique() -> None:
     """Planches 6 et 7 : `4 k_B T R`, et `4 k_B T Re[Z]` pour une impedance."""
     resistance = densite_thermique(1e3, AMBIANTE)
-    assert resistance == pytest.approx(4 * 1.38e-23 * 1e3 * 300, rel=1e-3, abs=0)
+    assert resistance == pytest.approx(
+        1.657e-17, rel=1e-3, abs=0
+    )  # 4 k T R, 1 kohm a 300 K
     assert densite_thermique(1e3 + 5e3j, AMBIANTE) == resistance
     assert densite_thermique(5e3j, AMBIANTE) == 0.0
     symbolique = densite_spectrale_unilaterale(1e3, AMBIANTE, BOLTZMANN)

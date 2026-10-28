@@ -11,8 +11,6 @@ figure 15.12.3 et le point `t / T = 9` de la figure 15.13.2.
 
 from __future__ import annotations
 
-import math
-
 import pytest
 import sympy as sp
 
@@ -45,6 +43,12 @@ from polytech.electromagnetisme.domain.transitoire.laplace import (
     VARIABLE,
     valeur_initiale,
 )
+from polytech.maths.domain.comparaison import (
+    egales,
+    exponentielle,
+    proches,
+    proches_relativement,
+)
 
 Q0, T = sp.symbols("Q_0 T", positive=True)
 AMORTISSEMENTS = (sp.Rational(5, 4), sp.Integer(1), sp.Rational(1, 2))
@@ -74,7 +78,7 @@ def test_la_charge_satisfait_l_equation_du_circuit(xi: sp.Expr) -> None:
     """(15.12.2) en variables reduites : `T^2 q'' + 2 xi T q' + q = 0`."""
     charge = charge_de_decharge(xi, T, Q0)
     residu = T**2 * sp.diff(charge, TEMPS, 2) + 2 * xi * T * sp.diff(charge, TEMPS)
-    assert sp.simplify(residu + charge) == 0
+    assert egales(residu, -(charge))
 
 
 @pytest.mark.parametrize("xi", AMORTISSEMENTS)
@@ -88,7 +92,7 @@ def test_la_decharge_part_de_q0_sans_courant(xi: sp.Expr) -> None:
 def test_le_courant_est_la_derivee_de_la_charge(xi: sp.Expr) -> None:
     """(15.12.9), (15.12.13) et (15.12.17) contre `i = dq/dt` (15.12.1)."""
     derivee = sp.diff(charge_de_decharge(xi, T, Q0), TEMPS)
-    assert sp.simplify(courant_de_decharge(xi, T, Q0) - derivee) == 0
+    assert egales(courant_de_decharge(xi, T, Q0), derivee)
 
 
 def test_les_originaux_ecrits_par_le_syllabus() -> None:
@@ -97,12 +101,12 @@ def test_les_originaux_ecrits_par_le_syllabus() -> None:
     aperiodique = -(Q0 / T) * sp.sinh(sp.Rational(3, 4) * reduit) / sp.Rational(3, 4)
     aperiodique *= sp.exp(-sp.Rational(5, 4) * reduit)
     ecart = courant_de_decharge(sp.Rational(5, 4), T, Q0) - aperiodique
-    assert sp.simplify(ecart.rewrite(sp.exp)) == 0
+    assert egales(ecart.rewrite(sp.exp), 0)
     critique = -(Q0 / T) * reduit * sp.exp(-reduit)
-    assert sp.simplify(courant_de_decharge(1, T, Q0) - critique) == 0
+    assert egales(courant_de_decharge(1, T, Q0), critique)
     racine = sp.sqrt(3) / 2
     pseudo = -(Q0 / T) * sp.sin(racine * reduit) / racine * sp.exp(-reduit / 2)
-    assert sp.simplify(courant_de_decharge(sp.Rational(1, 2), T, Q0) - pseudo) == 0
+    assert egales(courant_de_decharge(sp.Rational(1, 2), T, Q0), pseudo)
 
 
 @pytest.mark.parametrize("xi", AMORTISSEMENTS)
@@ -111,9 +115,9 @@ def test_la_transformee_de_la_charge_est_celle_de_son_original(xi: sp.Expr) -> N
     charge = sp.lambdify(TEMPS, charge_de_decharge(xi, 1, 1).rewrite(sp.exp))
     pas, borne = 1e-3, 80.0
     instants = [pas * (k + 0.5) for k in range(int(borne / pas))]
-    integrale = sum(charge(t) * math.exp(-0.7 * t) for t in instants) * pas
+    integrale = sum(charge(t) * exponentielle(-0.7 * t) for t in instants) * pas
     attendue = transformee_de_la_charge(xi, 1, 1).subs(VARIABLE, 0.7)
-    assert integrale == pytest.approx(float(attendue), rel=1e-5)
+    assert proches_relativement(integrale, float(attendue), 1e-5)
 
 
 def test_la_transformee_du_courant_suit_de_celle_de_la_charge() -> None:
@@ -121,7 +125,7 @@ def test_la_transformee_du_courant_suit_de_celle_de_la_charge() -> None:
     xi = sp.Symbol("xi", positive=True)
     charge = transformee_de_la_charge(xi, T, Q0)
     courant = transformee_du_courant(xi, T, Q0)
-    assert sp.simplify(VARIABLE * charge - Q0 - courant) == 0
+    assert egales(VARIABLE * charge - Q0, courant)
     assert valeur_initiale(charge) == Q0
     assert valeur_initiale(courant) == 0
 
@@ -136,8 +140,8 @@ def test_le_double_signe_de_15_12_7_contredit_15_12_5() -> None:
     premiere, seconde = ((-xi + s * sp.Rational(3, 4)) / T for s in (1, -1))
     facteurs = (VARIABLE - premiere) * (VARIABLE - seconde)
     courant = transformee_du_courant(xi, T, Q0)
-    assert sp.simplify(courant - (-Q0 / T**2) / facteurs) == 0
-    assert sp.simplify(courant - (-(-Q0 / T**2) / facteurs)) != 0
+    assert egales(courant, (-Q0 / T**2) / facteurs)
+    assert not egales(courant, -(-Q0 / T**2) / facteurs)
 
 
 def test_le_bilan_energetique_de_la_decharge() -> None:
@@ -149,16 +153,16 @@ def test_le_bilan_energetique_de_la_decharge() -> None:
     charge = charge_de_decharge(xi, periode, Q0)
     courant = courant_de_decharge(xi, periode, Q0)
     energie = inductance * courant**2 / 2 + charge**2 / (2 * capacite)
-    assert sp.simplify(sp.diff(energie, TEMPS) + resistance * courant**2) == 0
+    assert egales(sp.diff(energie, TEMPS), -(resistance * courant**2))
 
 
 def test_sans_resistance_la_decharge_est_periodique() -> None:
     """Remarque de la page 15-26 : `xi = 0`, pulsation `omega_0 = 1 / racine(L C)`."""
     charge = charge_de_decharge(0, T, Q0)
-    assert sp.simplify(charge - Q0 * sp.cos(TEMPS / T)) == 0
+    assert egales(charge, Q0 * sp.cos(TEMPS / T))
     propre = pulsation_propre(9, 4)
     assert propre == 1 / sp.sqrt(36)
-    assert sp.simplify(charge.subs(T, 6) - Q0 * sp.cos(propre * TEMPS)) == 0
+    assert egales(charge.subs(T, 6), Q0 * sp.cos(propre * TEMPS))
 
 
 def test_le_minimum_de_la_figure_15_12_3() -> None:
@@ -169,7 +173,7 @@ def test_le_minimum_de_la_figure_15_12_3() -> None:
     """
     reduite = 2 * T * courant_de_decharge(1, T, Q0) / Q0
     assert sp.diff(reduite, TEMPS).subs(TEMPS, T) == 0
-    assert float(reduite.subs(TEMPS, T)) == pytest.approx(-0.74, abs=0.01)
+    assert proches(float(reduite.subs(TEMPS, T)), -0.74, 0.01)
 
 
 def test_un_grand_amortissement_decharge_lentement() -> None:
@@ -180,7 +184,7 @@ def test_un_grand_amortissement_decharge_lentement() -> None:
     ]
     assert reste[0] < reste[1] < reste[2]
     # Figure 15.12.2 : la courbe 5,25 est encore a 0,42 en `t / T = 9`.
-    assert reste[2] == pytest.approx(0.42, abs=0.01)
+    assert proches(reste[2], 0.42, 0.01)
 
 
 E, R = sp.symbols("E R", positive=True)
@@ -193,20 +197,20 @@ def test_l_inductance_parasite_empeche_le_courant_de_sauter() -> None:
     # (15.12.5) avec `Q_0 = -C E`, et `C = tau / R = 2 xi T / R`.
     capacite = 2 * 5 * T / R
     attendu = courant_de_decharge(sp.Integer(5), T, -capacite * E)
-    assert sp.simplify(courant - attendu) == 0
+    assert egales(courant, attendu)
     # A l'instant zero toute la source est aux bornes de `l = T^2 / C`.
     parasite = T**2 / capacite
     pente = sp.diff(courant, TEMPS).subs(TEMPS, 0)
-    assert sp.simplify(parasite * pente - E) == 0
+    assert egales(parasite * pente, E)
 
 
 def test_la_figure_15_13_2_se_superpose_au_circuit_ideal() -> None:
     """`xi = 5`, donc `tau = 10 T` : 0,41 en `t / T = 9` pour les deux courbes."""
     reel = courant_rc_avec_inductance_parasite(1, 1, sp.Integer(5), 1)
     en_neuf = float(reel.subs(TEMPS, 9).rewrite(sp.exp))
-    ideal = math.exp(-9 / 10)
-    assert ideal == pytest.approx(0.41, abs=0.005)
-    assert en_neuf == pytest.approx(ideal, rel=0.02)
+    ideal = exponentielle(-9 / 10)
+    assert proches(ideal, 0.41, 0.005)
+    assert proches_relativement(en_neuf, ideal, 0.02)
 
 
 def test_l_exposant_de_15_13_3_est_t_sur_deux_xi_t() -> None:
@@ -217,7 +221,7 @@ def test_l_exposant_de_15_13_3_est_t_sur_deux_xi_t() -> None:
     """
     reel = courant_rc_avec_inductance_parasite(1, 1, sp.Integer(5), 1)
     en_neuf = float(reel.subs(TEMPS, 9).rewrite(sp.exp))
-    assert en_neuf > 1e30 * math.exp(-2 * 5 * 9)
+    assert en_neuf > 1e30 * float(sp.exp(-2 * 5 * 9))
 
 
 def test_un_circuit_rc_peu_amorti_n_est_pas_le_cas_de_la_figure() -> None:
@@ -249,7 +253,7 @@ def test_l_onde_amortie_de_l_effet_de_peau_satisfait_la_diffusion() -> None:
     chiffree = peau.subs(
         {mu: PERMEABILITE_DU_VIDE, rho: 1 / CONDUCTIVITE_DU_CUIVRE, omega: 100 * sp.pi}
     )
-    assert float(chiffree) == pytest.approx(epaisseur_de_peau(50.0))
+    assert proches_relativement(float(chiffree), epaisseur_de_peau(50.0), 1e-6)
 
 
 def test_un_mode_de_bessel_s_eteint_dans_le_cylindre() -> None:

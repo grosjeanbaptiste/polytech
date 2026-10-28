@@ -65,7 +65,9 @@ def test_la_coupure_divise_la_puissance_par_deux(qualite: float) -> None:
 
 def test_la_coupure_sans_amortissement() -> None:
     """Page 3 : `w_c -> w_0 racine(1 + racine(2))`, soit 1,5538 et non 1,558."""
-    assert math.sqrt(1 + math.sqrt(2)) == COUPURE_SANS_AMORTISSEMENT
+    assert coupure_a_trois_decibels(1e12) == pytest.approx(
+        COUPURE_SANS_AMORTISSEMENT, rel=1e-12
+    )
     assert pytest.approx(1.5538, abs=5e-5) == COUPURE_SANS_AMORTISSEMENT
     assert abs(COUPURE_SANS_AMORTISSEMENT - 1.558) > 4e-3
     proche = coupure_a_trois_decibels(1e6)

@@ -15,6 +15,7 @@ from __future__ import annotations
 import pytest
 import sympy as sp
 
+from polytech.maths.domain.comparaison import egales
 from polytech.maths.domain.differentielles.operateurs import D, OperateurDifferentiel
 from polytech.maths.domain.fourier.dispersion import ecart_type
 from polytech.maths.domain.fourier.proprietes import (
@@ -54,14 +55,13 @@ CAUSALE = sp.Piecewise((sp.exp(-T), T >= 0), (0, True))
 
 def _egales(obtenue: sp.Expr, attendue: sp.Expr) -> bool:
     """Compare en deux pulsations : sympy laisse des `|w|` qu'il ne simplifie pas."""
-    ecart = sp.simplify(obtenue - attendue)
-    return all(sp.simplify(ecart.subs(W, valeur)) == 0 for valeur in (1, R(-7, 3)))
+    return egales(obtenue, attendue)
 
 
 def test_la_transformee_de_la_gaussienne() -> None:
     """10.5.1 : `A e^(-a^2 t^2)` devient `(A racine(pi) / a) e^(-w^2 / (4 a^2))`."""
     attendue = 3 * sp.sqrt(sp.pi) / A * sp.exp(-(W**2) / (4 * A**2))
-    assert sp.simplify(transformee_de_fourier(3 * GAUSSIENNE) - attendue) == 0
+    assert egales(transformee_de_fourier(3 * GAUSSIENNE), attendue)
 
 
 def test_la_gaussienne_etroite_devient_large() -> None:
@@ -73,7 +73,7 @@ def test_la_gaussienne_etroite_devient_large() -> None:
     image = transformee_de_fourier(GAUSSIENNE)
 
     assert ecart_type(GAUSSIENNE, T) == 1 / (A * sp.sqrt(2))
-    assert sp.simplify(ecart_type(image, W) - A * sp.sqrt(2)) == 0
+    assert egales(ecart_type(image, W), A * sp.sqrt(2))
     assert ecart_type(GAUSSIENNE, T) ** 2 == 1 / (2 * A**2)
 
 
@@ -86,14 +86,14 @@ def test_la_valeur_en_zero_est_l_integrale_de_la_fonction() -> None:
     """(10.7) : `F(0) = int f(t) dt`."""
     assert sp.limit(transformee_de_fourier(PORTE), W, 0) == 2 * A
     aire = sp.integrate(GAUSSIENNE, (T, -sp.oo, sp.oo))
-    assert sp.simplify(transformee_de_fourier(GAUSSIENNE).subs(W, 0) - aire) == 0
+    assert egales(transformee_de_fourier(GAUSSIENNE).subs(W, 0), aire)
 
 
 def test_la_transformee_inverse_referme_la_boucle() -> None:
     """(10.2) puis (10.3) : `(1/2pi) int F(w) e^(+jwt) dw = f(t)`."""
     decalee = sp.exp(-((T - 1) ** 2))
     image = transformee_de_fourier(decalee)
-    assert sp.simplify(transformee_inverse(image) - decalee) == 0
+    assert egales(transformee_inverse(image), decalee)
 
 
 def test_l_inverse_imprimee_en_10_8_a_le_mauvais_signe() -> None:
@@ -105,19 +105,19 @@ def test_l_inverse_imprimee_en_10_8_a_le_mauvais_signe() -> None:
     decalee = sp.exp(-((T - 1) ** 2))
     image = transformee_de_fourier(decalee)
     noyau = image * sp.exp(-J * W * T)
-    imprimee = sp.simplify(sp.integrate(noyau, (W, -sp.oo, sp.oo)) / (2 * sp.pi))
-    assert sp.simplify(imprimee - decalee.subs(T, -T)) == 0
-    assert sp.simplify(imprimee - decalee) != 0
+    imprimee = sp.integrate(noyau, (W, -sp.oo, sp.oo)) / (2 * sp.pi)
+    assert egales(imprimee, decalee.subs(T, -T))
+    assert not egales(imprimee, decalee)
 
 
 def test_les_spectres_d_amplitude_de_phase_et_d_energie() -> None:
     """(10.5) et (10.6) : `F = R + jX = A e^(jb)`, energie `A^2`."""
     image = 1 / (1 + J * W)
     amplitude, phase, energie = spectres(image)
-    assert sp.simplify(amplitude - 1 / sp.sqrt(1 + W**2)) == 0
-    assert sp.simplify(phase + sp.atan(W)) == 0
-    assert sp.simplify(energie - 1 / (1 + W**2)) == 0
-    assert sp.simplify(sp.expand_complex(amplitude * sp.exp(J * phase) - image)) == 0
+    assert egales(amplitude, 1 / sp.sqrt(1 + W**2))
+    assert egales(phase, -(sp.atan(W)))
+    assert egales(energie, 1 / (1 + W**2))
+    assert egales(sp.expand_complex(amplitude * sp.exp(J * phase) - image), 0)
 
 
 def test_la_serie_de_fourier_de_la_porte_repetee_echantillonne_sa_transformee() -> None:
@@ -128,14 +128,9 @@ def test_la_serie_de_fourier_de_la_porte_repetee_echantillonne_sa_transformee() 
         serie = SerieDeFourier(porte_unite, -R(periode, 2), periode)
         for rang in (1, 2, 3):
             coefficient = serie.coefficient(rang)
-            assert (
-                sp.simplify(
-                    coefficient - sp.sin(sp.pi * rang / periode) / (sp.pi * rang)
-                )
-                == 0
-            )
+            assert egales(coefficient, sp.sin(sp.pi * rang / periode) / (sp.pi * rang))
             echantillon = image.subs(W, 2 * sp.pi * rang / periode) / periode
-            assert sp.simplify(coefficient - echantillon) == 0
+            assert egales(coefficient, echantillon)
 
 
 def test_la_limite_de_la_porte_n_est_pas_le_dirac_mais_deux_pi_fois_lui() -> None:
@@ -153,14 +148,14 @@ def test_le_changement_d_echelle() -> None:
     image = transformee_de_fourier(sp.exp(-(T**2)))
     for facteur in (2, -3, R(1, 2)):
         directe = transformee_de_fourier(sp.exp(-((facteur * T) ** 2)))
-        assert sp.simplify(du_changement_d_echelle(image, facteur) - directe) == 0
+        assert egales(du_changement_d_echelle(image, facteur), directe)
 
 
 def test_le_glissement_en_temps() -> None:
     """10.6.3 : `f(t - t0)` devient `e^(-j w t0) F(w)`."""
     image = transformee_de_fourier(sp.exp(-(T**2)))
     directe = transformee_de_fourier(sp.exp(-((T - 2) ** 2)))
-    assert sp.simplify(du_glissement(image, 2) - directe) == 0
+    assert egales(du_glissement(image, 2), directe)
 
 
 def test_la_modulation() -> None:
@@ -171,7 +166,7 @@ def test_la_modulation() -> None:
     fonction = sp.exp(-(T**2))
     image = transformee_de_fourier(fonction)
     directe = transformee_de_fourier(fonction * sp.exp(3 * J * T))
-    assert sp.simplify(de_la_modulation(image, 3) - directe) == 0
+    assert egales(de_la_modulation(image, 3), directe)
     en_cosinus = transformee_de_fourier(fonction * sp.cos(3 * T))
     somme = (de_la_modulation(image, 3) + de_la_modulation(image, -3)) / 2
     assert _egales(en_cosinus, somme)
@@ -186,7 +181,7 @@ def test_la_derivation_multiplie_par_j_omega() -> None:
     image = transformee_de_fourier(fonction)
     for ordre in (1, 2):
         directe = transformee_de_fourier(sp.diff(fonction, T, ordre))
-        assert sp.simplify(de_la_derivee(image, ordre) - directe) == 0
+        assert egales(de_la_derivee(image, ordre), directe)
 
 
 def test_l_integration_divise_par_j_omega() -> None:
@@ -194,7 +189,7 @@ def test_l_integration_divise_par_j_omega() -> None:
     fonction = -2 * T * sp.exp(-(T**2))
     image = transformee_de_fourier(fonction)
     primitive = sp.exp(-(T**2))
-    assert sp.simplify(de_la_primitive(image) - transformee_de_fourier(primitive)) == 0
+    assert egales(de_la_primitive(image), transformee_de_fourier(primitive))
 
 
 def test_une_fonction_d_integrale_non_nulle_n_a_pas_de_primitive_sommable() -> None:
@@ -211,15 +206,15 @@ def test_la_convolution_devient_un_produit() -> None:
         f.subs(T, muette) * g.subs(T, T - muette), (muette, -sp.oo, sp.oo)
     )
     produit = transformee_de_fourier(f) * transformee_de_fourier(g)
-    assert sp.simplify(transformee_de_fourier(sp.simplify(convolution)) - produit) == 0
+    assert egales(transformee_de_fourier(sp.simplify(convolution)), produit)
 
 
 def test_la_transformee_conserve_la_parite() -> None:
     """10.6.6 : paire donne paire, impaire donne impaire."""
     paire = transformee_de_fourier(sp.exp(-(T**2)))
     impaire = transformee_de_fourier(T * sp.exp(-(T**2)))
-    assert sp.simplify(paire.subs(W, -W) - paire) == 0
-    assert sp.simplify(impaire.subs(W, -W) + impaire) == 0
+    assert egales(paire.subs(W, -W), paire)
+    assert egales(impaire.subs(W, -W), -(impaire))
 
 
 def test_le_lemme_de_riemann_lebesgue() -> None:
@@ -234,32 +229,32 @@ def test_l_identite_de_parseval_plancherel() -> None:
     for fonction in (GAUSSIENNE, CAUSALE, PORTE.subs(A, 2)):
         temporelle = energie_temporelle(fonction)
         frequentielle = energie_frequentielle(transformee_de_fourier(fonction))
-        assert sp.simplify(temporelle - frequentielle) == 0
+        assert egales(temporelle, frequentielle)
     assert energie_temporelle(CAUSALE) == R(1, 2)
 
 
 def test_la_transformee_de_l_exponentielle_causale() -> None:
     """`e^(-t) H(t)` devient `1 / (1 + jw)` : la transformee de Laplace en `p = jw`."""
     image = transformee_de_fourier(CAUSALE)
-    assert sp.simplify(image - 1 / (1 + J * W)) == 0
+    assert egales(image, 1 / (1 + J * W))
     laplace = Transformee.de(sp.exp(-TEMPS)).image
-    assert sp.simplify(laplace.subs(P, J * W) - image) == 0
+    assert egales(laplace.subs(P, J * W), image)
 
 
 def test_le_lien_avec_la_transformee_des_signaux() -> None:
     """Lien : `fourier_depuis_laplace` du cours de signaux rend la meme image."""
     cote_signaux = fourier_depuis_laplace(1 / (P_DES_SIGNAUX + 1))
     image = transformee_de_fourier(CAUSALE)
-    assert sp.simplify(cote_signaux.subs(W_DES_SIGNAUX, W) - image) == 0
+    assert egales(cote_signaux.subs(W_DES_SIGNAUX, W), image)
 
 
 def test_une_equation_differentielle_devient_algebrique() -> None:
     """10.8 : `P(jw) F(w) = H(w)`. Ici `f' + 2f = e^(-t) H(t)`."""
     operateur = OperateurDifferentiel(D + 2)
     image = image_de_la_solution(operateur, transformee_de_fourier(CAUSALE))
-    assert sp.simplify(image - 1 / ((1 + J * W) * (2 + J * W))) == 0
+    assert egales(image, 1 / ((1 + J * W) * (2 + J * W)))
     solution = sp.Piecewise((sp.exp(-T) - sp.exp(-2 * T), T >= 0), (0, True))
-    assert sp.simplify(transformee_de_fourier(solution) - image) == 0
+    assert egales(transformee_de_fourier(solution), image)
 
 
 def test_l_oscillateur_amorti_du_10_8_1() -> None:
@@ -268,7 +263,7 @@ def test_l_oscillateur_amorti_du_10_8_1() -> None:
     operateur = OperateurDifferentiel(D**2 + gamma * D + w0**2)
     force = sp.Function("F")(W)
     image = image_de_la_solution(operateur, force)
-    assert sp.simplify(image - force / (w0**2 - W**2 + J * gamma * W)) == 0
+    assert egales(image, force / (w0**2 - W**2 + J * gamma * W))
 
 
 def test_un_oscillateur_sans_amortissement_n_a_pas_d_image_a_la_resonance() -> None:
@@ -280,8 +275,8 @@ def test_un_oscillateur_sans_amortissement_n_a_pas_d_image_a_la_resonance() -> N
 def test_l_inverse_au_signe_moins_rend_f_de_moins_t_et_un_autre_signe_leve() -> None:
     decalee = sp.exp(-((T - 1) ** 2))
     image = transformee_de_fourier(decalee)
-    assert sp.simplify(transformee_inverse(image) - decalee) == 0
-    assert sp.simplify(transformee_inverse(image, signe=-1) - decalee.subs(T, -T)) == 0
+    assert egales(transformee_inverse(image), decalee)
+    assert egales(transformee_inverse(image, signe=-1), decalee.subs(T, -T))
     with pytest.raises(ValueError, match="signe"):
         transformee_inverse(image, signe=2)
 
@@ -289,6 +284,6 @@ def test_l_inverse_au_signe_moins_rend_f_de_moins_t_et_un_autre_signe_leve() -> 
 def test_l_ecart_type_de_la_gaussienne_et_de_son_image() -> None:
     image = transformee_de_fourier(GAUSSIENNE)
     assert ecart_type(GAUSSIENNE, T) == 1 / (A * sp.sqrt(2))
-    assert sp.simplify(ecart_type(image, W) - A * sp.sqrt(2)) == 0
+    assert egales(ecart_type(image, W), A * sp.sqrt(2))
     with pytest.raises(ValueError, match="masse nulle"):
         ecart_type(T * GAUSSIENNE, T)

@@ -23,6 +23,7 @@ from polytech.maths.application import recueil_primitives_recurrence as recurren
 from polytech.maths.application import recueil_primitives_sommes as sommes
 from polytech.maths.application import recueil_primitives_suite as suite
 from polytech.maths.application.registre import JEUX_DE_MACROS
+from polytech.maths.domain.comparaison import egales
 
 x, a, b, p = enonces.X, enonces.A, enonces.B, enonces.P
 q, w, h = enonces.Q, enonces.W, enonces.H
@@ -220,20 +221,20 @@ def test_ecart_au_syllabus_le_coefficient_du_3_c() -> None:
     assert gestes.ecart(sp.diff(corrigee, x), integrande) < SEUIL
     calculee = recurrence.sur_le_trinome(3)
     assert gestes.ecart(sp.diff(calculee, x), integrande) < SEUIL
-    assert sp.simplify(calculee - corrigee) == 0
+    assert egales(calculee, corrigee)
 
 
 @pytest.mark.parametrize("ordre", [1, 2, 3])
 def test_exercice_3_la_recurrence(ordre: int) -> None:
     calculee = recurrence.puissance(ordre)
-    assert sp.simplify(sp.diff(calculee, x) - 1 / (x**2 + 1) ** ordre) == 0
-    assert sp.simplify(calculee - SOLUTIONS[f"3b{ordre}"]) == 0
+    assert egales(sp.diff(calculee, x), 1 / (x**2 + 1) ** ordre)
+    assert egales(calculee, SOLUTIONS[f"3b{ordre}"])
 
 
 @pytest.mark.parametrize("ordre", [1, 2])
 def test_exercice_3_le_trinome(ordre: int) -> None:
     calculee = recurrence.sur_le_trinome(ordre)
-    assert sp.simplify(calculee - SOLUTIONS[f"3c{ordre}"]) == 0
+    assert egales(calculee, SOLUTIONS[f"3c{ordre}"])
 
 
 def test_exercice_3_la_relation_se_verifie_en_derivant() -> None:
@@ -246,7 +247,7 @@ def test_exercice_3_la_relation_se_verifie_en_derivant() -> None:
         droite = facteur.subs(n, ordre) / (x**2 + 1) ** (ordre - 1) + sp.diff(
             terme.subs(n, ordre), x
         )
-        assert sp.simplify(gauche - droite) == 0
+        assert egales(gauche, droite)
 
 
 def test_un_ordre_nul_est_refuse() -> None:
@@ -314,7 +315,7 @@ def test_exercice_3_les_coefficients_que_le_syllabus_ecrit() -> None:
     forme = recurrence.facteur_du_trinome(3) * (
         c0 * atan(u36) + c1 * u36 / T + c2 * u36 / T**2
     )
-    assert sp.simplify(forme - recurrence.sur_le_trinome(3)) == 0
+    assert egales(forme, recurrence.sur_le_trinome(3))
 
 
 JEUX = {
@@ -360,7 +361,7 @@ def test_exercice_3_la_forme_que_le_syllabus_ecrit(ordre: int) -> None:
     forme = recurrence.forme_du_trinome(ordre)
     assert forme.free_symbols <= {recurrence.U, recurrence.TRINOME}
     en_x = forme.subs({recurrence.U: recurrence.CENTRE, recurrence.TRINOME: T})
-    assert sp.simplify(en_x - recurrence.sur_le_trinome(ordre)) == 0
+    assert egales(en_x, recurrence.sur_le_trinome(ordre))
 
 
 def test_une_differentielle_rationnelle_est_reduite() -> None:

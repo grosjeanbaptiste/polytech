@@ -20,6 +20,7 @@ from polytech.electronique.application.enonce_tp_01 import (
     ferrite,
     pont_de_resistances,
 )
+from polytech.electronique.domain.solenoide import inductance_du_solenoide
 
 
 def test_la_permeabilite_du_ferrite() -> None:
@@ -37,7 +38,7 @@ def test_l_inductance_exacte_et_celle_de_l_officiel() -> None:
     """469 uH avec la pente exacte ; 450 uH avec mu arrondi a 9e-4."""
     _, _, _, inductance = ferrite()
     assert inductance == pytest.approx(468.75e-6)
-    assert pytest.approx(450e-6) == 9e-4 * 20**2 * 25e-6 / 0.02
+    assert inductance_du_solenoide(9e-4, 20, 25e-6, 20e-3) == pytest.approx(450e-6)
 
 
 def test_la_boucle_coupe_vers_dix_megahertz() -> None:

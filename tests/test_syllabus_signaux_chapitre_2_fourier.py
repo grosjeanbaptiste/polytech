@@ -18,6 +18,13 @@ import numpy as np
 import pytest
 import sympy as sp
 
+from polytech.maths.domain.comparaison import (
+    egales,
+    proches,
+    proches_relativement,
+    suite_nulle,
+    suites_proches,
+)
 from polytech.maths.domain.fourier.distributions import transformee_du_cosinus
 from polytech.maths.domain.fourier.transformee import (
     PULSATION,
@@ -54,16 +61,10 @@ from polytech.signaux.domain.spectre_estime import raies_estimees, spectre_estim
 F, T = FREQUENCE, INSTANT
 
 
-def _egales(premiere: sp.Expr, seconde: sp.Expr) -> bool:
-    """Compare deux spectres en quelques frequences non entieres."""
-    ecart = sp.lambdify(F, premiere - seconde, "numpy")
-    return bool(np.allclose(ecart(np.array([-1.7, -0.3, 0.45, 2.6])), 0, atol=1e-12))
-
-
 def test_l_exemple_2_1_la_porte_devient_un_sinus_cardinal() -> None:
     """(2.10) : `rect(t) <-> sinc(f)`, nul en tout `f = k` entier non nul."""
     image = transformee_en_frequence(rect(T))
-    assert _egales(image, sinc(F))
+    assert egales(image, sinc(F))
     assert sinc(F).subs(F, 3) == 0
     assert sinc(F).subs(F, 0) == 1
 
@@ -75,7 +76,7 @@ def test_la_valeur_en_zero_est_la_surface_du_signal() -> None:
 
 
 def test_l_exemple_2_2_le_triangle_devient_un_sinus_cardinal_au_carre() -> None:
-    assert _egales(transformee_en_frequence(tri(T)), sinc(F) ** 2)
+    assert egales(transformee_en_frequence(tri(T)), sinc(F) ** 2)
 
 
 def test_la_convolution_de_deux_portes_est_un_triangle() -> None:
@@ -85,7 +86,7 @@ def test_la_convolution_de_deux_portes_est_un_triangle() -> None:
     porte = np.ones_like(instants)
     produit = convoluer(porte, porte) * pas
     attendus = sp.lambdify(T, tri(T), "numpy")(np.arange(-1.0, 1.0 + pas / 2, pas))
-    assert np.allclose(produit, attendus, atol=2 * pas)
+    assert suites_proches(produit, attendus, 2 * pas)
 
 
 def test_l_exemple_2_3_le_sinus_cardinal_devient_une_porte() -> None:
@@ -93,7 +94,7 @@ def test_l_exemple_2_3_le_sinus_cardinal_devient_une_porte() -> None:
     assert de_la_dualite(rect(T)) == rect(-F)
     retour = signal_depuis_le_spectre(rect(F))
     ecart = sp.lambdify(T, retour - sinc(T), "numpy")
-    assert np.allclose(ecart(np.array([-2.3, 0.4, 1.5])), 0, atol=1e-12)
+    assert suite_nulle(ecart(np.array([-2.3, 0.4, 1.5])), 1e-12)
 
 
 def test_la_dualite_retourne_l_axe() -> None:
@@ -104,7 +105,7 @@ def test_la_dualite_retourne_l_axe() -> None:
     image = du_decalage_temporel(sinc(F), retard).subs(F, T)
     retour = signal_depuis_le_spectre(de_la_dualite(decalee))
     ecart = sp.lambdify(T, retour - image, "numpy")
-    assert np.allclose(ecart(np.array([-1.3, 0.4, 2.2])), 0, atol=1e-12)
+    assert suite_nulle(ecart(np.array([-1.3, 0.4, 2.2])), 1e-12)
 
 
 def test_l_exemple_2_4_l_impulsion_de_dirac_contient_toutes_les_frequences() -> None:
@@ -115,22 +116,22 @@ def test_le_decalage_temporel_n_ajoute_qu_une_phase_lineaire() -> None:
     """Tableau 2.1 : `f(t - t_0) <-> F(f) exp(-j 2 pi f t_0)`."""
     retard = sp.Rational(3, 4)
     directe = transformee_en_frequence(rect(T - retard))
-    assert _egales(directe, du_decalage_temporel(sinc(F), retard))
+    assert egales(directe, du_decalage_temporel(sinc(F), retard))
     module = sp.Abs(du_decalage_temporel(sinc(F), retard))
-    assert sp.simplify(module - sp.Abs(sinc(F))) == 0
+    assert egales(module, sp.Abs(sinc(F)))
 
 
 def test_la_reflexion_conjugue_la_transformee() -> None:
     """Tableau 2.1 : `f(-t) <-> F*(f)`, sur une porte decalee."""
     retard = sp.Rational(3, 4)
     image = transformee_en_frequence(rect(T - retard))
-    assert _egales(transformee_en_frequence(rect(-T - retard)), de_la_reflexion(image))
+    assert egales(transformee_en_frequence(rect(-T - retard)), de_la_reflexion(image))
 
 
 def test_dilater_un_signal_comprime_sa_transformee() -> None:
     """Fig. 2.8 : la porte deux fois plus large a un spectre deux fois plus haut."""
     large = transformee_en_frequence(rect(T / 2))
-    assert _egales(large, du_changement_d_echelle(sinc(F), sp.Rational(1, 2)))
+    assert egales(large, du_changement_d_echelle(sinc(F), sp.Rational(1, 2)))
     assert sp.limit(large, F, 0) == 2
     with pytest.raises(ValueError, match="facteur d'echelle nul"):
         du_changement_d_echelle(sinc(F), 0)
@@ -141,7 +142,7 @@ def test_deriver_multiplie_par_j_omega() -> None:
     demi = sp.Rational(1, 2)
     pente = rect(T + demi) - rect(T - demi)
     directe = transformee_en_frequence(pente)
-    assert _egales(directe, de_la_derivee(sinc(F) ** 2))
+    assert egales(directe, de_la_derivee(sinc(F) ** 2))
 
 
 def test_parseval_l_energie_se_lit_dans_les_deux_domaines() -> None:
@@ -151,14 +152,14 @@ def test_parseval_l_energie_se_lit_dans_les_deux_domaines() -> None:
     spectre = np.sinc(frequences) ** 2
     frequentielle = float(np.sum(spectre) * (frequences[1] - frequences[0]))
     assert temporelle == 1
-    assert frequentielle == pytest.approx(1.0, abs=1e-3)
+    assert proches(frequentielle, 1.0, 1e-3)
 
 
 def test_la_notation_en_pulsation_ne_change_que_l_axe() -> None:
     """2.1.6 et fig. 2.22 : `F(omega) = F(f)`, soit `sinc(omega / 2 pi)`."""
     porte = sp.Piecewise((1, sp.Abs(VARIABLE) <= sp.Rational(1, 2)), (0, True))
     en_pulsation = transformee_de_fourier(porte)
-    assert _egales(en_frequence(en_pulsation, PULSATION), sinc(F))
+    assert egales(en_frequence(en_pulsation, PULSATION), sinc(F))
 
 
 def test_l_impulsion_de_dirac_change_de_poids_avec_l_axe() -> None:
@@ -167,7 +168,7 @@ def test_l_impulsion_de_dirac_change_de_poids_avec_l_axe() -> None:
     en_pulsation = transformee_du_cosinus(pulsation)
     frequence = pulsation / (2 * sp.pi)
     attendu = (sp.DiracDelta(F - frequence) + sp.DiracDelta(F + frequence)) / 2
-    assert sp.simplify(en_frequence(en_pulsation, PULSATION) - attendu) == 0
+    assert egales(en_frequence(en_pulsation, PULSATION), attendu)
 
 
 def test_l_exemple_2_8_les_raies_du_rectangle_periodique() -> None:
@@ -176,9 +177,9 @@ def test_l_exemple_2_8_les_raies_du_rectangle_periodique() -> None:
     assert raies[0] == sp.Rational(1, 2)
     assert raies[2] == 0
     assert raies[4] == 0
-    assert sp.simplify(raies[1] - 1 / sp.pi) == 0
-    assert sp.simplify(raies[3] * 3 + raies[1]) == 0
-    assert sp.simplify(raies[5] * 5 - raies[1]) == 0
+    assert egales(raies[1], 1 / sp.pi)
+    assert egales(raies[3] * 3, -(raies[1]))
+    assert egales(raies[5] * 5, raies[1])
 
 
 def test_la_raie_est_le_coefficient_de_la_serie_de_fourier() -> None:
@@ -186,7 +187,7 @@ def test_la_raie_est_le_coefficient_de_la_serie_de_fourier() -> None:
     for rang in (0, 1, 3):
         noyau = sp.exp(-sp.I * rang * sp.pi * T)
         directe = sp.integrate(rect(T) * noyau, (T, -1, 1)) / 2
-        assert sp.simplify(directe - raie(sinc(F), 2, rang)) == 0
+        assert egales(directe, raie(sinc(F), 2, rang))
 
 
 def test_une_raie_se_prolonge_la_ou_l_image_s_ecrit_zero_sur_zero() -> None:
@@ -205,9 +206,9 @@ def test_l_exemple_2_9_les_raies_du_triangle_decroissent_en_un_sur_k_carre() -> 
     raies = [raie(sinc(F) ** 2, 2, rang) for rang in range(6)]
     assert raies[0] == sp.Rational(1, 2)
     assert raies[2] == 0
-    assert sp.simplify(raies[1] - 2 / sp.pi**2) == 0
-    assert sp.simplify(raies[3] * 9 - raies[1]) == 0
-    assert sp.simplify(raies[5] * 25 - raies[1]) == 0
+    assert egales(raies[1], 2 / sp.pi**2)
+    assert egales(raies[3] * 9, raies[1])
+    assert egales(raies[5] * 25, raies[1])
 
 
 def test_l_exemple_2_7_le_peigne_de_dirac_a_des_raies_d_amplitude_un_sur_t0() -> None:
@@ -238,11 +239,11 @@ def test_le_taux_de_distorsion_du_rectangle_periodique() -> None:
     amplitudes = list(np.abs(np.sinc(rangs / 2)) / 2)
     for rang in (1, 2, 3):
         attendue = abs(float(raie(sinc(F), 2, rang)))
-        assert amplitudes[rang - 1] == pytest.approx(attendue, abs=1e-12)
+        assert proches(amplitudes[rang - 1], attendue, 1e-12)
     taux = taux_de_distorsion_harmonique(amplitudes)
-    assert taux == pytest.approx(100 * math.sqrt(1 - 8 / math.pi**2), abs=0.05)
-    assert taux == pytest.approx(43.5, abs=0.1)
-    assert (taux / 100) ** 2 * 100 == pytest.approx(18.9, abs=0.1)
+    assert proches(taux, 100 * math.sqrt(1 - 8 / math.pi**2), 0.05)
+    assert proches(taux, 43.5, 0.1)
+    assert proches((taux / 100) ** 2 * 100, 18.9, 0.1)
     assert taux_de_distorsion_harmonique([1.0]) == 0
     with pytest.raises(ValueError, match="fondamental nul"):
         taux_de_distorsion_harmonique([0.0, 1.0])
@@ -267,9 +268,9 @@ def test_l_estimation_numerique_de_la_porte_a_un_facteur_un_sur_te_pres() -> Non
     assert instants[5] < -0.5 < 0.5 > instants[15] > 0.4999
     frequences = np.array([0.0, 1.5, 2.5])
     estime = spectre_estime(porte, cadence, frequences)
-    assert estime[0] * cadence == pytest.approx(10.0)
-    assert estime[0] == pytest.approx(1.0)
-    assert estime[1:] == pytest.approx(np.abs(np.sinc(frequences[1:])), abs=0.03)
+    assert proches_relativement(estime[0] * cadence, 10.0, 1e-6)
+    assert proches_relativement(estime[0], 1.0, 1e-6)
+    assert suites_proches(estime[1:], np.abs(np.sinc(frequences[1:])), 0.03)
 
 
 def test_l_exemple_2_5_l_exponentielle_imaginaire_a_un_sommet_de_200() -> None:
@@ -278,21 +279,25 @@ def test_l_exemple_2_5_l_exponentielle_imaginaire_a_un_sommet_de_200() -> None:
     instants = np.arange(0, 2, 1 / cadence)
     signal = np.exp(2j * np.pi * instants)
     brut = raies_estimees(signal, cadence, np.array([1.0])) * len(instants)
-    assert brut[0] == pytest.approx(200.0)
-    assert raies_estimees(signal, cadence, np.array([1.0]))[0] == pytest.approx(1.0)
+    assert proches_relativement(brut[0], 200.0, 1e-6)
+    assert proches_relativement(
+        raies_estimees(signal, cadence, np.array([1.0]))[0], 1.0, 1e-6
+    )
 
 
 def test_l_exemple_2_6_le_cosinus_n_a_que_la_moitie_de_l_amplitude() -> None:
     cadence = 100.0
     instants = np.arange(0, 2, 1 / cadence)
     signal = np.cos(2 * np.pi * instants)
-    assert raies_estimees(signal, cadence, np.array([1.0]))[0] == pytest.approx(0.5)
+    assert proches_relativement(
+        raies_estimees(signal, cadence, np.array([1.0]))[0], 0.5, 1e-6
+    )
     with pytest.raises(ValueError, match="aucun echantillon"):
         raies_estimees(np.array([]), cadence, np.array([1.0]))
 
 
 def test_l_exemple_2_10_la_frequence_fondamentale_de_la_voix() -> None:
     """« Une periode de l'ordre de 65 echantillons », soit `8000 / 65 = 123 Hz`."""
-    assert frequence_fondamentale(65, 8000.0) == pytest.approx(123.0, abs=0.1)
+    assert proches(frequence_fondamentale(65, 8000.0), 123.0, 0.1)
     with pytest.raises(ValueError, match="periode nulle ou negative"):
         frequence_fondamentale(0, 8000.0)

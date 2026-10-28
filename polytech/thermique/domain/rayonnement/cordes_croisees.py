@@ -31,6 +31,18 @@ def corde_tendue(*points: Point) -> float:
     )
 
 
+def corde_croisee_de_deux_tubes(diametre: float, pas: float) -> float:
+    """Le fil croise tendu entre deux tubes de meme diametre, au pas donne.
+
+    Un segment tangent aux deux, plus l'arc dont il s'enroule sur chacun.
+    """
+    if pas < diametre:
+        msg = f"tubes qui se chevauchent : pas {pas} m, diametre {diametre} m"
+        raise ValueError(msg)
+    tangente = math.sqrt(pas**2 - diametre**2)
+    return tangente + diametre * math.asin(diametre / pas)
+
+
 def aire_par_les_cordes(
     croisees: Sequence[float], non_croisees: Sequence[float]
 ) -> float:

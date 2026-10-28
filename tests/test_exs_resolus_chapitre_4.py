@@ -14,6 +14,7 @@ import math
 import pytest
 import sympy as sp
 
+from polytech.maths.domain.comparaison import egales, proches, proches_relativement
 from polytech.signaux.application import resolus_graphes as gr
 from polytech.signaux.application import resolus_quadripoles as qu
 from polytech.signaux.domain.symboles import IMAGE as P
@@ -31,7 +32,7 @@ def test_0_22_les_quatre_transmittances() -> None:
         "RL": tau_lr * P / (tau_lr * P + 1),
     }
     for nom, attendue in attendues.items():
-        assert sp.simplify(qu.transmittance(nom) - attendue) == 0
+        assert egales(qu.transmittance(nom), attendue)
 
 
 def test_0_22_les_limites_encadrees_du_manuscrit() -> None:
@@ -74,7 +75,7 @@ def test_0_24_la_transmittance_de_la_solution() -> None:
     """Page 16 : `R / (p^2 RLC + p (R^2 C + L) + 2R)`."""
     r, ind, cap = qu.R, qu.L, qu.C
     attendue = r / (P**2 * r * ind * cap + P * (r**2 * cap + ind) + 2 * r)
-    assert sp.simplify(qu.transmittance_de_l_exemple() - attendue) == 0
+    assert egales(qu.transmittance_de_l_exemple(), attendue)
 
 
 def test_0_24_les_quatre_limites_de_la_solution() -> None:
@@ -85,9 +86,9 @@ def test_0_24_les_quatre_limites_de_la_solution() -> None:
 def test_0_24_les_reperes_des_traces_matlab() -> None:
     """Page 16 : l'impulsionnelle culmine vers 320 a 0,8 ms, l'indicielle vers 0,52."""
     instant, sommet = qu.sommet_de_l_impulsionnelle()
-    assert instant == pytest.approx(math.pi / 4 * 1e-3)
-    assert sommet == pytest.approx(322, abs=1)
-    assert qu.sommet_de_l_indicielle() == pytest.approx(0.52, abs=5e-3)
+    assert proches_relativement(instant, math.pi / 4 * 1e-3, 1e-6)
+    assert proches(sommet, 322, 1)
+    assert proches(qu.sommet_de_l_indicielle(), 0.52, 5e-3)
 
 
 # --- 0.25 a 0.28 : des graphes ----------------------------------------------
@@ -95,7 +96,7 @@ def test_0_24_les_reperes_des_traces_matlab() -> None:
 
 def test_0_25_la_transmittance_de_la_solution() -> None:
     """Page 17 : `p / (p^2 + 20p + 200)` ; pulsation 10 rad/s, constante 1/10 s."""
-    assert sp.simplify(gr.transmittance("0.25") - P / (P**2 + 20 * P + 200)) == 0
+    assert egales(gr.transmittance("0.25"), P / (P**2 + 20 * P + 200))
     assert gr.sigma_et_omega("0.25") == (10, 10)
     assert gr.limites("0.25") == {"h": (1, 0), "a": (0, 0)}
 
@@ -103,15 +104,15 @@ def test_0_25_la_transmittance_de_la_solution() -> None:
 def test_0_25_le_sommet_du_trace_matlab() -> None:
     """Page 18 : l'indicielle culmine vers 0,032, a 0,08 s."""
     instant, sommet = gr.sommet_de_l_indicielle("0.25")
-    assert instant == pytest.approx(math.pi / 40)
-    assert sommet == pytest.approx(0.0322, abs=5e-5)
+    assert proches_relativement(instant, math.pi / 40, 1e-6)
+    assert proches(sommet, 0.0322, 5e-5)
 
 
 def test_0_26_la_transmittance_que_le_schema_donne() -> None:
     """Le schema donne `p (p+2)/(p+1)^2` ; la solution imprime `p/(p+1)`."""
-    assert sp.simplify(gr.transmittance("0.26") - P * (P + 2) / (P + 1) ** 2) == 0
-    ecart = sp.simplify(gr.transmittance("0.26") / (P / (P + 1)))
-    assert sp.simplify(ecart - (P + 2) / (P + 1)) == 0
+    assert egales(gr.transmittance("0.26"), P * (P + 2) / (P + 1) ** 2)
+    ecart = gr.transmittance("0.26") / (P / (P + 1))
+    assert egales(ecart, (P + 2) / (P + 1))
 
 
 def test_0_26_la_valeur_finale_de_la_solution() -> None:
@@ -122,36 +123,36 @@ def test_0_26_la_valeur_finale_de_la_solution() -> None:
 
 def test_0_27_la_transmittance_et_les_limites_de_la_solution() -> None:
     """Pages 18 et 19 : `(p+1)/(p^2+20p+20)` ; `h` de 1 a 0, `a` de 0 a 1/20."""
-    assert sp.simplify(gr.transmittance("0.27") - (P + 1) / (P**2 + 20 * P + 20)) == 0
+    assert egales(gr.transmittance("0.27"), (P + 1) / (P**2 + 20 * P + 20))
     assert gr.limites("0.27") == {"h": (1, 0), "a": (0, sp.Rational(1, 20))}
 
 
 def test_0_27_les_constantes_de_temps() -> None:
     """Page 19 : « 1 s et 1/20 s » ; exactement 0,947 s et 0,053 s."""
     lente, rapide = gr.constantes_de_temps("0.27")
-    assert lente == pytest.approx(0.947, abs=5e-4)
-    assert rapide == pytest.approx(0.0528, abs=5e-5)
+    assert proches(lente, 0.947, 5e-4)
+    assert proches(rapide, 0.0528, 5e-5)
 
 
 def test_0_27_le_zero_efface_presque_le_pole_lent() -> None:
     """Le zero en -1 est a 0,056 du pole lent : son mode ne pese que 0,3 %."""
     lent, rapide = gr.poids_des_modes_de_l_impulsionnelle("0.27")
-    assert lent == pytest.approx(-0.0031, abs=5e-5)
-    assert lent + rapide == pytest.approx(1)
+    assert proches(lent, -0.0031, 5e-5)
+    assert proches_relativement(lent + rapide, 1, 1e-6)
 
 
 def test_0_28_la_transmittance_de_la_solution() -> None:
     """Page 19 : `5 / (p^3 + p^2 + 10p + 15)`."""
     attendue = 5 / (P**3 + P**2 + 10 * P + 15)
-    assert sp.simplify(gr.transmittance("0.28") - attendue) == 0
+    assert egales(gr.transmittance("0.28"), attendue)
 
 
 def test_0_28_le_systeme_est_instable() -> None:
     """Page 20 : des poles a droite, une oscillation a 3 rad/s (T = 2 s) qui diverge."""
     reel, pulsation = gr.pole_instable("0.28")
-    assert reel == pytest.approx(0.21, abs=5e-3)
-    assert pulsation == pytest.approx(3.25, abs=5e-3)
-    assert 2 * math.pi / pulsation == pytest.approx(2, abs=0.1)
+    assert proches(reel, 0.21, 5e-3)
+    assert proches(pulsation, 3.25, 5e-3)
+    assert proches(2 * math.pi / pulsation, 2, 0.1)
 
 
 def test_0_28_la_valeur_finale_n_existe_pas() -> None:

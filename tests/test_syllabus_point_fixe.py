@@ -14,6 +14,13 @@ from typing import TYPE_CHECKING
 import pytest
 import sympy as sp
 
+from polytech.maths.domain.comparaison import (
+    egales,
+    egales_arrondies,
+    eloignees,
+    proches,
+    suites_proches,
+)
 from polytech.maths.domain.differentielles.cauchy import ProblemeDeCauchy
 from polytech.maths.domain.differentielles.picard import (
     constante_de_lipschitz,
@@ -71,6 +78,9 @@ TABLE_DU_COSH = (
 )
 
 
+IMPRIME_PAGE_94 = 0.765009873  # x_inf imprime page 94 du syllabus de mathematique
+
+
 def _demi_cosinus(x: float) -> float:
     return math.cos(x) / 2
 
@@ -88,11 +98,11 @@ def test_les_iterees_du_demi_cosinus() -> None:
     """
     suite = iterer(_demi_cosinus, 0.0, 10)
     assert suite[0] == 0
-    assert suite[1:] == pytest.approx(TABLE_DU_COSINUS, abs=1e-6)
+    assert suites_proches(suite[1:], TABLE_DU_COSINUS, 1e-6)
     mal_arrondies = {
         rang
         for rang, imprimee in enumerate(TABLE_DU_COSINUS, start=1)
-        if round(suite[rang], 6) != imprimee
+        if not egales_arrondies(suite[rang], imprimee, 6)
     }
     assert mal_arrondies == {5, 9, 10}
 
@@ -100,16 +110,14 @@ def test_les_iterees_du_demi_cosinus() -> None:
 def test_la_limite_des_iterees_est_un_point_fixe() -> None:
     """`u = T(u)` : 0,450183 annule `x - cos(x)/2`."""
     u = iterer(_demi_cosinus, 0.0, 60)[-1]
-    assert u == pytest.approx(0.450183, abs=1e-6)
-    assert _demi_cosinus(u) == pytest.approx(u, abs=1e-15)
+    assert proches(u, 0.450183, 1e-6)
+    assert proches(_demi_cosinus(u), u, 1e-15)
 
 
 def test_le_point_fixe_ne_depend_pas_du_depart() -> None:
     """Theoreme 5.1 : un et un seul point fixe, quel que soit `x_0`."""
-    arrivees = {
-        round(iterer(_demi_cosinus, depart, 80)[-1], 12) for depart in (0, 1, 1.5)
-    }
-    assert len(arrivees) == 1
+    arrivees = [iterer(_demi_cosinus, depart, 80)[-1] for depart in (0, 1, 1.5)]
+    assert suites_proches(arrivees, [arrivees[0]] * len(arrivees), 1e-12)
 
 
 def test_le_demi_cosinus_est_contractant_de_constante_un_demi() -> None:
@@ -122,15 +130,15 @@ def test_le_demi_cosinus_est_contractant_de_constante_un_demi() -> None:
 def test_l_inverse_du_cosh_est_contractant() -> None:
     """Page 93 : `T'' = 0` en `sinh x = 1`, ou `|T'| = 1/2` est maximal."""
     seconde = sp.diff(INVERSE_DU_COSH, X, 2)
-    assert sp.simplify(seconde - (sp.sinh(X) ** 2 - 1) / sp.cosh(X) ** 3) == 0
+    assert egales(seconde, (sp.sinh(X) ** 2 - 1) / sp.cosh(X) ** 3)
     constante = constante_de_contraction(INVERSE_DU_COSH, X, sp.Interval(0, sp.oo))
-    assert sp.simplify(constante.rewrite(sp.exp) - R(1, 2)) == 0
+    assert egales(constante.rewrite(sp.exp), R(1, 2))
 
 
 def test_les_iterees_de_l_inverse_du_cosh() -> None:
     """Page 94 : de `x_0 = 1`, la table jusqu'a `x_19`."""
     suite = iterer(_inverse_du_cosh, 1.0, 19)
-    assert suite[1:] == pytest.approx(TABLE_DU_COSH, abs=5e-8)
+    assert suites_proches(suite[1:], TABLE_DU_COSH, 5e-8)
 
 
 def test_le_point_fixe_imprime_page_94_est_faux_a_la_huitieme_decimale() -> None:
@@ -141,10 +149,10 @@ def test_le_point_fixe_imprime_page_94_est_faux_a_la_huitieme_decimale() -> None
     """
     limite = iterer(_inverse_du_cosh, 1.0, 200)[-1]
     racine = float(sp.nsolve(X - INVERSE_DU_COSH, X, 0.765))
-    assert limite == pytest.approx(0.765009955, abs=5e-10)
-    assert limite == pytest.approx(racine, abs=1e-14)
-    assert abs(0.765009873 - _inverse_du_cosh(0.765009873)) > 1e-7
-    assert abs(limite - _inverse_du_cosh(limite)) < 1e-15
+    assert proches(limite, 0.765009955, 5e-10)
+    assert proches(limite, racine, 1e-14)
+    assert eloignees(IMPRIME_PAGE_94, _inverse_du_cosh(IMPRIME_PAGE_94), 1e-7)
+    assert proches(limite, _inverse_du_cosh(limite), 1e-15)
 
 
 @pytest.mark.parametrize(
@@ -158,7 +166,9 @@ def test_la_borne_de_l_erreur_tient_a_chaque_rang(
     suite = iterer(transformation, depart, 15)
     premier_pas = abs(suite[1] - suite[0])
     for rang, valeur in enumerate(suite):
-        assert abs(valeur - limite) <= borne_de_l_erreur(0.5, premier_pas, rang) + 1e-10
+        assert proches(
+            valeur, limite, borne_de_l_erreur(0.5, premier_pas, rang) + 1e-10
+        )
 
 
 def test_la_borne_decroit_d_autant_plus_vite_que_k_est_petit() -> None:

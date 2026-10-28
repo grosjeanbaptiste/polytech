@@ -14,6 +14,11 @@ import sympy as sp
 
 from polytech.electronique.application import dimensionnement_lab_05 as dm
 from polytech.electronique.domain.aop import aop, sortie_ideale
+from polytech.electronique.domain.decalages_en_sortie import (
+    Defauts,
+    decalage_de_l_inverseur,
+    decalage_du_non_inverseur,
+)
 from polytech.electronique.domain.netliste import (
     Admittance,
     Element,
@@ -70,14 +75,23 @@ def decalages_par_les_formules(
     contre_reaction: float = dm.R_RETOUR,
     courants: bool = True,
 ) -> tuple[float, float]:
-    """Le second chemin : les formules du cours, sans analyse nodale.
+    """Le second chemin : les gains et erreurs de `domain`, sans analyse nodale.
 
-    Non-inverseur : `(1 + R_f / R_m)(e_0 - R_s I_+) + R_f I_-` ; inverseur :
-    `-(R_p / R_e) V_1 + (1 + R_p / R_e) e_0 + R_p I_-`.
+    Non-inverseur : `G (e_0 - R_s I_+) + R_f I_-` ; inverseur : `G' V_1 +
+    (1 + R_p / R_e) e_0 + R_p I_-`, `G'` etant le gain inverseur.
     """
     i_plus, i_moins = (I_PLUS, I_MOINS) if courants else (0.0, 0.0)
-    gain = 1 + contre_reaction / vers_la_masse
-    premier = gain * (DECALAGE - GENERATEUR * i_plus) + contre_reaction * i_moins
-    rapport = dm.POTENTIOMETRE / dm.R_ENTREE
-    second = -rapport * premier + (1 + rapport) * DECALAGE
-    return premier, second + dm.POTENTIOMETRE * i_moins
+    defauts = Defauts(DECALAGE, i_plus, i_moins)
+    premier = decalage_du_non_inverseur(
+        defauts,
+        vers_la_masse=vers_la_masse,
+        contre_reaction=contre_reaction,
+        source=GENERATEUR,
+    )
+    second = decalage_de_l_inverseur(
+        premier,
+        Defauts(DECALAGE, 0.0, i_moins),
+        resistance_entree=dm.R_ENTREE,
+        contre_reaction=dm.POTENTIOMETRE,
+    )
+    return premier, second

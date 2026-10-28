@@ -68,10 +68,22 @@ from polytech.electromagnetisme.domain.energie_et_forces import (
     densite_d_energie_electrique,
 )
 from polytech.electromagnetisme.domain.symboles import CARTESIENNES
+from polytech.maths.domain.comparaison import (
+    egales,
+    egales_arrondies,
+    eloignees,
+    proches,
+    proches_relativement,
+    rapport_au_dessus,
+    suites_proches,
+)
 from polytech.mecanique.domain.gravitation import force_gravitationnelle
 
 X, Y, Z = CARTESIENNES
 K = 1 / (4 * math.pi * PERMITTIVITE_DU_VIDE)
+
+
+IMPRIME_813_5 = 813.5  # MeV, exemple 2.21.2 du syllabus d'electricite (valeur imprimee)
 
 
 def _nombres(vecteur: tuple[sp.Expr, ...]) -> list[float]:
@@ -114,7 +126,7 @@ def test_la_tension_se_compose_par_un_potentiel_de_reference() -> None:
     """(2.19.9) et (2.19.10) : U_12 = U_1a + U_a2 = U_10 - U_20."""
     v_1, v_2, v_a, v_0 = sp.symbols("V_1 V_2 V_a V_0", real=True)
     assert tension(v_1, v_a) + tension(v_a, v_2) == tension(v_1, v_2)
-    assert sp.simplify(tension(v_1, v_0) - tension(v_2, v_0) - tension(v_1, v_2)) == 0
+    assert egales(tension(v_1, v_0) - tension(v_2, v_0), tension(v_1, v_2))
 
 
 def test_le_travail_ne_depend_pas_du_chemin_suivi() -> None:
@@ -147,8 +159,8 @@ def test_le_travail_ne_depend_pas_du_chemin_suivi() -> None:
     direct = circulation([depart, arrivee])
     detour = circulation([depart, (2.0, 2.0, 0.0), (0.0, 5.0, 1.0), arrivee])
     attendu = travail_des_forces_du_champ(charge, valeur(*depart), valeur(*arrivee))
-    assert math.isclose(direct, attendu, rel_tol=1e-9)
-    assert math.isclose(detour, attendu, rel_tol=1e-9)
+    assert proches_relativement(direct, attendu, 1e-9)
+    assert proches_relativement(detour, attendu, 1e-9)
 
 
 # --- 2.20 Loi de Coulomb -------------------------------------------------------
@@ -158,9 +170,9 @@ def test_la_force_de_coulomb_entre_deux_charges() -> None:
     """(2.20.2) : F = q q_1 R_1 / (4 pi eps_0 R_1^3), de la source vers la charge."""
     force = _nombres(force_de_coulomb(1e-6, (0, 0, 0), 2e-6, (3, 0, 4)))
     module = K * 2e-12 / 25
-    assert math.isclose(force[0], module * 3 / 5)
+    assert proches_relativement(force[0], module * 3 / 5, 1e-9)
     assert force[1] == 0
-    assert math.isclose(force[2], module * 4 / 5)
+    assert proches_relativement(force[2], module * 4 / 5, 1e-9)
 
 
 def test_deux_charges_de_signes_opposes_s_attirent() -> None:
@@ -175,7 +187,7 @@ def test_l_action_et_la_reaction() -> None:
     """Remarque 1 de la page 2-68 : la force de q sur q_1 est egale et opposee."""
     aller = force_de_coulomb(3, (1, 2, 0), -2, (4, 6, 0))
     retour = force_de_coulomb(-2, (4, 6, 0), 3, (1, 2, 0))
-    assert [sp.simplify(a + r) for a, r in zip(aller, retour, strict=True)] == [0, 0, 0]
+    assert all(egales(a, -r) for a, r in zip(aller, retour, strict=True))
 
 
 def test_deux_charges_au_meme_point_n_ont_pas_de_force_definie() -> None:
@@ -189,27 +201,27 @@ def test_la_force_d_un_systeme_est_la_somme_des_forces() -> None:
     systeme = SystemeDeCharges(((2, (0, 0, 0)), (-1, (0, 3, 0))))
     point = (4, 0, 0)
     une_a_une = [force_de_coulomb(q, source, 5, point) for q, source in systeme.charges]
-    somme = [sp.simplify(sum(f[axe] for f in une_a_une)) for axe in range(3)]
+    somme = [sum(f[axe] for f in une_a_une) for axe in range(3)]
     totale = force_du_systeme(systeme, 5, point)
-    assert [sp.simplify(a - b) for a, b in zip(totale, somme, strict=True)] == [0, 0, 0]
+    assert all(egales(a, b) for a, b in zip(totale, somme, strict=True))
 
 
 def test_la_force_electrique_dans_l_atome_d_hydrogene() -> None:
     """Exemple 2.20.1 : 82 . 10^-9 N a 52,9 pm."""
     force = CHARGE_ELEMENTAIRE * champ_de_coulomb(CHARGE_ELEMENTAIRE, RAYON_DE_BOHR)
-    assert math.isclose(force, 82e-9, rel_tol=0.01)
+    assert proches_relativement(force, 82e-9, 0.01)
 
 
 def test_la_force_gravitationnelle_dans_l_atome_d_hydrogene() -> None:
     """Exemple 2.20.1 : 35 . 10^-48 N, avec 1 836 m_e^2 et m_e = 0,9 . 10^-30 kg."""
     imprime = force_gravitationnelle(0.9e-30, 1836 * 0.9e-30, RAYON_DE_BOHR)
-    assert round(imprime * 1e48, 1) == 35.4
+    assert egales_arrondies(imprime * 1e48, 35.4, 1)
     tel_qu_ecrit = force_gravitationnelle(0.9e-19, 1846 * 0.9e-19, RAYON_DE_BOHR)
-    assert tel_qu_ecrit > 1e20 * 35e-48
+    assert rapport_au_dessus(tel_qu_ecrit, 35e-48, 1e20)
     reelle = force_gravitationnelle(
         PARTICULES["electron"].masse, PARTICULES["proton"].masse, RAYON_DE_BOHR
     )
-    assert round(reelle * 1e48, 1) == 36.3
+    assert egales_arrondies(reelle * 1e48, 36.3, 1)
 
 
 def test_la_force_electrique_ecrase_la_gravitation() -> None:
@@ -220,21 +232,22 @@ def test_la_force_electrique_ecrase_la_gravitation() -> None:
     rapport = electrique / force_gravitationnelle(
         PARTICULES["electron"].masse, PARTICULES["proton"].masse, RAYON_DE_BOHR
     )
-    assert 1e39 < rapport < 1e40
+    assert rapport_au_dessus(rapport, 1.0, 1e39)
+    assert not rapport_au_dessus(rapport, 1.0, 1e40)
 
 
 def test_les_poids_des_particules_de_l_exemple_2_20_1() -> None:
     """P_p = 16,7 . 10^-27 N suppose g = 10 ; P_e = 9,0 . 10^-30 N suppose g = 9,81."""
     proton, electron = PARTICULES["proton"].masse, PARTICULES["electron"].masse
-    assert math.isclose(proton * 10, 16.7e-27, rel_tol=2e-3)
-    assert not math.isclose(proton * 9.81, 16.7e-27, rel_tol=1e-2)
-    assert math.isclose(electron * 9.81, 9.0e-30, rel_tol=1e-2)
+    assert proches_relativement(proton * 10, 16.7e-27, 2e-3)
+    assert not proches_relativement(proton * 9.81, 16.7e-27, 1e-2)
+    assert proches_relativement(electron * 9.81, 9.0e-30, 1e-2)
 
 
 def test_la_repulsion_de_deux_protons_dans_un_noyau() -> None:
     """Exemple 2.20.2 : 14 N a 4,0 . 10^-15 m."""
     force = CHARGE_ELEMENTAIRE * champ_de_coulomb(CHARGE_ELEMENTAIRE, 4.0e-15)
-    assert math.isclose(force, 14, rel_tol=0.04)
+    assert proches_relativement(force, 14, 0.04)
 
 
 def test_un_champ_uniforme_ne_tire_pas_sur_un_doublet() -> None:
@@ -256,11 +269,7 @@ def test_la_force_sur_un_dipole_dans_un_champ_non_uniforme() -> None:
     force = force_sur_un_dipole(moment, champ)
     scalaire = sum(p * e for p, e in zip(moment, champ, strict=True))
     gradient = [sp.diff(scalaire, axe) for axe in CARTESIENNES]
-    assert [sp.simplify(a - b) for a, b in zip(force, gradient, strict=True)] == [
-        0,
-        0,
-        0,
-    ]
+    assert all(egales(a, b) for a, b in zip(force, gradient, strict=True))
 
 
 def test_la_force_sur_un_dipole_est_la_limite_de_celle_du_doublet() -> None:
@@ -293,7 +302,7 @@ def test_l_energie_est_mutuelle() -> None:
     """(2.21.4) : W_e = q_1 V_1 = q_2 V_2 = (q_1 V_1 + q_2 V_2) / 2."""
     paire = SystemeDeCharges(((3, (0, 0, 0)), (-2, (0, 0, 4))))
     attendu = energie_de_deux_charges(3, -2, 4)
-    assert sp.simplify(energie_du_systeme(paire) - attendu) == 0
+    assert egales(energie_du_systeme(paire), attendu)
     assert attendu < 0
 
 
@@ -305,13 +314,13 @@ def test_l_energie_d_un_systeme_somme_sur_les_couples() -> None:
         + energie_de_deux_charges(1, -1, 4)
         + energie_de_deux_charges(2, -1, 5)
     )
-    assert sp.simplify(energie_du_systeme(trio) - couples) == 0
+    assert egales(energie_du_systeme(trio), couples)
 
 
 def test_la_constante_de_madelung_de_la_chaine_lineique() -> None:
     """Exemple 2.21.1 : 2 ln 2 = 1,386."""
-    assert sp.simplify(MADELUNG_DE_LA_CHAINE - sp.log(4)) == 0
-    assert math.isclose(float(MADELUNG_DE_LA_CHAINE), 1.386, rel_tol=1e-3)
+    assert egales(MADELUNG_DE_LA_CHAINE, sp.log(4))
+    assert proches_relativement(float(MADELUNG_DE_LA_CHAINE), 1.386, 1e-3)
     serie = sp.Sum(
         (-1) ** (sp.Symbol("i") - 1) / sp.Symbol("i"), (sp.Symbol("i"), 1, sp.oo)
     )
@@ -325,9 +334,9 @@ def test_le_potentiel_sur_un_site_de_la_chaine() -> None:
         potentiel_sur_la_chaine(charge, pas, voisins=1) == -2 * COULOMB * charge / pas
     )
     deux = potentiel_sur_la_chaine(charge, pas, voisins=2)
-    assert sp.simplify(deux + COULOMB * charge / pas) == 0
+    assert egales(deux, -(COULOMB * charge / pas))
     oppose = potentiel_sur_la_chaine(-charge, pas, voisins=2)
-    assert sp.simplify(oppose + deux) == 0
+    assert egales(oppose, -(deux))
 
 
 def test_l_energie_par_couple_tend_vers_la_constante_de_madelung() -> None:
@@ -336,15 +345,15 @@ def test_l_energie_par_couple_tend_vers_la_constante_de_madelung() -> None:
     rapports = [
         float(potentiel_sur_la_chaine(1, 1, voisins=n) / isole) for n in (1, 2, 3, 2000)
     ]
-    assert rapports[:3] == [2.0, 1.0, pytest.approx(5 / 3)]
-    assert math.isclose(rapports[3], 1.386, rel_tol=1e-3)
+    assert suites_proches(rapports[:3], [2.0, 1.0, 5 / 3], 1e-6, relativement=True)
+    assert proches_relativement(rapports[3], 1.386, 1e-3)
 
 
 def test_l_energie_de_la_chaine_infinie() -> None:
     """Exemple 2.21.1 : W_e = -n q^2 2 ln 2 / (4 pi eps_0 d)."""
     nombre, charge, pas = sp.symbols("n q d", positive=True)
     attendu = -nombre * charge**2 * 2 * sp.log(2) * COULOMB / pas
-    assert sp.simplify(energie_de_la_chaine(nombre, charge, pas) - attendu) == 0
+    assert egales(energie_de_la_chaine(nombre, charge, pas), attendu)
 
 
 def test_l_energie_de_la_sphere_uniformement_chargee() -> None:
@@ -353,9 +362,7 @@ def test_l_energie_de_la_sphere_uniformement_chargee() -> None:
     energie = energie_de_la_sphere(charge, rayon)
     assert energie == sp.Rational(3, 5) * COULOMB * charge**2 / rayon
     eta = charge / (sp.Rational(4, 3) * sp.pi * rayon**3)
-    assert (
-        sp.simplify(energie - 4 * sp.pi * eta**2 * rayon**5 / (15 * PERMITTIVITE)) == 0
-    )
+    assert egales(energie, 4 * sp.pi * eta**2 * rayon**5 / (15 * PERMITTIVITE))
 
 
 def test_l_energie_de_la_sphere_par_la_charge_et_le_potentiel() -> None:
@@ -364,7 +371,7 @@ def test_l_energie_de_la_sphere_par_la_charge_et_le_potentiel() -> None:
     eta = charge / (sp.Rational(4, 3) * sp.pi * rayon**3)
     integrande = eta * potentiel_interieur(charge, rayon, r) * 4 * sp.pi * r**2
     par_le_potentiel = sp.integrate(integrande, (r, 0, rayon)) / 2
-    assert sp.simplify(par_le_potentiel - energie_de_la_sphere(charge, rayon)) == 0
+    assert egales(par_le_potentiel, energie_de_la_sphere(charge, rayon))
 
 
 def test_l_energie_de_la_sphere_par_le_champ_dans_tout_l_espace() -> None:
@@ -376,15 +383,16 @@ def test_l_energie_de_la_sphere_par_le_champ_dans_tout_l_espace() -> None:
     par_le_champ = sp.integrate(coquille * dedans**2, (r, 0, rayon)) + sp.integrate(
         coquille * dehors**2, (r, rayon, sp.oo)
     )
-    assert sp.simplify(par_le_champ - energie_de_la_sphere(charge, rayon)) == 0
+    assert egales(par_le_champ, energie_de_la_sphere(charge, rayon))
 
 
 def test_l_energie_volumique_recoupe_celle_que_porte_deja_la_bibliotheque() -> None:
     """(2.21.14) : w_e = E . D / 2, soit eps_0 E^2 / 2 dans le vide."""
     champ = 3.0e5
-    assert math.isclose(
+    assert proches_relativement(
         densite_d_energie_electrique(PERMITTIVITE_DU_VIDE, champ),
         champ * (PERMITTIVITE_DU_VIDE * champ) / 2,
+        1e-9,
     )
 
 
@@ -395,10 +403,10 @@ def test_l_energie_du_noyau_d_uranium() -> None:
             PERMITTIVITE, PERMITTIVITE_DU_VIDE
         )
     )
-    assert math.isclose(joules, 1.3e-10, rel_tol=0.01)
+    assert proches_relativement(joules, 1.3e-10, 0.01)
     mega_electronvolts = joules / CHARGE_ELEMENTAIRE / 1e6
-    assert abs(mega_electronvolts - 812.5) < 0.05
-    assert abs(mega_electronvolts - 813.5) > 0.9  # la valeur imprimee est exclue
+    assert proches(mega_electronvolts, 812.5, 0.05)
+    assert eloignees(mega_electronvolts, IMPRIME_813_5, 0.9)  # valeur imprimee exclue
 
 
 def test_un_systeme_a_charges_confondues_n_a_pas_d_energie_finie() -> None:

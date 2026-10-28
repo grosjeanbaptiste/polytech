@@ -21,6 +21,7 @@ from polytech.electronique.domain.laplace import (
     impedance_de_resistance,
     impedances_en_serie,
 )
+from polytech.maths.domain.comparaison import egales
 from polytech.maths.domain.laplace.ordre_n import ProblemeLineaire
 from polytech.maths.domain.laplace.proprietes import (
     d_une_fonction_periodique,
@@ -50,7 +51,7 @@ def _original(image: sp.Expr) -> sp.Expr:
 
 
 def _memes(obtenu: sp.Expr, attendu: sp.Expr) -> bool:
-    return bool(sp.simplify(obtenu - attendu) == 0)
+    return egales(obtenu, attendu)
 
 
 TRANSFORMEES = {
@@ -194,7 +195,7 @@ def test_le_second_membre_par_morceaux_de_l_exercice_ii_5_3() -> None:
         reste = (
             derivee + 4 * officielle.subs(T, instant) - second_membre.subs(T, instant)
         )
-        assert sp.simplify(reste) == 0
+        assert egales(reste, 0)
     assert officielle.subs(T, 0) == 0
     assert sp.diff(officielle, T).subs(T, 0) == 0
 
@@ -280,6 +281,6 @@ def test_la_solution_officielle_de_ii_7_3_a_echange_ses_deux_exponentielles() ->
     corrigee = (
         communes + exp(j * T) / (2 * (1 + 3 * j)) + exp(-j * T) / (2 * (1 - 3 * j))
     )
-    assert sp.simplify(sp.diff(imprimee, T).subs(T, 0)) == R(-3, 5)
-    assert sp.simplify(sp.diff(corrigee, T).subs(T, 0)) == 0
+    assert egales(sp.diff(imprimee, T).subs(T, 0), R(-3, 5))
+    assert egales(sp.diff(corrigee, T).subs(T, 0), 0)
     assert _memes(sp.re(sp.expand_complex(corrigee)), _courant(1 / (P**2 + 1)))

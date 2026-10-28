@@ -106,11 +106,13 @@ def test_le_nusselt_moyen_d_une_plaque_en_partie_turbulente() -> None:
     assert mixte == pytest.approx(nusselt_moyen_a_constante(2e6, 0.7, constante))
     imprime = nusselt_moyen_a_constante(2e6, 0.7, 23100.0)
     assert mixte / imprime - 1 == pytest.approx(-0.0052, abs=1e-4)
+    # Au raccord, les deux lois se rejoignent : la constante C le garantit.
     assert nusselt_moyen_mixte(5e5, 0.7) == pytest.approx(
-        0.664 * math.sqrt(5e5) * 0.7 ** (1 / 3)
+        nusselt_moyen_a_constante(5e5, 0.7, constante), rel=1e-12
     )
+    # En laminaire, la moyenne sur la plaque vaut le double du local au bord de fuite.
     court = nusselt_moyen_mixte(1e5, 0.7)
-    assert court == pytest.approx(0.664 * math.sqrt(1e5) * 0.7 ** (1 / 3))
+    assert court == pytest.approx(2 * nusselt_local_laminaire(1e5, 0.7))
     tout_turbulent = nusselt_moyen_a_constante(1e8, 0.7, 0.0)
     assert nusselt_moyen_mixte(1e8, 0.7) == pytest.approx(tout_turbulent, rel=0.01)
 

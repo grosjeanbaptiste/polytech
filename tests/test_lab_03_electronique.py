@@ -31,6 +31,10 @@ from polytech.electronique.application.donnees_lab_03 import (
     UnTrois,
     UnUn,
 )
+from polytech.electronique.domain.acquisition import (
+    bits_necessaires,
+    densite_de_bruit_maximale,
+)
 from polytech.electronique.domain.chaine_d_acquisition import bruit_efficace
 
 # --- Exercice 1.1 -----------------------------------------------------
@@ -83,7 +87,7 @@ def test_ex11_la_somme_que_l_officiel_ecrit_n_est_pas_la_somme() -> None:
     assert efficace * 1e3 == pytest.approx(1.594, abs=5e-4)
     assert bruit_efficace([2.504e-6]) * 1e3 == pytest.approx(1.58, abs=5e-3)
     assert densite * 1e6 == pytest.approx(11.27, abs=5e-3)
-    assert densite == pytest.approx(efficace / math.sqrt(20e3))
+    assert densite == pytest.approx(densite_de_bruit_maximale(efficace, 20e3))
 
 
 def test_ex11_l_etage_dominant() -> None:
@@ -113,7 +117,8 @@ def test_ex12_le_gain_et_la_cadence() -> None:
 def test_ex12_le_convertisseur() -> None:
     """Pages 4 et 5 : onze bits au moins ; seul un ADC3 tient 320 kS/s."""
     assert deux.bits_minimaux() == 11
-    assert math.log2(2001) == pytest.approx(10.97, abs=5e-3)
+    assert bits_necessaires(2e-3, 1e-6) == 11
+    assert bits_necessaires(1000.0, 1.0) == 10  # dix bits ne tiennent pas 2000 pas
     assert deux.convertisseurs_assez_fins() == ("ADC2", "ADC3")
     assert deux.cadence_disponible("ADC2") == pytest.approx(200e3)
     assert deux.cadence_disponible("ADC3") == pytest.approx(400e3)
