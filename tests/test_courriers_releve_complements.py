@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import sympy as sp
 
+from polytech.maths.domain.algebre.complexes_exacts import racines_de_l_unite
 from polytech.maths.domain.algebre.solutions import solution_generale
 from polytech.maths.domain.algebre.spectre import Spectre
 from polytech.maths.domain.algebre.systemes import SystemeLineaire
@@ -54,3 +55,9 @@ def test_m30_pour_a_egal_trois_x_vaut_deux_y_plus_quatre() -> None:
     assert not egales(x, 2 * y + 2)
     assert egales(2 * x - 4 * y, 8)
     assert not egales(2 * (2 * y + 2) - 4 * y, 8)
+
+
+def test_i17_a_pour_n_egal_un_la_somme_des_racines_de_l_unite_vaut_un() -> None:
+    assert sum(racines_de_l_unite(1)) == 1
+    for n in (2, 3, 6):
+        assert egales(sum(racines_de_l_unite(n)), 0)
