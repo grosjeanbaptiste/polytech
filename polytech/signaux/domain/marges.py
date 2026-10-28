@@ -62,7 +62,7 @@ def _reponse(
 def arguments_deroules(
     ouverte: sp.Expr, valeurs: NDArray[np.complex128]
 ) -> NDArray[np.float64]:
-    """L'argument deroule, cale au depart sur `-90 alpha` degres."""
+    """L'argument deroule, cale au depart sur `-pi/2 alpha`, en radians."""
     sans_delai = ouverte.replace(lambda e: isinstance(e, sp.exp), lambda _: sp.S.One)
     depart = -math.pi / 2 * classe_du_systeme(sans_delai)
     phases = np.unwrap(np.angle(valeurs))

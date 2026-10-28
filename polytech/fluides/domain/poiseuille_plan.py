@@ -8,7 +8,10 @@ de largeur `G h^3 / (12 mu)`. Meme demarche que la conduite circulaire
 
 from __future__ import annotations
 
-import sympy as sp
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import sympy as sp
 
 
 def profil_plan(

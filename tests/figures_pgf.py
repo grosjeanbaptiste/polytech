@@ -11,10 +11,22 @@ Reference = Callable[[float], Valeur]
 ECHANTILLONS = 9
 
 
+def _en_tuple(valeur: Valeur) -> tuple[float, ...]:
+    return valeur if isinstance(valeur, tuple) else (valeur,)
+
+
+def constante(valeur: float) -> Reference:
+    """Une reference qui ne depend pas du parametre (une asymptote)."""
+    return lambda _t: valeur
+
+
+def modulo(valeur: Valeur, tour: float) -> float:
+    """Un angle ramene dans `[0, tour[`, pour comparer des angles."""
+    return _en_tuple(valeur)[0] % tour
+
+
 def _proches(a: Valeur, b: Valeur, relative: float) -> bool:
-    paires = zip(
-        a if isinstance(a, tuple) else (a,), b if isinstance(b, tuple) else (b,), strict=True
-    )
+    paires = zip(_en_tuple(a), _en_tuple(b), strict=True)
     return all(abs(x - y) <= relative * max(1.0, abs(y)) for x, y in paires)
 
 

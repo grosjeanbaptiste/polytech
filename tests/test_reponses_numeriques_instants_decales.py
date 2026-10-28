@@ -1,4 +1,4 @@
-"""Les reponses numeriques valent aux instants donnes, meme s'ils ne partent pas de zero.
+"""Les reponses numeriques valent aux instants donnes, meme hors de zero.
 
 Regression : `scipy.signal.step(T=...)` simule depuis `T[0]` comme si c'etait
 l'origine ; `reponse_indicielle([1],[1,1],[0.75, 1.5])` rendait `[0, 0.5276]`

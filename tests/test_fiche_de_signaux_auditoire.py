@@ -26,6 +26,7 @@ from polytech.signaux.domain.erreurs_de_regime import (
     erreur_de_consigne_selon_la_fiche,
 )
 from polytech.signaux.domain.symboles import IMAGE as P
+from tests.fiches_toml import articles
 
 
 def test_la_question_a_demande_de_faire_sortir_soixante_quatre_etudiants() -> None:
@@ -74,3 +75,8 @@ def test_l_erreur_de_consigne_du_cours_est_l_oppose_de_celle_de_la_lib() -> None
         boucle, 1
     )
     assert erreur_de_consigne_selon_la_fiche(boucle, 1) == sp.Rational(1, 5)
+
+
+def test_la_fiche_ecrit_la_convention_du_cours_pour_l_erreur() -> None:
+    formule = articles("SignauxSystemes")["erreurs_de_sortie_en_regime"]["formule"]
+    assert r"e_C = Y_i - y(\infty)" in formule

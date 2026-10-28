@@ -3,6 +3,46 @@
 use crate::texte::repr;
 use num_complex::Complex64;
 
+fn court(x: f64) -> String {
+    let t = repr(x);
+    t.strip_suffix(".0").map_or(t.clone(), str::to_owned)
+}
+
+/// Ecriture d'un complexe comme Python (`str(complex)`).
+fn complexe(z: Complex64) -> String {
+    if z.re == 0.0 && z.re.is_sign_positive() {
+        return format!("{}j", court(z.im));
+    }
+    let signe = if z.im.is_sign_negative() && !z.im.is_nan() {
+        ""
+    } else {
+        "+"
+    };
+    format!("({}{signe}{}j)", court(z.re), court(z.im))
+}
+
+fn exiger_fini(nom: &str, z: Complex64) -> Result<(), String> {
+    if z.re.is_finite() && z.im.is_finite() {
+        return Ok(());
+    }
+    Err(format!(
+        "valeur non finie pour {nom} : {} (nan/inf ne se comparent pas)",
+        complexe(z)
+    ))
+}
+
+fn exiger_finis(v: Complex64, r: Complex64, tolerance: f64) -> Result<(), String> {
+    exiger_fini("valeur", v)?;
+    exiger_fini("reference", r)?;
+    if tolerance.is_finite() {
+        return Ok(());
+    }
+    Err(format!(
+        "valeur non finie pour tolerance : {} (nan/inf ne se comparent pas)",
+        repr(tolerance)
+    ))
+}
+
 fn tolerance_valide(tolerance: f64) -> Result<f64, String> {
     if tolerance.is_nan() || tolerance < 0.0 {
         return Err(format!(
@@ -18,6 +58,7 @@ fn tolerance_valide(tolerance: f64) -> Result<f64, String> {
 /// # Errors
 /// Tolerance NaN ou negative.
 pub fn proches(valeur: Complex64, reference: Complex64, tolerance: f64) -> Result<bool, String> {
+    exiger_finis(valeur, reference, tolerance)?;
     Ok((valeur - reference).norm() <= tolerance_valide(tolerance)?)
 }
 
@@ -26,6 +67,7 @@ pub fn proches(valeur: Complex64, reference: Complex64, tolerance: f64) -> Resul
 /// # Errors
 /// Ecart NaN ou negatif.
 pub fn eloignees(valeur: Complex64, reference: Complex64, d_au_moins: f64) -> Result<bool, String> {
+    exiger_finis(valeur, reference, d_au_moins)?;
     Ok((valeur - reference).norm() > tolerance_valide(d_au_moins)?)
 }
 
@@ -38,6 +80,7 @@ pub fn proches_relativement(
     reference: Complex64,
     tolerance: f64,
 ) -> Result<bool, String> {
+    exiger_finis(valeur, reference, tolerance)?;
     Ok((valeur - reference).norm() <= tolerance_valide(tolerance)? * reference.norm())
 }
 
@@ -92,6 +135,20 @@ mod tests {
         assert!(proches(r(1.0), r(1.0), f64::NAN).is_err());
         assert!(eloignees(r(1.0), r(1.0), -0.1).is_err());
         assert!(proches_relativement(r(1.0), r(1.0), -0.1).is_err());
+    }
+
+    #[test]
+    fn non_fini_leve_en_nommant_l_argument() {
+        let e = proches(r(f64::NAN), r(1.0), 0.1).unwrap_err();
+        assert_eq!(
+            e,
+            "valeur non finie pour valeur : (nan+0j) (nan/inf ne se comparent pas)"
+        );
+        let e = eloignees(r(1.0), C::new(0.0, f64::INFINITY), 0.1).unwrap_err();
+        assert!(e.starts_with("valeur non finie pour reference : infj"));
+        let e = proches_relativement(r(1.0), r(1.0), f64::NEG_INFINITY).unwrap_err();
+        assert!(e.starts_with("valeur non finie pour tolerance : -inf"));
+        assert!(proches(r(1.0), r(f64::INFINITY), 0.1).is_err());
     }
 
     #[test]

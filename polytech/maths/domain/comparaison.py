@@ -84,19 +84,16 @@ def egales(obtenue: object, attendue: object) -> bool:
 
 def proches(valeur: complex, reference: complex, tolerance: float) -> bool:
     """`|valeur - reference| <= tolerance`."""
-    exiger_fini(valeur=valeur, reference=reference, tolerance=tolerance)
     return core.proches(valeur, reference, tolerance)
 
 
 def eloignees(valeur: complex, reference: complex, d_au_moins: float) -> bool:
     """`|valeur - reference| > d_au_moins` : la valeur citee est bien exclue."""
-    exiger_fini(valeur=valeur, reference=reference, tolerance=d_au_moins)
     return core.eloignees(valeur, reference, d_au_moins)
 
 
 def proches_relativement(valeur: complex, reference: complex, tolerance: float) -> bool:
     """`|valeur - reference| <= tolerance |reference|` ; en zero, l'egalite exacte."""
-    exiger_fini(valeur=valeur, reference=reference, tolerance=tolerance)
     return core.proches_relativement(valeur, reference, tolerance)
 
 
