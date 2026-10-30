@@ -193,6 +193,38 @@ def test_aucun_dossier_n_appartient_aux_deux_matieres() -> None:
 LONGUEUR_EXAMINEE = 3
 """En dessous, un nombre est trop commun pour qu'on puisse l'interdire."""
 
+DONNEES_DE_L_ENONCE = {
+    "lab-03-instrumentation": {
+        "LabTroisBPireCourant": "100 fA : donnee de la fiche technique",
+        "LabTroisDVoies": "100 voies : donnee de l'enonce, pas un resultat",
+    },
+}
+"""Macros qui portent une donnee : leur valeur peut s'ecrire en clair.
+
+Seule leur valeur est exemptee, et seulement si aucune macro calculee ne la
+porte aussi : un resultat qui retomberait sur la meme valeur reste interdit.
+"""
+
+LIGNES_ASSUMEES = {
+    "lab-03-instrumentation": (
+        ("1000", "2^n - 1 \\ge 1000", "rapport pas/pleine echelle, pas un gain"),
+        ("1000", "CAN & \\qty{1000}", "densite de bruit du CAN (donnee)"),
+        (
+            "1000",
+            "passe-bas & 1 & 1000",
+            "gain cumule du budget C (calcule hors macro)",
+        ),
+        (
+            "1000",
+            "multiplexeur & 1 & 1000",
+            "gain cumule du budget C (calcule hors macro)",
+        ),
+        ("5000", "2^n \\ge 5000", "rapport 10 mV / 2 uV, pas le gain total"),
+        ("300", "\\qty{300}{\\micro\\volt}", "tension de decalage de l'AMP (donnee)"),
+    ),
+}
+"""Coincidences nommees : (valeur, fragment de ligne, raison), ligne a ligne."""
+
 VALEURS_COURTES_SURVEILLEES = {
     "exs-03-thevenin-norton-01": (
         # Les cinq reponses de l'exercice. « 20 » et « 100 » sont les deux
@@ -305,9 +337,12 @@ def test_aucune_valeur_calculee_n_est_ecrite_en_chiffres(travail: str) -> None:
     """
     document = _document_du_travail(travail)
     lignes = _lignes_de_contenu(document)
+    macros = macros_du_travail(travail)
+    donnees = DONNEES_DE_L_ENONCE.get(travail, {})
+    calculees = {v for nom, v in macros.items() if nom not in donnees}
     interdites = {
         valeur
-        for valeur in macros_du_travail(travail).values()
+        for valeur in calculees
         if len(valeur.lstrip("-")) >= LONGUEUR_EXAMINEE
         and valeur.lstrip("-").replace(".", "").isdigit()
     }
@@ -319,6 +354,10 @@ def test_aucune_valeur_calculee_n_est_ecrite_en_chiffres(travail: str) -> None:
             f"{valeur!r} : {ligne.strip()[:62]}"
             for ligne in lignes
             if motif.search(ligne)
+            and not any(
+                valeur == v and fragment in ligne
+                for v, fragment, _raison in LIGNES_ASSUMEES.get(travail, ())
+            )
         ]
     assert fautes == []
 

@@ -18,6 +18,13 @@ from __future__ import annotations
 
 from typing import Final
 
+from polytech.thermique.domain.convection.forcee_dimensions import (  # noqa: F401 -- re-export : noms historiques de ce module
+    DIMENSIONS_FONDAMENTALES,
+    VARIABLES_DE_LA_CONVECTION_FORCEE,
+    groupes_sans_dimension,
+    nombre_de_groupes_de_vaschy_buckingham,
+)
+
 REYNOLDS_CRITIQUE_PLAQUE: Final = 3e5
 """Le formulaire donne « 3 a 5.10^5 » : la borne basse est retenue."""
 
@@ -87,49 +94,6 @@ def coefficient_d_echange(
         msg = f"longueur caracteristique nulle ou negative : {longueur}"
         raise ValueError(msg)
     return nusselt * conductivite / longueur
-
-
-VARIABLES_DE_LA_CONVECTION_FORCEE: Final = (
-    "coefficient d'echange",
-    "longueur caracteristique",
-    "conductivite du fluide",
-    "masse volumique",
-    "viscosite dynamique",
-    "chaleur massique",
-    "vitesse",
-)
-"""Les sept variables que le fascicule denombre pour la convection forcee.
-
-Quatre dimensions fondamentales les mesurent -- masse, longueur, temps,
-temperature -- donc le theoreme de Vaschy-Buckingham annonce trois
-groupes sans dimension. Ce sont Nusselt, Reynolds et Prandtl, et c'est
-**pourquoi** toutes les correlations du chapitre ont cette forme-la.
-"""
-
-DIMENSIONS_FONDAMENTALES: Final = 4
-"""Masse, longueur, temps, temperature."""
-
-
-def nombre_de_groupes_de_vaschy_buckingham(variables: int, dimensions: int) -> int:
-    """`n - k` : le nombre de groupes sans dimension independants.
-
-    C'est l'etape que le fascicule detaille sur six planches, et elle
-    repond a une question qu'on ne se pose pas assez : pourquoi deux
-    nombres et non sept variables. Parce qu'il n'y a que `n - k` facons
-    independantes de les combiner sans dimension.
-    """
-    if variables <= dimensions:
-        msg = (
-            f"moins de variables que de dimensions : {variables} <= {dimensions}, "
-            f"aucun groupe ne peut se former"
-        )
-        raise ValueError(msg)
-    return variables - dimensions
-
-
-def groupes_sans_dimension() -> tuple[str, str, str]:
-    """Les trois groupes que l'analyse dimensionnelle produit, dans l'ordre."""
-    return "Nusselt", "Reynolds", "Prandtl"
 
 
 EXPOSANT_LAMINAIRE: Final = 0.5

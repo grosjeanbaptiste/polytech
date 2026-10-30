@@ -36,7 +36,8 @@ import math
 
 import pytest
 
-from polytech.thermique.domain.convection.forcee import (
+from polytech.thermique.domain.convection import forcee, forcee_dimensions
+from polytech.thermique.domain.convection.forcee_dimensions import (
     VARIABLES_DE_LA_CONVECTION_FORCEE,
     groupes_sans_dimension,
     nombre_de_groupes_de_vaschy_buckingham,
@@ -282,3 +283,10 @@ def test_l_echangeur_du_tp_4_garde_ses_valeurs() -> None:
     """Non-regression : les ajouts ne touchent pas a l'ancrage du TP 4."""
     echangeur = Echangeur(conductance=775.61)
     assert echangeur.coefficient_rapporte(1.1556) == pytest.approx(671.17, abs=0.1)
+
+
+def test_forcee_republie_l_analyse_dimensionnelle_sous_ses_noms_historiques() -> None:
+    assert (
+        forcee.nombre_de_groupes_de_vaschy_buckingham
+        is forcee_dimensions.nombre_de_groupes_de_vaschy_buckingham
+    )

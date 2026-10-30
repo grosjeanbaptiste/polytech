@@ -17,6 +17,7 @@ from polytech.thermique.domain.coefficient_global import (
     coefficient_de_rayonnement_exact,
 )
 from polytech.thermique.domain.convection.forcee import TABLE_DU_CYLINDRE
+from polytech.thermique.domain.grandeurs import ZERO_ABSOLU
 from polytech.thermique.domain.tables.air_sec import air_sec
 
 VENT: Final = 5.0
@@ -24,7 +25,7 @@ DIAMETRE_EXTERIEUR_NU: Final = 1.04
 AIR: Final = (1.2430e-5, 0.716, 0.0233)
 """`(nu, Pr, lambda)` de l'air a -10 C."""
 EMISSIVITE: Final = 0.6
-KELVIN: Final = 273.15
+KELVIN: Final = ZERO_ABSOLU
 DEBIT: Final = 5.0
 FUMEES: Final = air_sec(150.0 + KELVIN)
 
