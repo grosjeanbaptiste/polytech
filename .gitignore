@@ -327,3 +327,7 @@ rustc-ice-*.txt
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# Les figures TikZ des corriges, exportees en SVG par `python -m outils.figures` :
+# elles se refont depuis les .tex et ne sont pas suivies.
+/travaux/**/figures/
