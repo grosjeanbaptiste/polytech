@@ -85,7 +85,24 @@ def echelle : List Marche := [
   ⟨"distance", [``EuclideanSpace.dist_eq],
     ["argument"]⟩,
   ⟨"moivre", [``Complex.cos_add_sin_mul_I_pow],
-    ["racine", "norme", "complexes"]⟩
+    ["racine", "norme", "complexes"]⟩,
+  ⟨"limites", [``Filter.Tendsto, ``Metric.tendsto_atTop, ``tendsto_nhds_unique],
+    ["reels"]⟩,
+  ⟨"exponentielle", [``Real.exp, ``Real.exp_add, ``Real.hasDerivAt_exp],
+    ["derivee", "complexes"]⟩,
+  ⟨"polynomes-et-racines", [``Polynomial, ``Polynomial.IsRoot,
+    ``Polynomial.mul_divByMonic_eq_iff_isRoot, ``Polynomial.card_roots', ``Complex.isAlgClosed],
+    ["reels", "complexes"]⟩,
+  ⟨"equations-differentielles", [``ODE_solution_unique, ``HasDerivAt],
+    ["derivee", "limites"]⟩,
+  ⟨"logarithme", [``Real.log, ``Real.exp_log, ``Real.log_mul],
+    ["exponentielle"]⟩,
+  ⟨"systemes-lineaires-et-rang", [``Matrix.rank, ``Matrix.rank_mul_le,
+    ``Matrix.mulVec_injective_iff_isUnit, ``Matrix.det_ne_zero_of_left_inverse],
+    ["determinant", "vecteurs"]⟩,
+  ⟨"transformee-de-laplace", [``integral_exp_mul_complex_Ioi, ``integral_exp_neg_Ioi,
+    ``MeasureTheory.integral_Ioi_of_hasDerivAt_of_tendsto],
+    ["integrale", "exponentielle", "complexes"]⟩
 ]
 
 /-- Les constantes de l'amont réuni d'une liste de constantes. -/
