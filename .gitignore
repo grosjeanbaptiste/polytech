@@ -28,7 +28,7 @@ __pycache__/
 # une copie peut encore les porter.
 /sources/
 # Depuis le 2026-10-21, `sources` est un lien vers la cle SUL-2
-# (/Volumes/SUL-2/Polytech/sources) : `/sources/` ne couvre pas un lien.
+# (/Volumes/SUL-2/polytech-corpus/sources) : `/sources/` ne couvre pas un lien.
 /sources
 /Mathematique/
 /Electromagnetisme/
