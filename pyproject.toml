@@ -1,5 +1,5 @@
 [project]
-name = "polypy"
+name = "polytech"
 version = "0.1.0"
 description = "Bibliotheques du cursus Polytech, un contexte borne par matiere"
 requires-python = ">=3.12"

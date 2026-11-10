@@ -1,4 +1,4 @@
-# polypy
+# polytech
 
 Bibliothèque scientifique et de calcul formel/numérique pour les matières de sciences appliquées et de l'ingénieur.
 
