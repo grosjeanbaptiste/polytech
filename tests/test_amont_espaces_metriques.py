@@ -111,3 +111,10 @@ def test_le_second_membre_projete_de_la_page_110_est_celui_de_la_page_96() -> No
     matrice = sp.Matrix([[1, 0], [1, 1], [0, 1]])
     solution = sp.Matrix(au_sens_des_moindres_carres(matrice, TROIS))
     assert matrice * solution == sp.Matrix([2, 4, 2])
+
+
+def test_sous_la_tolerance_un_produit_scalaire_est_tenu_pour_nul() -> None:
+    """`polytech.maths.domain.algebre.metrique.TOLERANCE` : le seuil de nullite."""
+    petit, grand = metrique.TOLERANCE / 10, metrique.TOLERANCE * 10
+    assert metrique.est_orthogonale([(1.0, 0.0), (petit, 1.0)])
+    assert not metrique.est_orthogonale([(1.0, 0.0), (grand, 1.0)])
