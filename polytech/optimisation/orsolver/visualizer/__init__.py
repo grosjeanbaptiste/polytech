@@ -1,3 +1,2 @@
-from polytech.optimisation.orsolver.visualizer.graphical_2d import DynamicGraphicalSolver
-
-__all__ = ["DynamicGraphicalSolver"]
+"""Compatibility alias for polytech.optimisation.visualizer."""
+from polytech.optimisation.visualizer import *

@@ -1,13 +1,2 @@
-from polytech.optimisation.orsolver.heuristics.tsp import (
-    nearest_neighbor_tsp,
-    two_opt_tsp,
-    simulated_annealing_tsp,
-    compute_tour_cost,
-)
-
-__all__ = [
-    "nearest_neighbor_tsp",
-    "two_opt_tsp",
-    "simulated_annealing_tsp",
-    "compute_tour_cost",
-]
+"""Compatibility alias for polytech.optimisation.heuristics."""
+from polytech.optimisation.heuristics import *

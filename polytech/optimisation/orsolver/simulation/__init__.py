@@ -1,7 +1,2 @@
-from polytech.optimisation.orsolver.simulation.monte_carlo import (
-    monte_carlo_pert,
-    StochasticTask,
-    MonteCarloResult,
-)
-
-__all__ = ["monte_carlo_pert", "StochasticTask", "MonteCarloResult"]
+"""Compatibility alias for polytech.optimisation.simulation."""
+from polytech.optimisation.simulation import *

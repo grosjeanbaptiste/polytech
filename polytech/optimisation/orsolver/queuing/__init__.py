@@ -1,3 +1,2 @@
-from polytech.optimisation.orsolver.queuing.models import mm1_queue, mms_queue, QueuePerformance
-
-__all__ = ["mm1_queue", "mms_queue", "QueuePerformance"]
+"""Compatibility alias for polytech.optimisation.queuing."""
+from polytech.optimisation.queuing import *

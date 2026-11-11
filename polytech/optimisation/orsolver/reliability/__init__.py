@@ -1,15 +1,2 @@
-from polytech.optimisation.orsolver.reliability.models import (
-    series_reliability,
-    parallel_reliability,
-    k_out_of_n_reliability,
-    exponential_reliability,
-    weibull_reliability,
-)
-
-__all__ = [
-    "series_reliability",
-    "parallel_reliability",
-    "k_out_of_n_reliability",
-    "exponential_reliability",
-    "weibull_reliability",
-]
+"""Compatibility alias for polytech.optimisation.reliability."""
+from polytech.optimisation.reliability import *

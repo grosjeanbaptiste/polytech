@@ -1,13 +1,2 @@
-from polytech.optimisation.orsolver.decision.criteria import (
-    decision_under_uncertainty,
-    decision_under_risk,
-    UncertaintyResult,
-    RiskResult,
-)
-
-__all__ = [
-    "decision_under_uncertainty",
-    "decision_under_risk",
-    "UncertaintyResult",
-    "RiskResult",
-]
+"""Compatibility alias for polytech.optimisation.decision."""
+from polytech.optimisation.decision import *

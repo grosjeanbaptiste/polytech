@@ -64,6 +64,25 @@ ignore = [
 "travaux/*/*/*.py" = ["INP001"]
 # Code importé depuis le solveur de recherche opérationnelle ORSolver (UMons)
 "polytech/optimisation/orsolver/**" = ["ALL"]
+"polytech/optimisation/core/**" = ["ALL"]
+"polytech/optimisation/lp/**" = ["ALL"]
+"polytech/optimisation/mip/**" = ["ALL"]
+"polytech/optimisation/transport/**" = ["ALL"]
+"polytech/optimisation/network/**" = ["ALL"]
+"polytech/optimisation/game_theory/**" = ["ALL"]
+"polytech/optimisation/mdp/**" = ["ALL"]
+"polytech/optimisation/mcda/**" = ["ALL"]
+"polytech/optimisation/decision/**" = ["ALL"]
+"polytech/optimisation/reliability/**" = ["ALL"]
+"polytech/optimisation/dynamic_programming/**" = ["ALL"]
+"polytech/optimisation/simulation/**" = ["ALL"]
+"polytech/optimisation/queuing/**" = ["ALL"]
+"polytech/optimisation/inventory/**" = ["ALL"]
+"polytech/optimisation/heuristics/**" = ["ALL"]
+"polytech/optimisation/nlp/**" = ["ALL"]
+"polytech/optimisation/visualizer/**" = ["ALL"]
+"polytech/optimisation/cli/**" = ["ALL"]
+"polytech/optimisation/legacy.py" = ["ALL"]
 "tests/orsolver/**" = ["ALL"]
 
 [tool.mypy]
@@ -86,7 +105,28 @@ module = "polytech.fluides.application.impression"
 disallow_subclassing_any = false
 
 [[tool.mypy.overrides]]
-module = "polytech.optimisation.orsolver.*"
+module = [
+    "polytech.optimisation.orsolver.*",
+    "polytech.optimisation.core.*",
+    "polytech.optimisation.lp.*",
+    "polytech.optimisation.mip.*",
+    "polytech.optimisation.transport.*",
+    "polytech.optimisation.network.*",
+    "polytech.optimisation.game_theory.*",
+    "polytech.optimisation.mdp.*",
+    "polytech.optimisation.mcda.*",
+    "polytech.optimisation.decision.*",
+    "polytech.optimisation.reliability.*",
+    "polytech.optimisation.dynamic_programming.*",
+    "polytech.optimisation.simulation.*",
+    "polytech.optimisation.queuing.*",
+    "polytech.optimisation.inventory.*",
+    "polytech.optimisation.heuristics.*",
+    "polytech.optimisation.nlp.*",
+    "polytech.optimisation.visualizer.*",
+    "polytech.optimisation.cli.*",
+    "polytech.optimisation.legacy",
+]
 ignore_errors = true
 
 [tool.pytest.ini_options]
