@@ -62,6 +62,9 @@ ignore = [
 # dossier -- `lab-01`, au nom du document qu'il resout -- ne pourrait
 # pas en etre un : un tiret n'entre pas dans un nom de module.
 "travaux/*/*/*.py" = ["INP001"]
+# Code importé depuis le solveur de recherche opérationnelle ORSolver (UMons)
+"polytech/optimisation/orsolver/**" = ["ALL"]
+"tests/orsolver/**" = ["ALL"]
 
 [tool.mypy]
 strict = true
@@ -81,6 +84,10 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "polytech.fluides.application.impression"
 disallow_subclassing_any = false
+
+[[tool.mypy.overrides]]
+module = "polytech.optimisation.orsolver.*"
+ignore_errors = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -9,7 +9,6 @@ paroi, trainee de Stokes : chaque ligne de
 from __future__ import annotations
 
 import tomllib
-from pathlib import Path
 
 import pytest
 import sympy as sp

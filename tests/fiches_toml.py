@@ -11,11 +11,12 @@ import tomllib
 from pathlib import Path
 from typing import Any, Final
 
-import sympy as sp
 import pytest
+import sympy as sp
 
-_LOCAL_FICHES = Path(__file__).resolve().parent.parent / "cursus" / "fiches"
-_CORPUS_FICHES = Path(__file__).resolve().parent.parent.parent / "corpus" / "cursus" / "fiches"
+_PARENT = Path(__file__).resolve().parent.parent
+_LOCAL_FICHES = _PARENT / "cursus" / "fiches"
+_CORPUS_FICHES = _PARENT.parent / "corpus" / "cursus" / "fiches"
 FICHES: Final = _LOCAL_FICHES if _LOCAL_FICHES.exists() else _CORPUS_FICHES
 NATURES: Final = ("schema", "calculee")
 

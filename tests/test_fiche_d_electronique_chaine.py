@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import math
 import tomllib
-from pathlib import Path
 
+import pytest
 import sympy as sp
 
 from polytech.electromagnetisme.domain.magnetostatique.biot_et_savart import (
@@ -29,6 +29,7 @@ from polytech.electronique.domain.multiplexage import (
 )
 from polytech.electronique.domain.quantification import Quantificateur
 from polytech.maths.domain.comparaison import egales, proches
+from tests.fiches_toml import FICHES
 
 MU0, COURANT, OMEGA, T = sp.symbols("mu_0 I omega t", positive=True)
 A, B, L = sp.symbols("a b ell", positive=True)
@@ -97,8 +98,6 @@ def test_la_patte_opposee_d_un_boitier_est_n_plus_un_moins_k() -> None:
 
 def test_la_figure_du_convertisseur_ecrit_le_meme_pas_que_l_article() -> None:
     """Article « Choisir le convertisseur » : `2^n - 1` partout, jamais `2^n`."""
-    from tests.fiches_toml import FICHES
-    import pytest
     chemin = FICHES / "ElectroniqueInstrumentation.toml"
     if not chemin.exists():
         pytest.skip("Fiche ElectroniqueInstrumentation.toml absente")

@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 
 from outils.fiches.pgf import Trace, Valeur, traces
+
 from tests.fiches_toml import figure
 
 Reference = Callable[[float], Valeur]

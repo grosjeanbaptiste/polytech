@@ -10,6 +10,7 @@ import math
 import unicodedata
 from pathlib import Path
 
+import pytest
 import sympy as sp
 
 from polytech.electronique.domain import catalogue_aop
@@ -28,8 +29,9 @@ from polytech.maths.domain.comparaison import egales, proches
 
 S = sp.Symbol("s")
 R, L, C = sp.symbols("R L C", positive=True)
-_LOCAL_CORPUS = Path(__file__).resolve().parent.parent / "cours-markdown"
-_REMOTE_CORPUS = Path(__file__).resolve().parent.parent.parent / "corpus" / "cours-markdown"
+_PARENT = Path(__file__).resolve().parent.parent
+_LOCAL_CORPUS = _PARENT / "cours-markdown"
+_REMOTE_CORPUS = _PARENT.parent / "corpus" / "cours-markdown"
 CORPUS = _LOCAL_CORPUS if _LOCAL_CORPUS.exists() else _REMOTE_CORPUS
 SLIDES = CORPUS / "ElectroniqueInstrumentation" / "SLIDES" / "Slides_2_part1.md"
 
