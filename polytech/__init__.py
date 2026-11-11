@@ -1,9 +1,36 @@
-"""Cursus Polytech : un paquet par matiere, un contexte borne par paquet.
+"""Polytech : Bibliothèque scientifique de calcul formel et numérique.
 
-Chaque matiere possede son propre langage ubiquitaire, et deux matieres
-peuvent nommer differemment la meme chose -- ou pire, nommer pareil deux
-choses differentes. Un ``champ`` n'est pas le meme objet en cinematique des
-fluides et en electromagnetisme. Les contextes sont donc etanches : aucun
-n'importe le domaine d'un autre, et la traduction, s'il en faut une un jour,
-se fait explicitement a la frontiere.
+Chaque matière constitue un contexte borné (Bounded Context) selon les
+principes du Domain-Driven Design (DDD). Les contextes sont étanches et
+utilisent le langage ubiquitaire propre à chaque discipline.
 """
+
+from __future__ import annotations
+
+from polytech import (
+    algorithmique,
+    chemistry,
+    electromagnetisme,
+    electronique,
+    fluides,
+    maths,
+    mecanique,
+    optimisation,
+    raisonnement,
+    signaux,
+    thermique,
+)
+
+__all__ = [
+    "algorithmique",
+    "chemistry",
+    "electromagnetisme",
+    "electronique",
+    "fluides",
+    "maths",
+    "mecanique",
+    "optimisation",
+    "raisonnement",
+    "signaux",
+    "thermique",
+]

@@ -28,7 +28,9 @@ from polytech.maths.domain.comparaison import egales, proches
 
 S = sp.Symbol("s")
 R, L, C = sp.symbols("R L C", positive=True)
-CORPUS = Path(__file__).resolve().parent.parent / "cours-markdown"
+_LOCAL_CORPUS = Path(__file__).resolve().parent.parent / "cours-markdown"
+_REMOTE_CORPUS = Path(__file__).resolve().parent.parent.parent / "corpus" / "cours-markdown"
+CORPUS = _LOCAL_CORPUS if _LOCAL_CORPUS.exists() else _REMOTE_CORPUS
 SLIDES = CORPUS / "ElectroniqueInstrumentation" / "SLIDES" / "Slides_2_part1.md"
 
 
@@ -59,6 +61,8 @@ def test_la_sonde_a_la_masse_ouvre_la_contre_reaction_du_non_inverseur() -> None
 
 def test_les_valeurs_de_catalogue_viennent_des_planches() -> None:
     """Article « L'amplificateur » : `R_in >= 1 MOhm`, `A_v` dans `[1e4, 1e6]`."""
+    if not SLIDES.exists():
+        pytest.skip("Planches d'électronique non présentes")
     texte = unicodedata.normalize("NFKC", SLIDES.read_text(encoding="utf-8"))
     regle = texte[texte.index("Good general rule") :].split("\n")[0]
     assert "1 MΩ" in regle

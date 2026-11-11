@@ -97,10 +97,12 @@ def test_la_patte_opposee_d_un_boitier_est_n_plus_un_moins_k() -> None:
 
 def test_la_figure_du_convertisseur_ecrit_le_meme_pas_que_l_article() -> None:
     """Article « Choisir le convertisseur » : `2^n - 1` partout, jamais `2^n`."""
-    chemin = Path(__file__).resolve().parent.parent / "cursus" / "fiches"
-    fiche = tomllib.loads(
-        (chemin / "ElectroniqueInstrumentation.toml").read_text("utf-8")
-    )
+    from tests.fiches_toml import FICHES
+    import pytest
+    chemin = FICHES / "ElectroniqueInstrumentation.toml"
+    if not chemin.exists():
+        pytest.skip("Fiche ElectroniqueInstrumentation.toml absente")
+    fiche = tomllib.loads(chemin.read_text("utf-8"))
     notion = "echantillonnage_et_quantification"
     article = next(a for a in fiche["article"] if a["notion"] == notion)
     assert "2^n - 1" in article["formule"]

@@ -1,6 +1,10 @@
-"""Contexte borne : thermique (cours « Thermique - Fondements », BAB3).
+"""Contexte borné : thermique et transferts de chaleur.
 
-Il se remplit travail par travail, comme `fluides` s'est rempli. Le
-premier est le TP 1 de conductibilite : un tas de charbon en combustion
-lente, et un reservoir d'hydrogene liquide.
+Conduction, convection forcée et naturelle, rayonnement et échangeurs thermiques.
 """
+
+from __future__ import annotations
+
+from polytech.thermique import application, domain, infrastructure
+
+__all__ = ["application", "domain", "infrastructure"]

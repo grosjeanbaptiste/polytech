@@ -32,8 +32,9 @@ from polytech.fluides.domain.turbulence import (
     vitesse_adimensionnee,
 )
 from polytech.maths.domain.comparaison import egales, proches, suite_nulle
+from tests.fiches_toml import FICHES
 
-FICHE = Path(__file__).resolve().parent.parent / "cursus/fiches/MecaniqueFluides.toml"
+FICHE = FICHES / "MecaniqueFluides.toml"
 UX = Decomposition((1.0, 1.4, 0.7, 1.3, 0.6))
 UY = Decomposition((0.2, -0.3, 0.1, 0.4, -0.5))
 UZ = Decomposition((0.0, 0.5, -0.2, 0.1, -0.4))

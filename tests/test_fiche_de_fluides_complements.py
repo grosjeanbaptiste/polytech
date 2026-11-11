@@ -43,8 +43,9 @@ from polytech.fluides.domain.zone_rugueuse import (
     coefficient_en_zone_rugueuse,
     est_completement_rugueux,
 )
+from tests.fiches_toml import FICHES
 
-FICHE = Path(__file__).resolve().parent.parent / "cursus/fiches/MecaniqueFluides.toml"
+FICHE = FICHES / "MecaniqueFluides.toml"
 
 
 def _article(debut: str) -> dict[str, Any]:

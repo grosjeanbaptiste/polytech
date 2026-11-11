@@ -1,9 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "polytech"
 version = "0.1.0"
-description = "Bibliotheques du cursus Polytech, un contexte borne par matiere"
+description = "Bibliothèque scientifique et de calcul formel/numérique pour les matières de sciences appliquées et de l'ingénieur"
+readme = "README.md"
 requires-python = ">=3.12"
-dependencies = ["sympy>=1.13", "pymupdf4llm>=0.0.17", "numpy>=2.0", "scipy>=1.14", "matplotlib>=3.9"]
+dependencies = [
+    "sympy>=1.13",
+    "pymupdf4llm>=0.0.17",
+    "numpy>=2.0",
+    "scipy>=1.14",
+    "matplotlib>=3.9",
+]
 
 [tool.ruff]
 line-length = 88

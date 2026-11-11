@@ -1,6 +1,10 @@
-"""Contexte borne « electronique et instrumentation » (UI-B3-IRCIVI-002-C).
+"""Contexte borné : électronique et instrumentation.
 
-Le vocabulaire vient du cours : convertisseur analogique-numerique, pas de
-quantification, densite spectrale de puissance, produit gain-bande,
-montage inverseur et non-inverseur.
+AOP, circuits linéaires et non linéaires, filtres actifs, bruit et chaîne d'acquisition.
 """
+
+from __future__ import annotations
+
+from polytech.electronique import application, domain, infrastructure
+
+__all__ = ["application", "domain", "infrastructure"]

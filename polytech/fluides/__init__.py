@@ -1,4 +1,10 @@
-"""Contexte borne : mecanique des fluides (cours IFLMA101).
+"""Contexte borné : mécanique des fluides.
 
-Statique (chapitre II) et cinematique (chapitre III) des fluides.
+Statique, cinématique, dynamique, écoulements visqueux, turbulence et aérodynamique.
 """
+
+from __future__ import annotations
+
+from polytech.fluides import application, domain, infrastructure
+
+__all__ = ["application", "domain", "infrastructure"]
