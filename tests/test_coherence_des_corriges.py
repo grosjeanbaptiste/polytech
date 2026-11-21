@@ -23,6 +23,7 @@ part, avec leur raison.
 
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import subprocess
@@ -62,14 +63,16 @@ from polytech.thermique.application.generation_du_travail import (
 from polytech.thermique.infrastructure import latex as latex_thermique
 
 RACINE = Path(__file__).resolve().parent.parent
-TRAVAUX = RACINE / "travaux" / "Electromagnetisme"
-TRAVAUX_SIGNAUX = RACINE / "travaux" / "SignauxSystemes"
-TRAVAUX_THERMIQUE = RACINE / "travaux" / "ThermiqueFondements"
-TRAVAUX_ELECTRONIQUE = RACINE / "travaux" / "ElectroniqueInstrumentation"
-TRAVAUX_MATHS = RACINE / "travaux" / "Mathematique"
-TRAVAUX_OPTIMISATION = RACINE / "travaux" / "Optimisation"
-TRAVAUX_PROGRAMMATION = RACINE / "travaux" / "ProgrammationAlgorithmique"
-TRAVAUX_FLUIDES = RACINE / "travaux" / "MecaniqueFluides"
+# Les travaux vivent dans le depot corpus, voisin de la bibliotheque.
+CORPUS = Path(os.environ.get("POLYTECH_CORPUS", RACINE.parent / "corpus"))
+TRAVAUX = CORPUS / "travaux" / "Electromagnetisme"
+TRAVAUX_SIGNAUX = CORPUS / "travaux" / "SignauxSystemes"
+TRAVAUX_THERMIQUE = CORPUS / "travaux" / "ThermiqueFondements"
+TRAVAUX_ELECTRONIQUE = CORPUS / "travaux" / "ElectroniqueInstrumentation"
+TRAVAUX_MATHS = CORPUS / "travaux" / "Mathematique"
+TRAVAUX_OPTIMISATION = CORPUS / "travaux" / "Optimisation"
+TRAVAUX_PROGRAMMATION = CORPUS / "travaux" / "ProgrammationAlgorithmique"
+TRAVAUX_FLUIDES = CORPUS / "travaux" / "MecaniqueFluides"
 
 DOSSIERS = {
     **{slug: TRAVAUX / slug for slug in registre_em.JEUX_DE_MACROS},
